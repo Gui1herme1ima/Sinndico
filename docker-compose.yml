@@ -1,0 +1,13 @@
+# O Postgres (e o Auth) rodam no Supabase, inclusive em dev — ver README.md seção 8.
+# Este compose fica só com o Redis, usado pra cache futuro.
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - sinndico_redis_data:/data
+
+volumes:
+  sinndico_redis_data:

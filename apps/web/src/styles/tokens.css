@@ -1,0 +1,29 @@
+/* Design tokens — ver docs/DESIGN_SYSTEM.md. Não hardcodar hex fora daqui. */
+:root {
+  --color-primary: #146C5B;
+  --color-primary-contrast: #FFFFFF;
+  --color-accent: #F0A94E;
+  --color-background: #F7F8F7;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #16211D;
+  --color-text-secondary: #4B5A54;
+  --color-border: #DCE3DF;
+  --color-danger: #E5484D;
+  --color-success: #3DBE7A;
+
+  --shadow-sm: 0 1px 2px rgba(14, 21, 18, 0.06);
+  --shadow-md: 0 4px 12px rgba(14, 21, 18, 0.08);
+}
+
+[data-theme='dark'] {
+  --color-primary: #2ED9A8;
+  --color-primary-contrast: #0E1512;
+  --color-accent: #F0A94E;
+  --color-background: #0E1512;
+  --color-surface: #161E1A;
+  --color-text-primary: #EAF2EE;
+  --color-text-secondary: #9FB0A9;
+  --color-border: #253128;
+  --color-danger: #E5484D;
+  --color-success: #3DBE7A;
+}

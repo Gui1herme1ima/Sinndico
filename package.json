@@ -1,0 +1,17 @@
+{
+  "name": "sinndico",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=apps/backend",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "migrate": "npm run migrate --workspace=apps/backend"
+  },
+  "allowScripts": {
+    "bcrypt@5.1.1": true,
+    "esbuild@0.28.1": true,
+    "esbuild@0.21.5": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@sinndico/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "PWA do morador — placeholder de estrutura. Implementação funcional prevista para a Fase 1 (após Auth/Chamados/Encomendas/Comunicados do backend estarem prontos).",
+  "scripts": {
+    "dev": "echo 'apps/mobile ainda não implementado — ver docs/DESIGN_SYSTEM.md e README.md seção 6 (Fase 1)' && exit 1"
+  }
+}
