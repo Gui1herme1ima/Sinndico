@@ -97,6 +97,48 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 11 (Data: 17/07/2026)
+**Completado:**
+- [x] **Notificações push (FCM) — API completa, com fallback gracioso** (não há projeto Firebase real
+  configurado neste ambiente — usuário decidiu construir agora e configurar depois).
+  - Nova tabela `device_tokens` (migration `1700000000013`) — token de dispositivo por usuário,
+    único (upsert em re-registro), RLS por `condominio_id`.
+  - `src/services/notificationService.ts` — inicializa o `firebase-admin` só na primeira notificação
+    (lazy) e só se `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` estiverem
+    todas definidas; se não estiverem, loga um aviso uma vez e vira no-op — **nunca** lança exceção,
+    então uma notificação falhando (ou Firebase não configurado) nunca derruba a operação principal.
+  - `src/models/DeviceToken.ts` + `POST`/`DELETE /api/device-tokens` (qualquer role autenticado
+    registra/remove o próprio token).
+  - Gatilhos conectados nos 3 módulos que o README pedia: encomenda criada → notifica o morador
+    dono; comunicado criado → notifica todo mundo do condomínio; mensagem de chat → notifica o
+    outro lado (todos os admins do condomínio se quem escreveu foi morador; o morador específico se
+    quem escreveu foi admin). Novo `listAdminIdsForTenant` em `User.ts` pra resolver "todos os
+    admins" no gatilho do chat.
+
+**Verificação feita nesta sessão (contra o Supabase real, sem Firebase configurado):**
+- Registrar device token → 201. Criar encomenda/comunicado/mensagem de chat com o token registrado
+  → todas continuam retornando 201 normalmente, e o log mostra exatamente o aviso esperado
+  ("Firebase não configurado ... notificações push desativadas"), sem nenhum erro/crash.
+- Remover device token → 204.
+- **Não foi possível testar o envio de push de verdade** (precisa de um projeto Firebase real — ver
+  Próximo passo).
+
+**Próximo passo:**
+- [ ] **Ação do usuário:** criar projeto no Firebase Console, gerar a chave de conta de serviço
+  (Configurações do projeto > Contas de serviço > Gerar nova chave privada) e preencher
+  `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` no `.env`. Depois, registrar
+  um token de dispositivo de verdade (via SDK do Firebase no client) e confirmar que a notificação
+  chega.
+- [ ] **Com isso, a API inteira da Fase 1 está 100% completa.** Resta: telas web/PWA (nenhum módulo
+  tem tela ainda) e o painel superadmin (schema/API pendente desde a Session 4).
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — mesmo padrão de acesso a dados dos módulos anteriores; a única peça nova é o
+  serviço de notificação em si, desenhado pra nunca quebrar a operação principal.
+
+**Bugs conhecidos:**
+- Nenhum. O envio de push de verdade fica pendente de credenciais reais do Firebase.
+
 ### Session 10 (Data: 17/07/2026)
 **Completado:**
 - [x] **Dashboard admin (API)**: `src/models/Dashboard.ts`, `src/controllers/dashboardController.ts`,
