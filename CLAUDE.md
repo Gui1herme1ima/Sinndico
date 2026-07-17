@@ -95,6 +95,16 @@ Formato do checkpoint:
 
 ## 8. Checkpoint Log
 
+> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 11; detalhes sessão a sessão abaixo):**
+>
+> - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
+> - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
+> - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — código completo, mas com fallback gracioso porque falta o usuário configurar um projeto Firebase real). Todos testados ponta a ponta contra o Supabase real, não com mocks.
+> - **Nada tem tela ainda.** `apps/web` e `apps/mobile` não passam do scaffold inicial (Session 1) — todo o trabalho até aqui (Sessions 2–11) foi 100% backend/API.
+> - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
+> - **Ação pendente do usuário:** criar projeto Firebase e preencher `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` no `.env` do backend, se quiser notificações push de verdade (Session 11).
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas web/PWA consumindo a API já pronta, (2) API de CRUD de condomínio + tela do painel superadmin, (3) configurar o Firebase de verdade e validar o envio de push.
+
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
 ### Session 11 (Data: 17/07/2026)
