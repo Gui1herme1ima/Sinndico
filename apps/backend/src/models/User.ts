@@ -1,4 +1,4 @@
-import { withTenantContext } from '../database/tenantContext';
+import { TenantContext, withTenantContext } from '../database/tenantContext';
 
 export type UserRole = 'morador' | 'admin' | 'porteiro' | 'superadmin';
 
@@ -30,6 +30,16 @@ export interface CreateUserInput {
 // onde só conhecemos o id do usuário autenticado, ainda não o condominio_id dele.
 export async function findUserById(id: string): Promise<User | null> {
   return withTenantContext({ userId: id, condominioId: null }, async (client) => {
+    const result = await client.query<User>('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0] ?? null;
+  });
+}
+
+// Lookup de outro usuário dentro do próprio tenant (ex.: porteiro validando o morador_id de uma
+// encomenda). Diferente de findUserById: usa o contexto de quem está pedindo (ctx), não o id alvo
+// como se fosse self-lookup — a policy libera porque ambos têm o mesmo condominio_id.
+export async function findUserByIdForTenant(ctx: TenantContext, id: string): Promise<User | null> {
+  return withTenantContext(ctx, async (client) => {
     const result = await client.query<User>('SELECT * FROM users WHERE id = $1', [id]);
     return result.rows[0] ?? null;
   });
