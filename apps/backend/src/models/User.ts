@@ -45,6 +45,15 @@ export async function findUserByIdForTenant(ctx: TenantContext, id: string): Pro
   });
 }
 
+// Usado pelo gatilho de notificação do chat: quando um morador escreve, notifica todos os admins
+// do mesmo condomínio (não tem um "admin dono da conversa" fixo).
+export async function listAdminIdsForTenant(ctx: TenantContext): Promise<string[]> {
+  return withTenantContext(ctx, async (client) => {
+    const result = await client.query<{ id: string }>("SELECT id FROM users WHERE role = 'admin'");
+    return result.rows.map((r) => r.id);
+  });
+}
+
 export async function createUser(input: CreateUserInput): Promise<User> {
   return withTenantContext({ userId: input.id, condominioId: input.condominioId }, async (client) => {
     const result = await client.query<User>(

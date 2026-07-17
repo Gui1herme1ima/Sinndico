@@ -9,6 +9,7 @@ import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import comunicadosRoutes from './routes/comunicados';
 import dashboardRoutes from './routes/dashboard';
+import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
 import solicitacoesRoutes from './routes/solicitacoes';
 
@@ -34,5 +35,6 @@ app.use('/api/encomendas', encomendasRoutes);
 app.use('/api/comunicados', comunicadosRoutes);
 app.use('/api/chats', chatsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/device-tokens', deviceTokensRoutes);
 
 app.use(errorHandler);

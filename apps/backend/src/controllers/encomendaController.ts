@@ -10,6 +10,8 @@ import {
   signEncomenda,
 } from '../models/Encomenda';
 import { findUserByIdForTenant } from '../models/User';
+import { listTokensForUsers } from '../models/DeviceToken';
+import { sendPushToTokens } from '../services/notificationService';
 
 export const createEncomendaSchema = z.object({
   moradorId: z.string().uuid(),
@@ -51,6 +53,13 @@ export async function create(req: Request, res: Response) {
     porteiroId: req.user!.id,
     descricao: input.descricao,
     fotoUrl: input.fotoUrl,
+  });
+
+  const tokens = await listTokensForUsers(ctx, [encomenda.morador_id]);
+  await sendPushToTokens(tokens, {
+    title: 'Encomenda chegou',
+    body: encomenda.descricao ?? 'Você tem uma nova encomenda na portaria.',
+    data: { tipo: 'encomenda', encomendaId: encomenda.id },
   });
 
   res.status(201).json(toEncomendaResponse(encomenda));
