@@ -34,6 +34,7 @@ async function main() {
   const user = await createUser({
     id: created.user.id,
     condominioId: null,
+    username: email.split('@')[0],
     email,
     nome: 'Superadmin',
     role: 'superadmin',

@@ -11,6 +11,8 @@ interface RequireAuthProps {
   children: ReactNode;
 }
 
+const CHANGE_PASSWORD_PATH = '/trocar-senha';
+
 export function RequireAuth({ roles, children }: RequireAuthProps) {
   const { status, user } = useAuth();
   const location = useLocation();
@@ -26,6 +28,10 @@ export function RequireAuth({ roles, children }: RequireAuthProps) {
 
   if (status === 'unauthenticated' || !user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (user.mustChangePassword && location.pathname !== CHANGE_PASSWORD_PATH) {
+    return <Navigate to={CHANGE_PASSWORD_PATH} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {

@@ -2,8 +2,10 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/Layout/AppShell';
 import { AreasComunsPage } from '@/pages/AreasComuns/AreasComunsPage';
+import { ChangePasswordPage } from '@/pages/auth/ChangePasswordPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
-import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ChatPage } from '@/pages/Chat/ChatPage';
 import { ComidaPage } from '@/pages/Comida/ComidaPage';
@@ -26,6 +28,9 @@ function IndexRedirect() {
 export function AppRoutes() {
   return (
     <Routes>
+      {/* /login é reservado pro superadmin (não pertence a nenhum tenant); /:tenantSlug/login resolve
+          o condomínio via GET /api/condominios/by-slug/:slug só pra exibir o nome — o login em si
+          funciona igual nos dois casos (username/e-mail + senha). */}
       <Route
         path="/login"
         element={
@@ -35,11 +40,22 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/register"
+        path="/:tenantSlug/login"
         element={
           <RequireGuest>
-            <RegisterPage />
+            <LoginPage />
           </RequireGuest>
+        }
+      />
+      <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+      <Route path="/:tenantSlug/esqueci-senha" element={<ForgotPasswordPage />} />
+      <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+      <Route
+        path="/trocar-senha"
+        element={
+          <RequireAuth>
+            <ChangePasswordPage />
+          </RequireAuth>
         }
       />
 

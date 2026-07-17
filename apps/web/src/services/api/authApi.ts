@@ -1,21 +1,15 @@
 import { apiFetch } from '@/services/api/client';
 import type {
   AuthResponse,
+  ChangePasswordPayload,
+  ForgotPasswordPayload,
   LoginPayload,
   RefreshResponse,
-  RegisterPayload,
+  ResetPasswordPayload,
   UserResponse,
 } from '@/services/api/types';
 
 export const authApi = {
-  register(payload: RegisterPayload): Promise<AuthResponse> {
-    return apiFetch<AuthResponse>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      skipAuth: true,
-    });
-  },
-
   login(payload: LoginPayload): Promise<AuthResponse> {
     return apiFetch<AuthResponse>('/api/auth/login', {
       method: 'POST',
@@ -38,5 +32,28 @@ export const authApi = {
 
   me(): Promise<UserResponse> {
     return apiFetch<UserResponse>('/api/auth/me');
+  },
+
+  forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
+    return apiFetch<void>('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      skipAuth: true,
+    });
+  },
+
+  resetPassword(payload: ResetPasswordPayload): Promise<void> {
+    return apiFetch<void>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      skipAuth: true,
+    });
+  },
+
+  changePassword(payload: ChangePasswordPayload): Promise<void> {
+    return apiFetch<void>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   },
 };

@@ -8,13 +8,13 @@ export function useAuth() {
     throw new Error('useAuth deve ser usado dentro de <AuthProvider>');
   }
 
-  const { state, login, register, logout } = ctx;
+  const { state, login, logout, refreshUser } = ctx;
 
   return {
     status: state.status,
     user: state.status === 'authenticated' ? state.user : null,
     login,
-    register,
     logout,
+    refreshUser,
   };
 }

@@ -96,47 +96,144 @@ Formato do checkpoint:
 
 ## 8. Checkpoint Log
 
-> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 11; detalhes sessão a sessão abaixo):**
+> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 25; detalhes sessão a sessão abaixo):**
 >
+> - **Reformulação de acesso em andamento (iniciada na Session 25) — pivô de produto sobre o que já
+>   estava construído**: o usuário decidiu abandonar o auto-registro livre em favor de um modelo
+>   hierárquico e administrado (superadmin cria condomínio+primeiro admin; admin cadastra tudo o mais;
+>   morador só recebe acesso via e-mail de boas-vindas). Plano completo em 6 fatias registrado no
+>   plan file da sessão; a Fase 3 antiga (Assembleia/votação) fica pausada até a fundação de acesso
+>   (Fatia 1) e os cadastros administrados (Fatias 2-3) estarem prontos — não foi abandonada, só
+>   reordenada por decisão explícita do usuário (ver seção 6 deste arquivo: mudança de escopo é normal).
+> - **Fatia 1 (fundação de acesso) completa nesta sessão**: `condominios` ganhou `slug`/`endereco`/
+>   `contato_*`/`tipo_residencia`; `users` ganhou `username` (login por username OU e-mail) e
+>   `senha_temporaria` (força troca no primeiro login); `email` virou opcional (só morador é
+>   obrigatório — admin/porteiro podem ter só username, com e-mail sintético interno pro Supabase
+>   Auth); `POST /api/auth/register` foi removido; superadmin cria condomínio + primeiro admin numa
+>   chamada só; "ver como" via header (`X-Impersonate-Condominio-Id`), sem conta duplicada; admin
+>   reseta senha de porteiro/outro admin direto no painel (nunca de morador); esqueci-minha-senha via
+>   Supabase; tudo testado ponta a ponta contra o Supabase real e no navegador via Playwright. Ver
+>   Session 25 pra detalhe completo.
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
-> - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13, e as 5 telas de módulo da Fase 1 estão
->   completas desde a Session 19** (Solicitações — Session 14 —, Encomendas — Session 15 —,
->   Comunicados — Session 17 —, Chat — Session 18 — e Dashboard admin — Session 19): roteamento com
->   guarda por role, login/registro/logout contra a API real, componentes base do design system
->   (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle/StatTile), fontes self-hosted,
->   manifest de PWA, e `@tanstack/react-query` como camada de cache. **Com isso, a Fase 1 (MVP) está
->   funcionalmente completa ponta a ponta — API + telas.** `apps/mobile` segue só placeholder (o PWA
->   ainda não tem manifest com service worker/instalação offline, só o manifest estático — ver
->   Session 13).
-> - **Conta de porteiro de teste**: não existe self-registro pra porteiro (só morador/admin em
->   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
->   (Session 15, mesmo padrão do `seed:superadmin` já existente) só pra viabilizar testar telas que
->   dependem desse role.
-> - **Brand kit integrado ao app desde a Session 21** (organizado na Session 16): favicon/ícones PWA
->   reais, componente `Logo` (símbolo reativo ao tema, sem precisar trocar arquivo por claro/escuro)
->   no header e telas de login/registro, os 8 ícones de domínio como componentes React (4 já usados
->   na navegação), e os 3 valores de token refinados do brand kit adotados em `tokens.css`.
-> - **Painel superadmin completo desde a Session 20**: API de CRUD de condomínio (`/api/condominios`
->   — criar/listar/editar nome, sem exclusão por decisão explícita) e tela em `apps/web` (`/condominios`
->   — nav exclusiva do superadmin). **Com isso, a Fase 1 (MVP) está 100% completa**: API + telas de
->   todos os módulos + painel superadmin.
+> - **Módulos operacionais da Fase 1/2/Áreas Comuns seguem completos** (API + tela, todos testados
+>   ponta a ponta): Solicitações, Encomendas, Comunicados, Chat, Dashboard admin, Notificações push
+>   (FCM), Visitantes, Comida/Delivery, Áreas Comuns/Reservas. Painel superadmin (CRUD de condomínio)
+>   ganhou os campos novos da Fatia 1 nesta sessão.
+> - **Brand kit integrado ao app desde a Session 21**: favicon/ícones PWA reais, componente `Logo`,
+>   ícones de domínio, tokens do brand kit em `tokens.css`.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
->   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
->   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Fase 2 completa desde a Session 23** (iniciada na Session 22): Visitantes (morador registra
->   visitante auto-aprovado, porteiro/admin registram entrada/saída ou bloqueiam) e Comida/Delivery
->   (morador avisa pedido feito com ETA, porteiro/admin confirmam chegada e notificam o morador,
->   morador confirma retirada) — API + tela dos dois módulos, testados ponta a ponta.
-> - **Fase 3 iniciada na Session 24**: módulo de Áreas Comuns completo (API + tela) — admin cadastra/
->   edita áreas comuns, morador solicita reserva (fica `pendente`, já bloqueia o horário pra outros
->   pedidos conflitantes), admin aprova/cancela, morador cancela a própria. Falta só Assembleia/
->   votação pra fechar a Fase 3.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Assembleia/votação (fecha
->   a Fase 3) — não há mais nenhum outro módulo pendente.
+>   um device token de verdade.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** seguir o roadmap da
+>   reformulação — Fatia 2 (Residências) é o próximo passo natural (pré-requisito de Moradores na
+>   Fatia 3), mas confirmar com o usuário antes de começar, conforme o fluxo de aprovação combinado.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 25 (Data: 17/07/2026)
+**Completado:**
+- [x] **Pivô de produto planejado e aprovado**: o usuário testou o app (contas de teste, self-registro)
+  e trouxe uma reformulação grande do modelo de acesso — sem auto-registro livre, hierárquico
+  (superadmin → admin → morador/porteiro), navegação em coluna lateral com bloco "Cadastros", papéis
+  customizáveis por tenant no final. Planejado em Plan Mode: 6 fatias, cada uma aprovada antes de
+  implementar (decisões confirmadas: "ver como" em vez de conta duplicada, e-mail via SMTP Hostinger
+  + `nodemailer`, Visitantes continua sendo o morador quem cadastra, RBAC fica pra Fatia 5). No meio
+  do planejamento, o usuário acrescentou: login por username OU e-mail, e-mail obrigatório só pra
+  morador (opcional pra admin/porteiro), e admin pode redefinir senha de porteiro/outro admin direto
+  no painel (nunca de morador, que só usa o fluxo de e-mail).
+- [x] **Fatia 1 (Fundação de acesso) implementada e verificada de ponta a ponta**:
+  - **Migrations**: `1700000000018_expand-condominios` (`slug` único, `endereco`, `contato_nome/
+    email/telefone`, `tipo_residencia` com CHECK `apartamento`/`casa` — backfill primeiro, trava
+    NOT NULL/UNIQUE depois, já que a tabela tem linhas reais acumuladas de sessões anteriores);
+    `1700000000019_add-senha-temporaria` (`users.senha_temporaria`); `1700000000020_add-username-
+    email-nullable` (`users.username` único **globalmente**, backfill derivado do e-mail com sufixo
+    numérico em colisão; `email` vira nullable).
+  - **Username + e-mail opcional**: `models/User.ts` ganhou `syntheticEmailFor(username)` —
+    `<username>@staff.sinndico.internal`, usado só como identificador técnico do Supabase Auth quando
+    a conta não tem e-mail real (nunca exibido/enviado); `public.users.email` fica `NULL` nesse caso.
+    `findUserByUsername` usa o `pool` privilegiado direto (bypassa RLS de propósito — é lookup
+    pré-autenticação, mesmo padrão do model `Condominio.ts`).
+  - **Login por username ou e-mail**: `POST /api/auth/login` agora recebe `{identificador, senha}` —
+    se tem `@`, tenta como e-mail direto; senão resolve via `username` pro e-mail (real ou sintético)
+    antes de chamar `signInWithPassword`.
+  - **`POST /api/condominios`** (superadmin) ganhou os campos novos + cria o primeiro admin na mesma
+    chamada (`adminNome`/`adminUsername`/`adminEmail?`) — gera senha temporária, sempre devolve na
+    resposta (pro superadmin copiar/repassar), envia e-mail de boas-vindas só se `adminEmail` foi
+    informado. **`GET /api/condominios/by-slug/:slug`** público, resolve o tenant antes do login.
+  - **`PATCH /api/users/:id/senha`** (admin, novo `userController.ts`/`routes/users.ts`) — redefine
+    senha de porteiro/outro admin direto, bloqueado (400) se o alvo for `role: 'morador'`.
+  - **`POST /api/auth/forgot-password`** (sempre 204, não revela existência) e **`POST /api/auth/
+    reset-password`** (`verifyOtp` server-side + `updateUserById`) — funcionou como esperado contra
+    o Supabase real (o ponto que o plano marcava como "mais incerto tecnicamente" não deu problema).
+  - **`POST /api/auth/change-password`** (autenticado, usado na troca obrigatória de primeiro login).
+  - **"Ver como"**: em vez do endpoint dedicado que o plano sugeria, o middleware `authenticate`
+    passou a honrar um header `X-Impersonate-Condominio-Id` **só quando o perfil real já é
+    superadmin** — eleva `req.user` pra `{role: 'admin', condominioId: <alvo>}` por request, sem
+    emitir token novo nem criar conta duplicada; loga a ação pra manter o superadmin real
+    identificável. Simplificação sobre o plano original: nenhum endpoint novo foi necessário, o
+    frontend já tem a lista de condomínios carregada e só liga o header a partir dali.
+  - **`POST /api/auth/register` removido por completo** (rota, controller, schema).
+  - **Frontend**: `RegisterPage.tsx` removida; `LoginPage` aceita `identificador` (e-mail ou
+    username) e funciona tanto em `/login` (superadmin, sem tenant) quanto `/:tenantSlug/login`
+    (resolve o nome do condomínio via `by-slug`, 404 amigável se o slug não existir);
+    `ForgotPasswordPage`/`ResetPasswordPage`/`ChangePasswordPage` novas; `RequireAuth` redireciona
+    pra `/trocar-senha` sempre que `user.mustChangePassword` for `true`; `AuthContext` ganhou
+    `refreshUser()` (re-busca `/me`, usado após trocar senha e ao entrar/sair do "ver como”, sem
+    precisar de novo login); `services/impersonation.ts` (sessionStorage, não localStorage —
+    elevação transitória) + `client.ts` anexa o header em toda request quando ativo;
+    `CreateCondominioForm`/`CondominioCard` ganharam os campos novos, exibição da senha gerada (uma
+    vez) e o botão "Entrar como admin"; `AppShell` mostra um banner "Você está vendo o painel de X"
+    com botão pra sair do modo, quando impersonando.
+
+**Verificação feita nesta sessão:**
+- As 3 migrations rodaram contra o Supabase real sem quebrar nenhuma linha de teste acumulada de
+  sessões anteriores (slug/tipo_residencia/username backfilled corretamente, zero username
+  duplicado conferido por query).
+- `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web) limpos.
+- Suite de verificação via API real (script descartável): criar condomínio com admin sem e-mail →
+  senha devolvida na resposta → login por username → `mustChangePassword: true` → change-password →
+  `mustChangePassword: false` → re-login com a senha nova; criar condomínio com admin COM e-mail →
+  login por e-mail; slug duplicado e username duplicado → 409 nos dois; admin reseta a própria senha
+  (role admin, permitido) → devolve senha nova; reset bloqueado (400) contra um usuário `role:
+  morador` real do banco (confirmado chamando o controller direto, não só por inspeção); superadmin
+  sem header de impersonation → 403 numa rota admin-only; com o header → 200; forgot-password com
+  e-mail inexistente → sempre 204.
+- Verificação de UI via Playwright contra backend+web reais: sem link "Registre-se" no login; criar
+  condomínio pelo painel → senha temporária aparece na tela; login do novo admin por username →
+  redireciona pra `/trocar-senha` → troca a senha → vai pro `/dashboard` normalmente; slug
+  inexistente mostra mensagem amigável (não crash); "esqueci minha senha" sempre mostra a mesma
+  mensagem genérica; "Entrar como admin" → banner de "ver como" aparece → "Sair do modo" volta pra
+  `/condominios`.
+- **Um bug real encontrado e corrigido durante a verificação de UI**: depois de trocar a senha
+  obrigatória, a tela ficava presa em `/trocar-senha` — `RequireAuth` só *permite* sair da rota
+  quando `mustChangePassword` vira `false`, não navega pra lugar nenhum sozinho. Corrigido fazendo
+  `ChangePasswordPage` navegar explicitamente pro `roleHome(user.role)` depois do `refreshUser()`.
+
+**Próximo passo:**
+- [ ] Confirmar com o usuário antes de começar: Fatia 2 (Residências) é o próximo item natural do
+  roadmap (pré-requisito de Moradores na Fatia 3), mas o usuário pediu pra sempre apresentar o plano
+  de cada fatia antes de implementar.
+- [ ] SMTP da Hostinger ainda não configurado neste ambiente (`SMTP_HOST`/`PORT`/`USER`/`PASSWORD`
+  no `.env`) — sem isso, e-mail de boas-vindas e "esqueci minha senha" ficam em modo silencioso
+  (loga aviso, não quebra a API, mesmo padrão gracioso do Firebase). Testado só o caminho sem e-mail
+  (senha mostrada na UI) e o e-mail COM endereço informado (chamada ao `sendEmail` não falha, mas
+  não foi confirmado envio de verdade).
+- [ ] "Ver como" fica só no header por ora — não há ainda um registro de auditoria persistido (só
+  `console.log`), o que é suficiente pro MVP mas pode valer uma tabela de log se o uso real pedir.
+
+**Decisões técnicas / desvios do plano original:**
+- `username` é único **globalmente** (não por tenant) — necessário porque alimenta o e-mail sintético
+  do Supabase Auth, que precisa ser único no projeto inteiro.
+- "Ver como" implementado via header + elevação por request no middleware, **sem** o endpoint
+  `POST /api/auth/impersonate/:id` que o plano original cogitava — desnecessário na prática, o
+  frontend já tem os dados do condomínio pra popular o header direto.
+- Redefinição de senha do admin/porteiro (`PATCH /api/users/:id/senha`) foi construída agora
+  (Fatia 1) mesmo sem a tela de "Administradores" existir ainda (essa é Fatia 3) — é infraestrutura
+  de auth, não uma tela de cadastro; a UI que consome esse endpoint chega junto com Administradores.
+
+**Bugs conhecidos:**
+- Nenhum em aberto — o bug de navegação pós-troca-de-senha foi encontrado e corrigido na própria
+  sessão (ver Verificação acima).
 
 ### Session 24 (Data: 17/07/2026)
 **Completado:**

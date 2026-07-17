@@ -10,6 +10,8 @@ export interface AuthenticatedUser {
   // null só para role = 'superadmin'.
   condominioId: string | null;
   nome: string;
+  // presente só durante "ver como" — id do superadmin real, pra manter auditável quem está agindo.
+  impersonatedBy?: string;
 }
 
 declare global {
@@ -36,6 +38,24 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const profile = await findUserById(sub);
   if (!profile) {
     throw new ApiError(401, 'Perfil de usuário não encontrado');
+  }
+
+  // "Ver como": superadmin opera as rotas normais de admin de um tenant sem uma segunda conta. Não
+  // gera token novo — é uma elevação por request do próprio token do superadmin, honrada só quando o
+  // perfil real (verificado acima via JWT) já é superadmin, nunca a partir do que o cliente afirma.
+  const impersonateCondominioId = req.headers['x-impersonate-condominio-id'];
+  if (profile.role === 'superadmin' && typeof impersonateCondominioId === 'string' && impersonateCondominioId) {
+    console.log(
+      `[auth] superadmin ${profile.id} agindo como admin do condomínio ${impersonateCondominioId} em ${req.method} ${req.path}`
+    );
+    req.user = {
+      id: profile.id,
+      role: 'admin',
+      condominioId: impersonateCondominioId,
+      nome: profile.nome,
+      impersonatedBy: profile.id,
+    };
+    return next();
   }
 
   req.user = {

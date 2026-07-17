@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { formatDate } from '@/lib/formatDate';
+import { impersonation } from '@/services/impersonation';
 import { condominiosApi } from '@/services/api/condominiosApi';
 import type { CondominioResponse } from '@/services/api/types';
+import { useAuth } from '@/store/useAuth';
 
 export interface CondominioCardProps {
   condominio: CondominioResponse;
@@ -14,6 +17,8 @@ export interface CondominioCardProps {
 
 export function CondominioCard({ condominio }: CondominioCardProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [editing, setEditing] = useState(false);
   const [nome, setNome] = useState(condominio.nome);
 
@@ -24,6 +29,12 @@ export function CondominioCard({ condominio }: CondominioCardProps) {
       setEditing(false);
     },
   });
+
+  async function entrarComoAdmin() {
+    impersonation.set(condominio.id, condominio.nome);
+    await refreshUser();
+    navigate('/dashboard');
+  }
 
   function handleCancel() {
     setNome(condominio.nome);
@@ -51,15 +62,22 @@ export function CondominioCard({ condominio }: CondominioCardProps) {
         ) : (
           <div className="flex items-start justify-between gap-4">
             <h3 className="font-display text-lg font-semibold text-text-primary">{condominio.nome}</h3>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-              Editar
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+                Editar
+              </Button>
+              <Button size="sm" onClick={() => void entrarComoAdmin()}>
+                Entrar como admin
+              </Button>
+            </div>
           </div>
         )}
 
+        <p className="font-mono text-xs text-text-secondary">/{condominio.slug}/login</p>
         <p className="font-mono text-xs text-text-secondary">{condominio.id}</p>
 
-        <div className="flex gap-4 text-sm text-text-secondary">
+        <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
+          <span>{condominio.tipoResidencia === 'apartamento' ? 'Apartamento' : 'Casa'}</span>
           <span>
             {condominio.totalUsuarios} usuário{condominio.totalUsuarios === 1 ? '' : 's'}
           </span>

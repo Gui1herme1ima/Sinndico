@@ -1,4 +1,5 @@
 import { API_URL } from '@/lib/env';
+import { impersonation } from '@/services/impersonation';
 import { tokenStorage } from '@/services/tokenStorage';
 
 export interface ApiErrorDetails {
@@ -72,6 +73,9 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     if (!skipAuth) {
       const accessToken = tokenStorage.getAccess();
       if (accessToken) finalHeaders.set('Authorization', `Bearer ${accessToken}`);
+
+      const viewingAs = impersonation.get();
+      if (viewingAs) finalHeaders.set('X-Impersonate-Condominio-Id', viewingAs.condominioId);
     }
     return fetch(`${API_URL}${path}`, { ...rest, headers: finalHeaders, body });
   };

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { authApi } from '@/services/api/authApi';
 import { setAuthExpiredHandler } from '@/services/api/client';
-import type { LoginPayload, RegisterPayload, UserResponse } from '@/services/api/types';
+import type { LoginPayload, UserResponse } from '@/services/api/types';
 import { tokenStorage } from '@/services/tokenStorage';
 
 export type AuthState =
@@ -31,8 +31,10 @@ function authReducer(_state: AuthState, action: AuthAction): AuthState {
 export interface AuthContextValue {
   state: AuthState;
   login(payload: LoginPayload): Promise<void>;
-  register(payload: RegisterPayload): Promise<void>;
   logout(): Promise<void>;
+  // Re-busca /me — usada depois de trocar senha (zera mustChangePassword) e depois de
+  // entrar/sair do modo "ver como" (troca a identidade efetiva sem precisar de novo login).
+  refreshUser(): Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -67,12 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'AUTHENTICATED', user: response.user });
   }
 
-  async function register(payload: RegisterPayload) {
-    const response = await authApi.register(payload);
-    tokenStorage.set(response);
-    dispatch({ type: 'AUTHENTICATED', user: response.user });
-  }
-
   async function logout() {
     try {
       await authApi.logout();
@@ -83,5 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UNAUTHENTICATED' });
   }
 
-  return <AuthContext.Provider value={{ state, login, register, logout }}>{children}</AuthContext.Provider>;
+  async function refreshUser() {
+    const user = await authApi.me();
+    dispatch({ type: 'AUTHENTICATED', user });
+  }
+
+  return (
+    <AuthContext.Provider value={{ state, login, logout, refreshUser }}>{children}</AuthContext.Provider>
+  );
 }

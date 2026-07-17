@@ -2,12 +2,14 @@ export type UserRole = 'morador' | 'admin' | 'porteiro' | 'superadmin';
 
 export interface UserResponse {
   id: string;
-  email: string;
+  email: string | null;
+  username: string;
   nome: string;
   role: UserRole;
   condominioId: string | null;
   apto: string | null;
   telefone: string | null;
+  mustChangePassword: boolean;
 }
 
 export interface AuthResponse {
@@ -23,19 +25,22 @@ export interface RefreshResponse {
   expiresIn: number;
 }
 
-export interface RegisterPayload {
-  condominioId: string;
-  email: string;
+export interface LoginPayload {
+  identificador: string;
   senha: string;
-  nome: string;
-  apto?: string;
-  telefone?: string;
-  role: 'morador' | 'admin';
 }
 
-export interface LoginPayload {
+export interface ForgotPasswordPayload {
   email: string;
-  senha: string;
+}
+
+export interface ResetPasswordPayload {
+  tokenHash: string;
+  novaSenha: string;
+}
+
+export interface ChangePasswordPayload {
+  novaSenha: string;
 }
 
 export type SolicitacaoCategoria = 'manutencao' | 'seguranca' | 'animal' | 'outra';
@@ -132,15 +137,40 @@ export interface DashboardSummaryResponse {
   };
 }
 
+export type TipoResidencia = 'apartamento' | 'casa';
+
 export interface CondominioResponse {
   id: string;
   nome: string;
+  slug: string;
+  endereco: string | null;
+  contatoNome: string | null;
+  contatoEmail: string | null;
+  contatoTelefone: string | null;
+  tipoResidencia: TipoResidencia;
   createdAt: string;
   totalUsuarios: number;
 }
 
 export interface CreateCondominioPayload {
   nome: string;
+  slug: string;
+  tipoResidencia: TipoResidencia;
+  endereco?: string;
+  contatoNome?: string;
+  contatoEmail?: string;
+  contatoTelefone?: string;
+  adminNome: string;
+  adminUsername: string;
+  adminEmail?: string;
+}
+
+export interface CreateCondominioResponse extends CondominioResponse {
+  admin: {
+    username: string;
+    email: string | null;
+    senhaTemporaria: string;
+  };
 }
 
 export interface UpdateCondominioPayload {

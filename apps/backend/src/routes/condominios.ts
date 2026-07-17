@@ -1,10 +1,13 @@
 import { Router } from 'express';
 
-import { create, getById, list, update } from '../controllers/condominioController';
+import { create, getById, getBySlug, list, update } from '../controllers/condominioController';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
+
+// Público, antes do authenticate — usado pela tela de login pra resolver /<slug>/login.
+router.get('/by-slug/:slug', asyncHandler(getBySlug));
 
 router.use(asyncHandler(authenticate));
 

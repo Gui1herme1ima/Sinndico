@@ -16,6 +16,7 @@ import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
 import reservasRoutes from './routes/reservas';
 import solicitacoesRoutes from './routes/solicitacoes';
+import usersRoutes from './routes/users';
 import visitantesRoutes from './routes/visitantes';
 
 export const app = express();
@@ -46,5 +47,6 @@ app.use('/api/visitantes', visitantesRoutes);
 app.use('/api/comida', comidaRoutes);
 app.use('/api/areas-comuns', areasComunsRoutes);
 app.use('/api/reservas', reservasRoutes);
+app.use('/api/users', usersRoutes);
 
 app.use(errorHandler);

@@ -9,7 +9,9 @@ async function main() {
   }
 
   const result = await pool.query(
-    "INSERT INTO condominios (nome) VALUES ('Condomínio de Teste') RETURNING id, nome"
+    `INSERT INTO condominios (nome, slug, tipo_residencia)
+     VALUES ('Condomínio de Teste', 'condominio-de-teste', 'apartamento')
+     RETURNING id, nome`
   );
   console.log('Condomínio de teste criado:', result.rows[0]);
 }

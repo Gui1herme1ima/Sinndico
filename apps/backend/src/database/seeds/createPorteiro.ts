@@ -38,6 +38,7 @@ async function main() {
   const user = await createUser({
     id: created.user.id,
     condominioId,
+    username: email.split('@')[0],
     email,
     nome,
     role: 'porteiro',
