@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { pool } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
+import comunicadosRoutes from './routes/comunicados';
 import encomendasRoutes from './routes/encomendas';
 import solicitacoesRoutes from './routes/solicitacoes';
 
@@ -28,5 +29,6 @@ app.get('/health', async (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/solicitacoes', solicitacoesRoutes);
 app.use('/api/encomendas', encomendasRoutes);
+app.use('/api/comunicados', comunicadosRoutes);
 
 app.use(errorHandler);
