@@ -97,6 +97,44 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 7 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Encomendas (API)**: `src/models/Encomenda.ts`, `src/controllers/encomendaController.ts`,
+  `src/routes/encomendas.ts`, montado em `app.ts` como `/api/encomendas`.
+  - `POST /api/encomendas` (porteiro cadastra — `moradorId`, `descricao?`, `fotoUrl?`; ainda sem
+    upload de arquivo de verdade, `fotoUrl` é só uma string por enquanto — infra de storage não
+    existe ainda, ver README seção 2).
+  - `GET /api/encomendas` (porteiro/admin veem todas do condomínio; morador vê só as próprias).
+  - `GET /api/encomendas/:id` (mesma regra de escopo).
+  - `POST /api/encomendas/:id/assinar` (só o morador dono assina digitalmente — seta `assinado`,
+    `data_assinatura`, `status: retirada`; a checagem de dono é feita no próprio `WHERE morador_id`
+    do UPDATE, não em código separado).
+- [x] Novo `findUserByIdForTenant` em `User.ts` — lookup de outro usuário dentro do mesmo tenant
+  (diferente de `findUserById`, que é só self-lookup pro bootstrap de auth). Usado pra validar que o
+  `moradorId` que o porteiro informa existe, é do mesmo condomínio e tem `role = 'morador'`.
+
+**Verificação feita nesta sessão (tudo contra o Supabase real):**
+- Porteiro cadastra → morador lista e vê → morador assina (`assinado: true`, `status: retirada`,
+  `dataAssinatura` preenchida).
+- Outro morador do mesmo condomínio tentando assinar → 404 (não é dono).
+- Morador de outro condomínio não vê a encomenda na listagem (isolamento por RLS).
+- Morador tentando `POST` (cadastrar) → 403 (só porteiro).
+- `moradorId` de um admin (role errado) ou de outro condomínio → 400 nos dois casos.
+
+**Próximo passo:**
+- [ ] Comunicados (mesmo padrão de módulo).
+- [ ] Chat básico, Dashboard admin, notificações push (FCM), telas web/PWA, painel superadmin —
+  seguem pendentes.
+- [ ] Upload de arquivo de verdade (foto da encomenda) quando a infra de storage entrar em pauta —
+  hoje `fotoUrl` é só um campo de texto.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — mesmo padrão de acesso a dados (`withTenantContext`) e de autorização por role já
+  estabelecido nos módulos anteriores.
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 6 (Data: 17/07/2026)
 **Completado:**
 - [x] **Renomeado "Chamados" para "Solicitações"** (pedido do usuário — nome mais formal), de ponta a
