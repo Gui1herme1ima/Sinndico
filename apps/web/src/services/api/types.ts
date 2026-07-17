@@ -146,3 +146,26 @@ export interface CreateCondominioPayload {
 export interface UpdateCondominioPayload {
   nome: string;
 }
+
+export type VisitanteStatus = 'aprovado' | 'bloqueado' | 'ativo';
+
+export interface VisitanteResponse {
+  id: string;
+  condominioId: string;
+  moradorId: string;
+  aprovadoPor: string;
+  nomeVisitante: string;
+  rg: string | null;
+  placaVeiculo: string | null;
+  dataVisita: string;
+  horaEntrada: string | null;
+  horaSaida: string | null;
+  status: VisitanteStatus;
+}
+
+export interface CreateVisitantePayload {
+  nomeVisitante: string;
+  rg?: string;
+  placaVeiculo?: string;
+  dataVisita: string;
+}

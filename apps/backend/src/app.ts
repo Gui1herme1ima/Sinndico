@@ -13,6 +13,7 @@ import dashboardRoutes from './routes/dashboard';
 import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
 import solicitacoesRoutes from './routes/solicitacoes';
+import visitantesRoutes from './routes/visitantes';
 
 export const app = express();
 
@@ -38,5 +39,6 @@ app.use('/api/condominios', condominiosRoutes);
 app.use('/api/chats', chatsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/device-tokens', deviceTokensRoutes);
+app.use('/api/visitantes', visitantesRoutes);
 
 app.use(errorHandler);

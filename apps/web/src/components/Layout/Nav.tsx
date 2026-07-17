@@ -1,7 +1,14 @@
 import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { ChatIcon, ComunicadoIcon, EncomendaIcon, IconProps, SolicitacaoManutencaoIcon } from '@/components/ui/icons';
+import {
+  ChatIcon,
+  ComunicadoIcon,
+  EncomendaIcon,
+  IconProps,
+  SolicitacaoManutencaoIcon,
+  VisitanteIcon,
+} from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 import type { UserRole } from '@/services/api/types';
 
@@ -18,6 +25,12 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/encomendas', label: 'Encomendas', roles: ['morador', 'admin', 'porteiro'], icon: EncomendaIcon },
   { to: '/comunicados', label: 'Comunicados', roles: ['morador', 'admin', 'porteiro'], icon: ComunicadoIcon },
   { to: '/chat', label: 'Chat', roles: ['morador', 'admin'], icon: ChatIcon },
+  {
+    to: '/visitantes',
+    label: 'Visitantes',
+    roles: ['morador', 'admin', 'porteiro'],
+    icon: VisitanteIcon,
+  },
   { to: '/condominios', label: 'Condomínios', roles: ['superadmin'] },
 ];
 

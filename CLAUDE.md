@@ -125,11 +125,60 @@ Formato do checkpoint:
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** avançar pra Fase 2
->   (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação) — não há mais nenhum
->   item de produto pendente da Fase 1.
+> - **Fase 2 iniciada na Session 22**: módulo de Visitantes completo (API + tela) — morador registra
+>   visitante (auto-aprovado), porteiro/admin registram entrada/saída na portaria ou bloqueiam antes
+>   da chegada. Falta só Comida/Delivery pra fechar a Fase 2.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Comida/Delivery (fecha a
+>   Fase 2) ou pular pra Fase 3 (Áreas comuns, Assembleia/votação).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 22 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Visitantes (API + tela)** — primeiro módulo da Fase 2, confirmado com o usuário.
+  - **Ambiguidade entre docs resolvida**: o roadmap do README ("aprovação admin") contradizia o
+    CLAUDE.md ("morador aprova visitante") e o schema só tem 3 status (`aprovado`/`bloqueado`/`ativo`
+    — sem um 4º "pendente" que sustentasse um gate de admin separado). Decisão: morador cria o
+    visitante já como `aprovado` (auto-aprovação — é o convidado dele); o campo `aprovado_por` do
+    schema é preenchido com o próprio morador na criação em vez de ficar sem uso.
+  - Migration `1700000000014_create-visitantes.ts` — RLS + policy `tenant_isolation` no mesmo molde
+    de `device_tokens` (Session 11). `data_visita`/`hora_entrada`/`hora_saida` como `timestamptz`
+    únicos (não data+hora separados), consistente com `encomendas.horario_chegada`.
+  - `models/Visitante.ts`, `controllers/visitanteController.ts`, `routes/visitantes.ts` — mesmo
+    padrão de todo módulo; `registrarEntrada`/`registrarSaida` usam a condição de status no próprio
+    `WHERE` (mesmo estilo do `signEncomenda`) pra rejeitar transições fora de ordem sem checagem
+    separada.
+  - Frontend: `VisitantesPage.tsx` (form só pro morador, lista pros três papéis), `VisitanteCard.tsx`
+    com os botões de porteiro/admin (registrar entrada/saída/bloquear) e o `VisitanteIcon` — já
+    reservado desde a Session 21 — agora em uso na `Nav.tsx`.
+  - **Bug pego na própria verificação e corrigido**: como o status fica `ativo` mesmo depois da
+    saída (não existe um 4º status "concluído"), o badge mostrava "Na portaria" pra quem já tinha
+    saído. Corrigido calculando o rótulo/cor a partir de `status` **+** presença de `horaSaida`
+    juntos, não só do status cru — "Visita concluída" (verde) quando `ativo` com `horaSaida`
+    preenchida, "Na portaria" só quando `ativo` sem `horaSaida`.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais):
+- Morador cria 2 visitantes (`aprovado`). Porteiro registra entrada do primeiro (`ativo`,
+  `horaEntrada` preenchida) → tentativa de check-in duplicado direto na API → 400, como esperado →
+  registra saída (`horaSaida` preenchida) → bloqueia o segundo (`bloqueado`). Tudo confirmado via
+  consulta direta à API, não só a tela. Morador não vê nenhum botão de ação; admin vê os mesmos
+  botões do porteiro.
+- `npx tsc --noEmit` (backend) e `npx tsc -b` (web) limpos.
+
+**Próximo passo:**
+- [ ] Comida/Delivery fecha a Fase 2, ou pular pra Fase 3 (Áreas comuns, Assembleia/votação) —
+  nenhuma decidida.
+- [ ] Visitantes/usuários de teste acumulados (`teste.visit.*@sinndico.dev`) — limpar no painel se
+  quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- `aprovado_por` preenchido com o próprio morador na criação (não com um admin) — ver ambiguidade
+  resolvida acima.
+- Rótulo de status na UI depende de `status` + `horaSaida` juntos, não só do enum cru — schema não
+  tem um 4º status "concluído", então a tela precisa dessa distinção adicional.
+
+**Bugs conhecidos:**
+- Nenhum (o bug do rótulo "Na portaria" pós-saída foi encontrado e corrigido na própria sessão).
 
 ### Session 21 (Data: 17/07/2026)
 **Completado:**

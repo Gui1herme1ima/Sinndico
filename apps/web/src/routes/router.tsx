@@ -10,6 +10,7 @@ import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
+import { VisitantesPage } from '@/pages/Visitantes/VisitantesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
 import { RequireGuest } from '@/routes/RequireGuest';
 import { roleHome } from '@/routes/roleHome';
@@ -93,6 +94,14 @@ export function AppRoutes() {
           element={
             <RequireAuth roles={['superadmin']}>
               <CondominiosPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="visitantes"
+          element={
+            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+              <VisitantesPage />
             </RequireAuth>
           }
         />

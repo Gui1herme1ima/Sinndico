@@ -218,8 +218,12 @@ sinndico/
 **comida**
 - id, morador_id, restaurante, horario_chegada_estimada, status (pedido-feito/em-caminho/chegou/retirada), notificacao_portaria_enviada
 
-**visitantes**
-- id, morador_id, nome_visitante, rg, placa_veiculo, data_visita, hora_entrada, hora_saida, aprovado_por (admin), status (aprovado/bloqueado/ativo)
+**visitantes** (implementado na Fase 2, Session 22 — ver Checkpoint Log no CLAUDE.md)
+- id, condominio_id, morador_id, nome_visitante, rg, placa_veiculo, data_visita, hora_entrada, hora_saida, aprovado_por, status (aprovado/bloqueado/ativo)
+- `aprovado_por`: sempre o próprio morador na criação (auto-aprovação — é o convidado dele; não há
+  gate de admin separado, resolvendo uma ambiguidade que existia entre este README e o CLAUDE.md).
+  `status` não tem um valor "concluído" — depois da saída o status continua `ativo`, só `hora_saida`
+  é preenchida; a UI distingue "na portaria" de "visita concluída" combinando os dois campos.
 
 **comunicados**
 - id, admin_id, titulo, conteudo, data_criacao, lido_por (array de user_ids ou relação separada)
