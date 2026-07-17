@@ -206,8 +206,8 @@ sinndico/
 
 ### Entidades Principais
 
-**users** (moradores + admin + porteiro) — perfil de negócio; identidade e senha ficam no Supabase Auth
-- id (mesmo id do `auth.users` do Supabase, sem senha própria armazenada aqui), email, nome, apto, telefone, role (morador/admin/porteiro), condominio_id, created_at
+**users** (moradores + admin + porteiro + superadmin) — perfil de negócio; identidade e senha ficam no Supabase Auth
+- id (mesmo id do `auth.users` do Supabase, sem senha própria armazenada aqui), email, nome, apto, telefone, role (morador/admin/porteiro/superadmin), condominio_id (NULL só pra superadmin — não pertence a um condomínio específico, gerencia a plataforma inteira), created_at
 
 **chamados**
 - id, morador_id, categoria (manutenção/segurança/animal/outra), titulo, descricao, status (aberto/em-progresso/resolvido), prioridade, data_criacao, data_resolvimento, assigned_to (admin)
@@ -238,6 +238,38 @@ sinndico/
 
 **chats**
 - id, morador_id, admin_id, mensagem, timestamp, lido
+
+### Multi-tenancy e isolamento de dados
+
+Sinndico é vendido por condomínio (um cliente = um condomínio), então isolamento entre tenants é
+requisito desde o início, não um "depois eu penso nisso".
+
+**Estratégia escolhida: banco único (um projeto Supabase) + `condominio_id` em cada tabela + Row
+Level Security no Postgres** — não um banco/projeto separado por cliente. Motivo: o custo de um
+projeto Supabase por cliente escala linearmente com o número de condomínios (cada projeto acima do
+free tier tem custo próprio), e cada mudança de schema precisaria rodar em N bancos em vez de um só.
+Pro público-alvo (condomínios de porte pequeno/médio, dezenas a poucas centenas de clientes), banco
+único é o padrão de mercado — Slack, Linear, Notion e a maioria dos SaaS B2B desse porte funcionam
+assim. Banco por cliente só se justificaria com poucos clientes muito grandes ou exigência
+contratual/regulatória de separação física.
+
+**Como o isolamento é garantido de verdade (não só "por convenção" no código):**
+- Toda tabela com dado de um condomínio específico tem `condominio_id`.
+- **Row Level Security ativado** nas tabelas (`condominios`, `users`, `chamados`, `encomendas`,
+  `comunicados`, `comunicado_leituras`) — o Postgres bloqueia a leitura/escrita de linhas fora do
+  tenant atual mesmo que o código do backend esqueça um filtro `WHERE condominio_id = ...`.
+- A API **não** se conecta ao Postgres com a role `postgres` (superuser do Supabase, que ignora RLS
+  por padrão) pra servir requests normais — existe uma role dedicada, restrita (`app_user`, sem
+  `BYPASSRLS`), e cada request roda dentro de uma transação que seta o tenant atual via
+  `SET LOCAL`/`set_config` antes de qualquer query. `DATABASE_URL` (privilegiada) fica só pra rodar
+  migrations e pra operações de superadmin; `APP_DATABASE_URL` (restrita) é o que a API usa em
+  runtime pra tudo que é tenant-scoped.
+
+**Superadmin:** role própria (`role = 'superadmin'`), sem `condominio_id` (gerencia todos os
+condomínios, não pertence a nenhum). Sem tela própria ainda — a fundação (schema + regra de acesso)
+já existe; o painel visual pra criar/gerenciar condomínios fica pra quando entrarmos na Fase 1 do
+frontend admin. Enquanto isso, a primeira conta de superadmin é criada via
+`npm run seed:superadmin` (ver seção 8).
 
 ---
 
@@ -322,8 +354,10 @@ cd apps/backend
 npm install
 cp .env.example .env
 # preencher DATABASE_URL / SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY no .env
+# gerar uma senha forte pra APP_DB_PASSWORD e montar a APP_DATABASE_URL (ver comentários no .env.example)
 npm run migrate
 npm run seed
+SUPERADMIN_EMAIL=voce@seudominio.com SUPERADMIN_PASSWORD=senha-forte npm run seed:superadmin
 npm run dev
 
 # Em outro terminal: Web
@@ -344,7 +378,11 @@ npm run dev
 
 ```
 # Backend
-DATABASE_URL=postgresql://postgres:sua_senha@db.seu-projeto.supabase.co:5432/postgres
+# Privilegiada (role "postgres", ignora RLS) — só migrations, nunca runtime da API
+DATABASE_URL=postgresql://postgres.seu-projeto:sua_senha@aws-0-sua-regiao.pooler.supabase.com:6543/postgres
+# Restrita (role "app_user", sem BYPASSRLS) — usada em runtime pela API, RLS aplica de verdade
+APP_DATABASE_URL=postgresql://app_user.seu-projeto:sua_senha@aws-0-sua-regiao.pooler.supabase.com:6543/postgres
+APP_DB_PASSWORD=...
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...

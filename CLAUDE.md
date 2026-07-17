@@ -42,6 +42,7 @@ Se o usuário não especificar identidade visual em uma tarefa nova, use os toke
 - Mobile morador: PWA (prioridade) — React Native como evolução futura
 - Notificações: Firebase Cloud Messaging
 - Auth: Supabase Auth (GoTrue) — JWT verificado no backend via JWKS
+- Multi-tenancy: banco único + `condominio_id` + Row Level Security (não banco por cliente) — ver README seção 5. Role `superadmin` gerencia todos os condomínios.
 - Hospedagem: Hostinger (app) + Supabase (Postgres + Auth), integração oficial entre as duas
 
 ## 5. Ordem de desenvolvimento (fases)
@@ -95,6 +96,67 @@ Formato do checkpoint:
 ## 8. Checkpoint Log
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 4 (Data: 16/07/2026)
+**Completado:**
+- [x] Decisão de multi-tenancy registrada: **banco único (um projeto Supabase) + `condominio_id` +
+  Row Level Security**, não um banco/projeto por cliente — confirmado com o usuário (motivo: custo e
+  complexidade operacional escalando por cliente não fazem sentido pro porte do público-alvo). Detalhes
+  e trade-offs documentados no README seção 5 ("Multi-tenancy e isolamento de dados").
+- [x] **RLS ativado de verdade** — não só `ENABLE ROW LEVEL SECURITY` decorativo: descobri que a role
+  `postgres` (usada até então pela API) é superuser e ignora RLS por padrão, então criei uma role
+  Postgres restrita (`app_user`, sem `BYPASSRLS`) e o backend passou a rodar toda query tenant-scoped
+  dentro de uma transação com `SET LOCAL`/`set_config` setando `app.user_id`/`app.condominio_id`
+  (`src/database/tenantContext.ts`). Verificado empiricamente: sem contexto, zero linhas voltam; com
+  o contexto certo, só os dados daquele tenant.
+- [x] Migrations novas (additivas, banco já tinha migrations aplicadas — não editei as antigas):
+  `1700000000008` (role `superadmin` + `condominio_id` opcional só pra ela),
+  `1700000000009` (role `app_user` + RLS + policies em `condominios`/`users`/`chamados`/`encomendas`/
+  `comunicados`/`comunicado_leituras`), `1700000000010` (fix de um bug real do `set_config` — ver
+  Bugs conhecidos).
+- [x] Role `superadmin` no schema — sem `condominio_id` (gerencia a plataforma inteira). Sem
+  self-registro público; primeira conta criada via `npm run seed:superadmin` (novo script,
+  `src/database/seeds/createSuperadmin.ts`). Painel visual (telas) fica pra quando entrarmos na Fase 1
+  do frontend admin — só a fundação (schema + regra de acesso) foi construída agora, por decisão
+  explícita do usuário.
+- [x] `User.ts`/`authController.ts`/`middleware/auth.ts` atualizados pro novo modelo de acesso a dados
+  (via `withTenantContext` em vez de `pool.query` direto); removida a checagem de e-mail duplicado
+  pré-registro (virou responsabilidade só do Supabase Auth — fazia uma leitura cross-tenant sem
+  contexto, que não tem mais como existir com RLS).
+
+**Verificação feita nesta sessão:**
+- Todo o fluxo de Auth reexecutado contra o Supabase real depois da mudança: register → login → me →
+  refresh, todos OK com RLS ativo. Também testado o bootstrap do superadmin (seed → login → `/me`
+  retornando `role: superadmin`, `condominioId: null`).
+- Testes manuais diretos no Postgres confirmando que RLS bloqueia (0 linhas sem contexto) e libera
+  (linha certa) com o `SET LOCAL` certo.
+
+**Bug real encontrado e corrigido:** `set_config('app.condominio_id', NULL, true)` grava **string
+vazia**, não `NULL` de verdade — então `current_setting(...)::uuid` quebrava com "invalid input syntax
+for type uuid" toda vez que o contexto não tinha `condominio_id` (caso do self-lookup de usuário, ex.
+`/me`, `authenticate`). Corrigido com `NULLIF(current_setting(...), '')::uuid` em todas as policies
+(migration `1700000000010`) e passando `''` em vez de `null` no `tenantContext.ts`.
+
+**Próximo passo:**
+- [ ] Segue tudo que já estava pendente: módulos funcionais (Chamados, Encomendas, Comunicados, Chat,
+  Dashboard, notificações FCM), telas web/PWA, componentes React do design system.
+- [ ] **Painel superadmin (tela):** quando começar o frontend admin de verdade, construir a tela de
+  criar/listar/gerenciar condomínios (a API/schema já existe — falta só a UI e os endpoints REST de
+  CRUD de condomínio, que também não foram criados ainda, só a permissão de role).
+- [ ] Quando os módulos de Chamados/Encomendas/Comunicados forem implementados, seguir o mesmo padrão
+  de acesso a dados via `withTenantContext(req.user, ...)` em vez de `pool.query` direto — é o que
+  garante que RLS protege esses módulos também.
+
+**Decisões técnicas / desvios do plano original:**
+- Confirmado com o usuário: banco único + RLS em vez de banco por cliente (ver acima).
+- `condominios` ganhou RLS com policy de leitura por tenant (qualquer usuário pode ler o próprio
+  condomínio); escrita em `condominios` fica só pra role privilegiada (superadmin/migrations).
+- `app_user` (role restrita) precisa de duas connection strings distintas no `.env`: `DATABASE_URL`
+  (privilegiada, só migrations) e `APP_DATABASE_URL` (restrita, runtime da API) — isso é permanente,
+  não uma migração temporária.
+
+**Bugs conhecidos:**
+- Nenhum em aberto — o bug do `set_config`/`NULLIF` foi encontrado e corrigido na própria sessão.
 
 ### Session 3 (Data: 16/07/2026)
 **Completado:**
