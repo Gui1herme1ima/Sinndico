@@ -32,6 +32,7 @@ O visual é um pilar do produto, não um detalhe secundário. Antes de implement
 - **Animações:** fluidas e propositais (transições de página, reveal de cards, feedback tátil em botões, skeleton loading), sempre respeitando `prefers-reduced-motion`. Evitar excesso de efeitos decorativos sem função.
 - **Antes de codar qualquer módulo funcional:** garantir que o design system básico (`docs/DESIGN_SYSTEM.md`: cores, tipografia, botão, card, input, badge, toggle de tema) já existe. Se não existir, criar primeiro.
 - **Todo componente novo deve ser visualmente testado em ambos os modos (claro/escuro) antes de ser considerado concluído.**
+- **Arquivos-fonte do brand kit** (logo/símbolo em SVG, ícones de domínio, `tokens.json` machine-readable) vivem em `brand-assets/` na raiz — complementa `docs/DESIGN_SYSTEM.md` (a especificação escrita). Ainda não integrado ao código do app (`apps/web`) — ver Checkpoint Log Session 16.
 
 Se o usuário não especificar identidade visual em uma tarefa nova, use os tokens acima por padrão — não invente nova paleta sem perguntar.
 
@@ -111,6 +112,9 @@ Formato do checkpoint:
 >   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
 >   (Session 15, mesmo padrão do `seed:superadmin` já existente) só pra viabilizar testar telas que
 >   dependem desse role.
+> - **Brand kit anexado e organizado (Session 16)**: logo/símbolo real, ícones de domínio e tokens
+>   machine-readable em `brand-assets/` na raiz — só organizado/documentado, **ainda não integrado**
+>   ao app rodando (logo placeholder, ícones e tokens de `apps/web` continuam como estavam).
 > - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via
 >   `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
@@ -118,9 +122,55 @@ Formato do checkpoint:
 >   funcional, isso é destravável assim que fizer sentido priorizar.
 > - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) próxima tela de módulo
 >   web, seguindo a ordem do backend (Comunicados é a próxima; Chat e Dashboard depois), (2) API de
->   CRUD de condomínio + tela do painel superadmin.
+>   CRUD de condomínio + tela do painel superadmin, (3) integrar o brand kit real ao app (trocar
+>   logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como componentes React,
+>   decidir se adota os 3 valores de token refinados do brand kit).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 16 (Data: 17/07/2026)
+**Completado:**
+- [x] **Brand kit anexado pelo usuário, organizado e documentado** — pedido explícito era só
+  estruturar pra uso futuro, sem tocar no app rodando ainda (confirmado antes de começar).
+  - Consolidado em `brand-assets/` na raiz (a pasta chegou como `Brand-assets/`, com 4 arquivos
+    soltos de amostra duplicando 4 dos 22 arquivos reais dentro de `sinndico-brand-assets.zip`).
+    Extraído o zip, apagados os arquivos soltos duplicados e o próprio zip, pasta renomeada pra
+    minúsculo. Estrutura final: `brand-assets/assets/brand/` (8 SVGs — símbolo, wordmark, lockups
+    claro/escuro, reverse-mono, favicons 16/32/48) e `brand-assets/assets/icons/` (8 ícones de
+    domínio, um por módulo funcional) + `brand-assets/tokens.json` (versão machine-readable dos
+    tokens).
+  - **Fundido o `docs/DESIGN_SYSTEM.md` do brand kit no canônico** (`docs/DESIGN_SYSTEM.md` na raiz)
+    em vez de manter os dois — seções novas: Logo e símbolo (§2), Ícones — confirma que o spec já
+    bate 1:1 com `apps/web/src/components/ui/icons.tsx` (§4), Imagery (§7), nota de Motion sobre
+    Framer Motion (§8). Restante do doc renumerado (era 6 seções, agora 9). Tokens do brand kit que
+    divergem dos já implementados (`text-secondary` escuro, `border` claro/escuro, mais o token novo
+    `text-muted`) entraram como tabela "candidatos, não aplicados" (§1.1) — não mudei nenhum valor
+    real em `apps/web/src/styles/tokens.css`.
+  - CLAUDE.md seção 3: uma linha nova apontando que os arquivos-fonte do brand kit vivem em
+    `brand-assets/`, complementando o `docs/DESIGN_SYSTEM.md`.
+
+**Verificação feita nesta sessão** (trabalho só de arquivo/documentação, sem código executável):
+- `git status` confirmando que só existe `brand-assets/` (sem `Brand-assets/` residual, sem `.zip`,
+  sem arquivos soltos duplicados).
+- Conferidos visualmente `symbol.svg`, `chat.svg` e `tokens.json` extraídos do zip — sem corrupção,
+  conteúdo íntegro.
+- `docs/DESIGN_SYSTEM.md` final relido de ponta a ponta — cores/tipografia/componentes que já
+  existiam continuam exatamente com os mesmos valores; nada do que estava implementado mudou.
+
+**Próximo passo:**
+- [ ] Integrar o brand kit ao app rodando, quando fizer sentido priorizar: trocar
+  `apps/web/public/favicon.svg`/`icons/icon.svg` (+ PNGs derivados) pelo `symbol.svg`/`favicon-*.svg`
+  reais; adicionar os 8 ícones de domínio como componentes React (mesmo padrão de
+  `apps/web/src/components/ui/icons.tsx`); decidir se adota os 3 valores de token candidatos
+  (§1.1 do `docs/DESIGN_SYSTEM.md`).
+- [ ] Continuar a ordem das telas de módulo: Comunicados, depois Chat, depois Dashboard.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma — só organização/documentação, conforme pedido explícito do usuário e confirmado antes de
+  começar (não alterar `apps/web` nesta sessão).
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 15 (Data: 17/07/2026)
 **Completado:**
