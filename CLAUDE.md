@@ -97,6 +97,42 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 5 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Chamados (API)** — primeiro módulo funcional da Fase 1 depois do Auth:
+  `src/models/Chamado.ts`, `src/controllers/chamadoController.ts`, `src/routes/chamados.ts`, montado
+  em `app.ts` como `/api/chamados`.
+  - `POST /api/chamados` (morador cria — categoria/titulo/descricao).
+  - `GET /api/chamados` (lista — morador vê só os próprios, admin vê todos do condomínio).
+  - `GET /api/chamados/:id` (detalhe, mesma regra de escopo por role).
+  - `PATCH /api/chamados/:id` (só admin — status/prioridade/assigned_to; `data_resolvimento` é
+    setada automaticamente quando o status vira `resolvido`, e limpa se for reaberto).
+  - Segue exatamente o padrão de acesso a dados que o Auth já usava (`withTenantContext`), então RLS
+    protege esse módulo também sem nenhum código extra de segurança.
+
+**Verificação feita nesta sessão (tudo contra o Supabase real, não mock):**
+- Morador cria chamado → admin lista e vê → admin resolve (`status: resolvido`, `dataResolvimento`
+  preenchida).
+- **Isolamento entre tenants**: criado um segundo condomínio de teste + morador nele — não vê o
+  chamado do primeiro condomínio na listagem, e recebe 404 tentando acessar por id direto (RLS
+  bloqueando de verdade, não só o filtro da query).
+- **Isolamento dentro do mesmo tenant**: um segundo morador do mesmo condomínio não vê nem acessa o
+  chamado do primeiro morador (isolamento por role, feito na aplicação — RLS só garante o limite do
+  condomínio, não filtra por usuário dentro do tenant).
+- Morador tentando `PATCH` recebe 403 (só admin pode alterar status/prioridade/atribuição).
+
+**Próximo passo:**
+- [ ] Encomendas e Comunicados (mesmo padrão de módulo: model + controller + rotas + RLS de graça).
+- [ ] Chat básico, Dashboard admin, notificações push (FCM) — ainda não iniciados.
+- [ ] Telas web/PWA — Chamados (como Auth) ainda só existe como API, sem nenhuma tela.
+- [ ] Painel superadmin (tela) e CRUD de condomínio — segue pendente da Session 4.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — só aplicação do padrão já decidido (RLS + `withTenantContext`) a um módulo novo.
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 4 (Data: 16/07/2026)
 **Completado:**
 - [x] Decisão de multi-tenancy registrada: **banco único (um projeto Supabase) + `condominio_id` +
