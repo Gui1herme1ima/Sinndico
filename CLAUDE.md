@@ -97,6 +97,36 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 10 (Data: 17/07/2026)
+**Completado:**
+- [x] **Dashboard admin (API)**: `src/models/Dashboard.ts`, `src/controllers/dashboardController.ts`,
+  `src/routes/dashboard.ts`, montado em `app.ts` como `/api/dashboard`.
+  - `GET /api/dashboard/summary` (só admin) — um único resumo agregado: solicitações abertas/em
+    progresso, encomendas aguardando retirada e que chegaram hoje, últimos 5 comunicados. Três
+    queries rodando na mesma transação/contexto de tenant (`Promise.all` sobre o mesmo client —
+    seguro porque `pg` enfileira internamente, não executa de verdade em paralelo na mesma conexão).
+  - Não criou nenhum model/tabela novo — só agrega dados que os módulos anteriores já expõem.
+
+**Verificação feita nesta sessão (contra o Supabase real, com dado acumulado das sessões anteriores):**
+- Números do resumo conferidos manualmente contra o estado real do banco (2 solicitações abertas, 1
+  encomenda aguardando + 2 que chegaram hoje, 1 comunicado recente) — bateram exatamente.
+- Morador e porteiro tentando acessar `/api/dashboard/summary` → 403 nos dois (só admin).
+
+**Com isso, a API inteira da Fase 1 está completa, exceto notificações push:**
+- [x] Auth, [x] Solicitações, [x] Encomendas, [x] Comunicados, [x] Chat básico, [x] Dashboard admin.
+- [ ] Notificações push (FCM) — único item funcional que falta pra fechar a Fase 1 (API).
+
+**Próximo passo:**
+- [ ] Notificações push (FCM) — encomenda chegou, comunicado novo, resposta no chat.
+- [ ] Depois disso, a Fase 1 (API) está 100% — resta construir as telas web/PWA (nenhum módulo tem
+  tela ainda) e o painel superadmin.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova.
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 9 (Data: 17/07/2026)
 **Completado:**
 - [x] **Módulo de Chat básico (API)** — último item funcional que faltava da Fase 1 (com
