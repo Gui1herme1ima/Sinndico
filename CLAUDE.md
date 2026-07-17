@@ -101,12 +101,12 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13**, e 3 telas funcionais de módulo desde a
->   Session 17 (Solicitações — Session 14 —, Encomendas — Session 15 — e Comunicados — Session 17):
->   roteamento com guarda por role, login/registro/logout contra a API real, componentes base do
->   design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle), fontes self-hosted,
->   manifest de PWA, e `@tanstack/react-query` como camada de cache pra telas de lista. Chat/Dashboard
->   ainda são placeholders "em construção" — seguem uma sessão de cada vez, mesmo padrão. `apps/mobile`
+> - **`apps/web` tem fundação real desde a Session 13**, e 4 telas funcionais de módulo desde a
+>   Session 18 (Solicitações — Session 14 —, Encomendas — Session 15 —, Comunicados — Session 17 — e
+>   Chat — Session 18): roteamento com guarda por role, login/registro/logout contra a API real,
+>   componentes base do design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle),
+>   fontes self-hosted, manifest de PWA, e `@tanstack/react-query` como camada de cache pra telas de
+>   lista. Só falta o Dashboard admin — placeholder "em construção", próxima sessão. `apps/mobile`
 >   segue só placeholder.
 > - **Conta de porteiro de teste**: não existe self-registro pra porteiro (só morador/admin em
 >   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
@@ -120,13 +120,49 @@ Formato do checkpoint:
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) próxima tela de módulo
->   web, seguindo a ordem do backend (Chat, depois Dashboard), (2) API de CRUD de condomínio + tela
->   do painel superadmin, (3) integrar o brand kit real ao app (trocar logo/favicon/ícones PWA
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) tela de Dashboard admin
+>   — única tela de módulo que falta, fecha o ciclo de telas da Fase 1 —, (2) API de CRUD de
+>   condomínio + tela do painel superadmin, (3) integrar o brand kit real ao app (trocar
+>   logo/favicon/ícones PWA
 >   placeholder, adicionar os 8 ícones de domínio como componentes React, decidir se adota os 3
 >   valores de token refinados do brand kit).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 18 (Data: 17/07/2026)
+**Completado:**
+- [x] **Tela de Chat**, consumindo a API real (`/api/chats`), quarta tela de módulo — com isso, só
+  falta o Dashboard admin pra fechar o ciclo de telas da Fase 1.
+  - Tipos novos (`ChatResponse`, `CreateChatPayload`) + `src/services/api/chatsApi.ts` (`list` aceita
+    `moradorId` opcional pra montar a query string, `send`).
+  - `src/components/Chat/`: `ChatThread.tsx` (bolhas alinhadas à direita/esquerda por `autorId`,
+    rotuladas "Você"/"Morador"/"Administração" — sem diretório de usuários, o rótulo genérico é a
+    melhor aproximação possível hoje) e `ChatMessageForm.tsx` (envia e invalida a query da thread
+    certa, `queryKey: ['chats', moradorId]`).
+  - `ChatPage.tsx` substitui o placeholder na rota `/chat` — morador vê direto a própria thread
+    (`moradorId` implícito = o próprio id); admin precisa digitar o ID do morador (mesmo padrão já
+    usado em Encomendas, sem diretório de moradores ainda) antes de ver/responder a conversa.
+  - Nenhuma mudança no backend — a marcação automática de "lido" ao abrir a thread (`GET` já marca
+    como lidas as mensagens do outro lado, sem endpoint separado) já existia e só foi consumida.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais):
+- Morador manda mensagem → admin digita o ID do morador, vê a mensagem, responde → morador recarrega
+  e vê a resposta. Confirmado via API direta que a marcação automática de leitura funciona nos dois
+  sentidos: a mensagem do morador fica `lido: true` depois que o admin abre a thread (`GET`), e a
+  resposta do admin fica `lido: true` depois que o morador reabre a própria thread.
+- `npx tsc -b` limpo. Nenhum erro de console/página.
+
+**Próximo passo:**
+- [ ] **Dashboard admin** — última tela de módulo da Fase 1 (`GET /api/dashboard/summary`, só
+  leitura, sem mutação — a mais simples de todas).
+- [ ] Usuários/mensagens de teste acumulados no condomínio de teste (`teste.chat.*@sinndico.dev`) —
+  limpar no painel se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — mesmo padrão de tela das três sessões anteriores.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 17 (Data: 17/07/2026)
 **Completado:**

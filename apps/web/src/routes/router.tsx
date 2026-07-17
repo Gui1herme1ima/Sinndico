@@ -5,6 +5,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { ChatPage } from '@/pages/Chat/ChatPage';
 import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
@@ -82,7 +83,7 @@ export function AppRoutes() {
           path="chat"
           element={
             <RequireAuth roles={['morador', 'admin']}>
-              <ComingSoonPage title="Chat" />
+              <ChatPage />
             </RequireAuth>
           }
         />

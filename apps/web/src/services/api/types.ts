@@ -102,3 +102,18 @@ export interface CreateComunicadoPayload {
   titulo: string;
   conteudo: string;
 }
+
+export interface ChatResponse {
+  id: string;
+  condominioId: string;
+  moradorId: string;
+  autorId: string;
+  mensagem: string;
+  lido: boolean;
+  createdAt: string;
+}
+
+export interface CreateChatPayload {
+  moradorId?: string;
+  mensagem: string;
+}
