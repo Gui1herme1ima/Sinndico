@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
-import { createUser, findUserByEmail, findUserById, User } from '../models/User';
+import { createUser, findUserById, User } from '../models/User';
 import { supabaseAdmin, supabaseAuth } from '../services/supabaseClient';
 
 export const registerSchema = z.object({
@@ -39,11 +39,10 @@ function toUserResponse(user: User) {
 export async function register(req: Request, res: Response) {
   const input = registerSchema.parse(req.body);
 
-  const existing = await findUserByEmail(input.email);
-  if (existing) {
-    throw new ApiError(409, 'Já existe uma conta com este e-mail');
-  }
-
+  // Unicidade de e-mail é responsabilidade do Supabase Auth (auth.users), não da nossa tabela de
+  // perfil — não dá pra checar isso antes, porque ainda não existe nenhum contexto de tenant
+  // (a checagem seria cross-tenant por natureza, e a role restrita que fala com o Postgres não
+  // tem esse tipo de acesso).
   const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
     email: input.email,
     password: input.senha,
@@ -51,7 +50,8 @@ export async function register(req: Request, res: Response) {
   });
 
   if (createError || !created.user) {
-    throw new ApiError(400, createError?.message ?? 'Não foi possível criar o usuário');
+    const status = createError?.message?.toLowerCase().includes('already') ? 409 : 400;
+    throw new ApiError(status, createError?.message ?? 'Não foi possível criar o usuário');
   }
 
   const user = await createUser({

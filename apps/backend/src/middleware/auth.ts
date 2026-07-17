@@ -7,7 +7,8 @@ import { ApiError } from './errorHandler';
 export interface AuthenticatedUser {
   id: string;
   role: UserRole;
-  condominioId: string;
+  // null só para role = 'superadmin'.
+  condominioId: string | null;
   nome: string;
 }
 
