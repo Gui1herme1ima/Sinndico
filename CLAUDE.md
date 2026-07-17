@@ -100,22 +100,72 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13**, e a primeira tela funcional de módulo
->   (Solicitações) desde a Session 14: roteamento com guarda por role, login/registro/logout contra a
->   API real, componentes base do design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/
->   ThemeToggle), fontes self-hosted, manifest de PWA, e `@tanstack/react-query` como camada de cache
->   pra telas de lista. Encomendas/Comunicados/Chat/Dashboard ainda são placeholders "em construção" —
->   seguem uma sessão de cada vez, mesmo padrão. `apps/mobile` segue só placeholder.
+> - **`apps/web` tem fundação real desde a Session 13**, e 2 telas funcionais de módulo desde a
+>   Session 15 (Solicitações — Session 14 — e Encomendas — Session 15): roteamento com guarda por
+>   role, login/registro/logout contra a API real, componentes base do design system (Button/Card/
+>   Input/Select/Textarea/Badge/Skeleton/ThemeToggle), fontes self-hosted, manifest de PWA, e
+>   `@tanstack/react-query` como camada de cache pra telas de lista. Comunicados/Chat/Dashboard ainda
+>   são placeholders "em construção" — seguem uma sessão de cada vez, mesmo padrão. `apps/mobile`
+>   segue só placeholder.
+> - **Conta de porteiro de teste**: não existe self-registro pra porteiro (só morador/admin em
+>   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
+>   (Session 15, mesmo padrão do `seed:superadmin` já existente) só pra viabilizar testar telas que
+>   dependem desse role.
 > - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via
 >   `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
 > - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) próxima tela de módulo
->   web (Encomendas, Comunicados, Chat ou Dashboard — Dashboard é a mais simples, só leitura), (2) API
->   de CRUD de condomínio + tela do painel superadmin.
+>   web, seguindo a ordem do backend (Comunicados é a próxima; Chat e Dashboard depois), (2) API de
+>   CRUD de condomínio + tela do painel superadmin.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 15 (Data: 17/07/2026)
+**Completado:**
+- [x] **Tela de Encomendas**, consumindo a API real (`/api/encomendas`), seguindo a mesma ordem do
+  backend (Session 7) e o mesmo padrão de tela estabelecido na Session 14 (Solicitações).
+  - Tipos novos (`EncomendaResponse`, `CreateEncomendaPayload`) + `src/services/api/encomendasApi.ts`
+    (list/create/sign).
+  - `src/components/Encomendas/`: `CreateEncomendaForm.tsx` (só porteiro — `moradorId`/descrição/
+    fotoUrl, mesmos como campos de texto crus já usados em outros formulários desta fase, já que não
+    existe endpoint de busca/diretório de moradores nem upload de arquivo de verdade) e
+    `EncomendaCard.tsx` (Badge de status aguardando/retirada, link pra foto se houver, e botão
+    "Confirmar retirada" só pro morador dono, escondido se já assinada).
+  - `EncomendasPage.tsx` substitui o placeholder na rota `/encomendas` — porteiro vê form+lista
+    completa, admin só lista completa (sem form, sem botão de assinar), morador só a própria lista
+    com o botão de assinar.
+  - **Gap novo descoberto e resolvido**: não existe endpoint de auto-registro pra role `porteiro` (só
+    morador/admin em `/register` — gap já documentado desde a Session 1 do backend, mas nunca tinha
+    esbarrado nele até esta sessão precisar testar a tela). Criado
+    `apps/backend/src/database/seeds/createPorteiro.ts` + script `npm run seed:porteiro`, no mesmo
+    molde do `seed:superadmin` já existente (parametrizado via env vars
+    `PORTEIRO_EMAIL`/`PORTEIRO_PASSWORD`/`PORTEIRO_CONDOMINIO_ID`/`PORTEIRO_NOME`) — não é uma feature
+    de produto (isso seria "admin cria porteiro pela UI", ainda não existe), é só a mesma ferramenta de
+    bootstrap que já usávamos pra superadmin, agora também pra porteiro.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais):
+- Porteiro (conta criada via `seed:porteiro`) cadastra uma encomenda pro morador → aparece na lista do
+  porteiro. Admin vê a mesma encomenda (sem form nem botão de assinar). Morador vê e confirma a
+  retirada — persistência (`status: retirada`, `assinado: true`, `dataAssinatura` preenchida)
+  confirmada consultando a API diretamente, não só lendo a tela.
+- Nav por role conferida nos 3 papéis: porteiro só vê Encomendas/Comunicados; admin e morador mantêm
+  o conjunto já validado nas sessões anteriores.
+- `npx tsc -b` limpo.
+
+**Próximo passo:**
+- [ ] Próxima tela de módulo, seguindo a ordem do backend: Comunicados, depois Chat, depois Dashboard.
+- [ ] Encomendas/usuários de teste acumulados no condomínio de teste
+  (`teste.enc.*@sinndico.dev`, `teste.porteiro@sinndico.dev`) — limpar no painel se quiser um
+  ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- `seed:porteiro` é uma ferramenta de bootstrap de teste/ambiente (como o `seed:superadmin`), não uma
+  feature de produto — a feature real ("admin cria porteiro") continua no backlog do painel admin.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 14 (Data: 17/07/2026)
 **Completado:**

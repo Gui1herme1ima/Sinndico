@@ -11,7 +11,8 @@
     "migrate:down": "node-pg-migrate -j ts --tsx -m src/database/migrations down",
     "migrate:create": "node-pg-migrate create -j ts -m src/database/migrations",
     "seed": "tsx src/database/seeds/run.ts",
-    "seed:superadmin": "tsx src/database/seeds/createSuperadmin.ts"
+    "seed:superadmin": "tsx src/database/seeds/createSuperadmin.ts",
+    "seed:porteiro": "tsx src/database/seeds/createPorteiro.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

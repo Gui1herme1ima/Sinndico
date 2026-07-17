@@ -66,3 +66,24 @@ export interface UpdateSolicitacaoPayload {
   status?: SolicitacaoStatus;
   prioridade?: SolicitacaoPrioridade;
 }
+
+export type EncomendaStatus = 'aguardando' | 'retirada';
+
+export interface EncomendaResponse {
+  id: string;
+  condominioId: string;
+  moradorId: string;
+  porteiroId: string;
+  descricao: string | null;
+  horarioChegada: string;
+  fotoUrl: string | null;
+  assinado: boolean;
+  dataAssinatura: string | null;
+  status: EncomendaStatus;
+}
+
+export interface CreateEncomendaPayload {
+  moradorId: string;
+  descricao?: string;
+  fotoUrl?: string;
+}

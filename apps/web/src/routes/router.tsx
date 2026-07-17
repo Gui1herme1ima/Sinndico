@@ -5,6 +5,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
 import { RequireGuest } from '@/routes/RequireGuest';
@@ -64,7 +65,7 @@ export function AppRoutes() {
           path="encomendas"
           element={
             <RequireAuth roles={['morador', 'admin', 'porteiro']}>
-              <ComingSoonPage title="Encomendas" />
+              <EncomendasPage />
             </RequireAuth>
           }
         />
