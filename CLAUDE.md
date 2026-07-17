@@ -11,7 +11,7 @@ Sinndico é um SaaS de gestão condominial que centraliza a comunicação entre 
 
 ## 2. Módulos do sistema (visão funcional)
 
-1. **Chamados** — morador abre chamado (manutenção, segurança, animal invasor, outros), admin gerencia status e prioridade.
+1. **Solicitações** — morador abre solicitação (manutenção, segurança, animal invasor, outros), admin gerencia status e prioridade.
 2. **Encomendas** — porteiro cadastra encomenda (foto + horário), morador é notificado, assinatura digital na retirada.
 3. **Comida/Delivery** — morador avisa pedido feito com ETA, portaria recebe pré-aviso, status atualizado até retirada.
 4. **Visitantes** — morador aprova visitante (nome, RG, placa), fica salvo no perfil para acessos futuros; porteiro vê histórico completo ao consultar.
@@ -49,7 +49,7 @@ Se o usuário não especificar identidade visual em uma tarefa nova, use os toke
 
 Sempre seguir a ordem abaixo. Não pular fase nem implementar módulo de fase futura antes da atual estar funcional e testada.
 
-- **Fase 1 (MVP):** Auth, Chamados, Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push.
+- **Fase 1 (MVP):** Auth, Solicitações, Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push.
 - **Fase 2:** Visitantes, Comida/Delivery.
 - **Fase 3:** Áreas comuns, Assembleia/votação.
 - **Fase 4:** Testes, otimização, deploy produção, documentação.
@@ -97,6 +97,37 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 6 (Data: 17/07/2026)
+**Completado:**
+- [x] **Renomeado "Chamados" para "Solicitações"** (pedido do usuário — nome mais formal), de ponta a
+  ponta: tabela do banco (`chamados` → `solicitacoes`, via migration `1700000000011` de `RENAME`,
+  incluindo índices/constraints/FKs — a tabela já tinha dado real, então foi rename, não
+  recriação), model (`Solicitacao.ts`), controller (`solicitacaoController.ts`), rotas
+  (`solicitacoes.ts`, montada em `/api/solicitacoes`), pasta placeholder do design system web
+  (`components/Solicitacoes/`), README.md e CLAUDE.md (descrição do módulo, estrutura de pastas,
+  schema, fases). Migrations antigas (histórico já aplicado) não foram alteradas — só a numeração
+  nova documenta a mudança de nome.
+- [x] Checkpoint Log: entradas históricas (Sessions 1-5) mantidas com o nome antigo onde descrevem o
+  que foi feito na época (não reescrevo história); só os itens de "Próximo passo" ainda em aberto da
+  Session 5 foram atualizados pro nome novo.
+
+**Verificação feita nesta sessão:**
+- `npx tsc --noEmit` limpo depois do rename.
+- Grep confirmando que só as migrations antigas (histórico) ainda mencionam "chamado" — nenhum código
+  vivo.
+- Migration de rename rodada contra o Supabase real; nomes de constraint/index conferidos direto no
+  `pg_catalog` antes de escrever a migration (não adivinhados).
+
+**Próximo passo:**
+- [ ] Segue tudo que já estava pendente: Encomendas, Comunicados, Chat, Dashboard, notificações FCM,
+  telas web/PWA, painel superadmin.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma — só rename, sem mudança de comportamento/schema além do nome.
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 5 (Data: 17/07/2026)
 **Completado:**
 - [x] **Módulo de Chamados (API)** — primeiro módulo funcional da Fase 1 depois do Auth:
@@ -124,7 +155,7 @@ Formato do checkpoint:
 **Próximo passo:**
 - [ ] Encomendas e Comunicados (mesmo padrão de módulo: model + controller + rotas + RLS de graça).
 - [ ] Chat básico, Dashboard admin, notificações push (FCM) — ainda não iniciados.
-- [ ] Telas web/PWA — Chamados (como Auth) ainda só existe como API, sem nenhuma tela.
+- [ ] Telas web/PWA — Solicitações (como Auth) ainda só existe como API, sem nenhuma tela.
 - [ ] Painel superadmin (tela) e CRUD de condomínio — segue pendente da Session 4.
 
 **Decisões técnicas / desvios do plano original:**

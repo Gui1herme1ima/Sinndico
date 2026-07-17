@@ -3,7 +3,7 @@
 ## 1. Visão Geral
 
 Sistema completo de gestão condominial que centraliza comunicação entre moradores e diretoria/portaria através de:
-- **Chamados de manutenção** (categorias: manutenção, segurança, invasão de animais, etc)
+- **Solicitações de manutenção** (categorias: manutenção, segurança, invasão de animais, etc)
 - **Recebimento de encomendas** (foto, horário, assinatura digital, notificação)
 - **Rastreamento de entrega de comida** (morador avisa plataforma, portaria recebe pré-aviso)
 - **Gestão de visitantes** (registro, aprovação, acesso futuro, placa, RG, documentação)
@@ -32,7 +32,7 @@ Sistema completo de gestão condominial que centraliza comunicação entre morad
 - **State:** Zustand ou Context API
 - **UI:** Tailwind CSS + shadcn/ui ou Material-UI
 - **Forms:** React Hook Form + Zod validation
-- **Charts:** Recharts (dashboard de chamados, ocupação áreas)
+- **Charts:** Recharts (dashboard de solicitações, ocupação áreas)
 
 ### Mobile (Moradores)
 - **Opção 1 (Recomendado início):** PWA (Progressive Web App) — React + Workbox
@@ -68,7 +68,7 @@ Evitar os clichês visuais mais comuns de produtos gerados por IA (fundo creme c
 | `background-dark` | `#0E1512` | Fundo modo escuro — verde-carvão profundo, não preto puro |
 | `surface-light` / `surface-dark` | `#FFFFFF` / `#161E1A` | Cards, painéis, modais |
 | `text-primary-light` / `text-primary-dark` | `#16211D` / `#EAF2EE` | Texto principal |
-| `danger` | `#E5484D` | Erros, chamados urgentes, bloqueios |
+| `danger` | `#E5484D` | Erros, solicitações urgentes, bloqueios |
 | `success` | `#3DBE7A` | Confirmações, status resolvido |
 
 ### Tipografia
@@ -84,7 +84,7 @@ Evitar os clichês visuais mais comuns de produtos gerados por IA (fundo creme c
 
 ### Animações e microinterações
 - Motion fluida e proposital, não decorativa: transições de página, reveal de cards no dashboard, feedback tátil em botões (scale/opacity sutil ao toque), skeleton loading em vez de spinners genéricos.
-- Priorizar uma "assinatura" de movimento — ex: elementos de status (chamado resolvido, encomenda retirada) têm uma transição de check/confirmação particular do produto, reconhecível e reutilizada em todo o sistema.
+- Priorizar uma "assinatura" de movimento — ex: elementos de status (solicitação resolvida, encomenda retirada) têm uma transição de check/confirmação particular do produto, reconhecível e reutilizada em todo o sistema.
 - Respeitar `prefers-reduced-motion` sempre.
 - Bibliotecas sugeridas: Framer Motion (web/React), Reanimated (se migrar pra React Native no futuro).
 
@@ -102,7 +102,7 @@ sinndico/
 │   │   ├── src/
 │   │   │   ├── controllers/
 │   │   │   │   ├── authController.ts
-│   │   │   │   ├── chamadoController.ts
+│   │   │   │   ├── solicitacaoController.ts
 │   │   │   │   ├── encomendaController.ts
 │   │   │   │   ├── visitanteController.ts
 │   │   │   │   ├── comidaController.ts
@@ -112,7 +112,7 @@ sinndico/
 │   │   │   │   └── chatController.ts
 │   │   │   ├── models/
 │   │   │   │   ├── User.ts
-│   │   │   │   ├── Chamado.ts
+│   │   │   │   ├── Solicitacao.ts
 │   │   │   │   ├── Encomenda.ts
 │   │   │   │   ├── Visitante.ts
 │   │   │   │   ├── Comida.ts
@@ -122,7 +122,7 @@ sinndico/
 │   │   │   │   └── Chat.ts
 │   │   │   ├── routes/
 │   │   │   │   ├── auth.ts
-│   │   │   │   ├── chamados.ts
+│   │   │   │   ├── solicitacoes.ts
 │   │   │   │   ├── encomendas.ts
 │   │   │   │   ├── visitantes.ts
 │   │   │   │   ├── comida.ts
@@ -153,7 +153,7 @@ sinndico/
 │   │   │   ├── components/
 │   │   │   │   ├── Layout/
 │   │   │   │   ├── Dashboard/
-│   │   │   │   ├── Chamados/
+│   │   │   │   ├── Solicitacoes/
 │   │   │   │   ├── Encomendas/
 │   │   │   │   ├── Visitantes/
 │   │   │   │   ├── Comunicados/
@@ -174,7 +174,7 @@ sinndico/
 │       ├── src/
 │       │   ├── screens/
 │       │   │   ├── HomeScreen.tsx
-│       │   │   ├── ChamadosScreen.tsx
+│       │   │   ├── SolicitacoesScreen.tsx
 │       │   │   ├── EncomendaScreen.tsx
 │       │   │   ├── VisitantesScreen.tsx
 │       │   │   ├── ComidaScreen.tsx
@@ -209,7 +209,7 @@ sinndico/
 **users** (moradores + admin + porteiro + superadmin) — perfil de negócio; identidade e senha ficam no Supabase Auth
 - id (mesmo id do `auth.users` do Supabase, sem senha própria armazenada aqui), email, nome, apto, telefone, role (morador/admin/porteiro/superadmin), condominio_id (NULL só pra superadmin — não pertence a um condomínio específico, gerencia a plataforma inteira), created_at
 
-**chamados**
+**solicitacoes** (chamado de manutenção/segurança/animal — nome anterior: "chamados")
 - id, morador_id, categoria (manutenção/segurança/animal/outra), titulo, descricao, status (aberto/em-progresso/resolvido), prioridade, data_criacao, data_resolvimento, assigned_to (admin)
 
 **encomendas**
@@ -255,7 +255,7 @@ contratual/regulatória de separação física.
 
 **Como o isolamento é garantido de verdade (não só "por convenção" no código):**
 - Toda tabela com dado de um condomínio específico tem `condominio_id`.
-- **Row Level Security ativado** nas tabelas (`condominios`, `users`, `chamados`, `encomendas`,
+- **Row Level Security ativado** nas tabelas (`condominios`, `users`, `solicitacoes`, `encomendas`,
   `comunicados`, `comunicado_leituras`) — o Postgres bloqueia a leitura/escrita de linhas fora do
   tenant atual mesmo que o código do backend esqueça um filtro `WHERE condominio_id = ...`.
 - A API **não** se conecta ao Postgres com a role `postgres` (superuser do Supabase, que ignora RLS
@@ -279,11 +279,11 @@ frontend admin. Enquanto isso, a primeira conta de superadmin é criada via
 Funcionalidades core que entregam valor imediato:
 
 - [ ] **Auth:** Cadastro/login morador + admin, JWT
-- [ ] **Chamados:** Morador cria, admin vê/resolve (web e mobile)
+- [ ] **Solicitações:** Morador cria, admin vê/resolve (web e mobile)
 - [ ] **Encomendas:** Porteiro cadastra (foto + hora), morador assina digital, notificação
 - [ ] **Comunicados:** Admin posta, morador vê + notificação
 - [ ] **Chat básico:** Morador escreve, admin responde
-- [ ] **Dashboard admin:** Resumo (chamados abertos, encomendas hoje, comunicados recentes)
+- [ ] **Dashboard admin:** Resumo (solicitações abertas, encomendas hoje, comunicados recentes)
 - [ ] **Notificações:** Push FCM (encomenda chegou, comunicado novo, resposta admin)
 
 **Saídas MVP:**
