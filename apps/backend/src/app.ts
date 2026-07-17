@@ -5,6 +5,7 @@ import morgan from 'morgan';
 
 import { pool } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
+import areasComunsRoutes from './routes/areas-comuns';
 import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import comidaRoutes from './routes/comida';
@@ -13,6 +14,7 @@ import condominiosRoutes from './routes/condominios';
 import dashboardRoutes from './routes/dashboard';
 import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
+import reservasRoutes from './routes/reservas';
 import solicitacoesRoutes from './routes/solicitacoes';
 import visitantesRoutes from './routes/visitantes';
 
@@ -42,5 +44,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/device-tokens', deviceTokensRoutes);
 app.use('/api/visitantes', visitantesRoutes);
 app.use('/api/comida', comidaRoutes);
+app.use('/api/areas-comuns', areasComunsRoutes);
+app.use('/api/reservas', reservasRoutes);
 
 app.use(errorHandler);

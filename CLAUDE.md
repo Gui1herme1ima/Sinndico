@@ -129,10 +129,66 @@ Formato do checkpoint:
 >   visitante auto-aprovado, porteiro/admin registram entrada/saída ou bloqueiam) e Comida/Delivery
 >   (morador avisa pedido feito com ETA, porteiro/admin confirmam chegada e notificam o morador,
 >   morador confirma retirada) — API + tela dos dois módulos, testados ponta a ponta.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Fase 3 (Áreas comuns,
->   Assembleia/votação) — não há mais nenhum módulo pendente das Fases 1 e 2.
+> - **Fase 3 iniciada na Session 24**: módulo de Áreas Comuns completo (API + tela) — admin cadastra/
+>   edita áreas comuns, morador solicita reserva (fica `pendente`, já bloqueia o horário pra outros
+>   pedidos conflitantes), admin aprova/cancela, morador cancela a própria. Falta só Assembleia/
+>   votação pra fechar a Fase 3.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Assembleia/votação (fecha
+>   a Fase 3) — não há mais nenhum outro módulo pendente.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 24 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Áreas Comuns (API + tela)** — primeiro módulo da Fase 3. Duas decisões confirmadas
+  com o usuário antes de codar: (1) reserva `pendente` já bloqueia o horário pra outros pedidos
+  conflitantes (como reserva de restaurante — só `cancelada` libera), (2) módulo fica só entre
+  morador e admin, sem porteiro (nem CLAUDE.md nem README mencionam porteiro aqui).
+  - **Primeiro módulo com duas entidades relacionadas** (`areas_comuns` + `reservas`) e o primeiro
+    com um fluxo de aprovação de verdade (ao contrário de Visitantes, onde a "aprovação" virou
+    auto-aprovação do morador — aqui o admin aprova mesmo, sem ambiguidade entre os docs desta vez).
+  - Migrations `1700000000016_create-areas-comuns.ts` e `1700000000017_create-reservas.ts` — RLS +
+    `tenant_isolation` de sempre nas duas. `hora_inicio`/`hora_fim` como `timestamptz` únicos (sem
+    `data_reserva` separada), mesma decisão de consistência de Visitantes/Comida.
+  - `models/Reserva.ts`: `hasConflictingReserva` faz a checagem de sobreposição de horário (`status
+    IN ('pendente','aprovada')` bloqueiam, só `cancelada` libera) via `WHERE hora_inicio < novo_fim
+    AND hora_fim > novo_inicio` — checagem na camada de aplicação (check-then-insert), sem
+    constraint de exclusão no Postgres (`btree_gist`) — proporcional ao tráfego esperado do projeto,
+    não uma engine de reserva de alta concorrência.
+  - `controllers/reservaController.ts`: mesmo padrão do `comidaController` da sessão passada —
+    `aprovada` só admin, `cancelada` admin (qualquer) ou o próprio morador dono
+    (`restrictToMoradorId`). Notifica todos os admins quando uma reserva é criada
+    (`listAdminIdsForTenant`, já existente desde o Chat) e notifica o morador quando aprovada/
+    cancelada pelo admin.
+  - Frontend: `AreaComumCard.tsx` combina edição inline (admin, mesmo padrão do `CondominioCard`) com
+    um mini-form de solicitar reserva (morador). `AreasComunsPage.tsx` roda duas queries
+    (`areas-comuns` e `reservas`) com invalidação cruzada. Nav ganhou "Áreas comuns" com o
+    `AreaComumIcon` — reservado desde a Session 21, finalmente em uso.
+
+**Verificação feita nesta sessão** (Playwright + consulta direta à API, contra backend+web reais):
+- Admin cria área → morador solicita reserva (`pendente`, admin notificado) → morador tenta reservar
+  horário adjacente sem sobreposição → 201 (correto, não é conflito) → morador tenta aprovar a
+  própria reserva → 403 → admin aprova → morador cancela uma reserva sua → porteiro recebe 403 em
+  `/api/areas-comuns` e não vê o item na nav.
+- **Um teste inicial deu falso-negativo**: o script testou um horário que eu *pensei* que sobrepunha
+  a reserva já criada, mas o `datetime-local` do formulário converte hora local pro UTC armazenado
+  (ex.: 10h local virou 13h UTC no banco), e meu payload de teste usava UTC cru sem considerar essa
+  conversão — não testava o horário que eu achava que estava testando. Corrigido testando direto
+  contra o horário UTC real confirmado via API (não assumido) — aí sim o conflito respondeu 400 e o
+  horário adjacente sem sobreposição respondeu 201, como esperado. Não era bug do app.
+- `npx tsc --noEmit` (backend) e `npx tsc -b` (web) limpos.
+
+**Próximo passo:**
+- [ ] Assembleia/votação fecha a Fase 3 — não há mais nenhum outro módulo pendente depois dele.
+- [ ] Áreas/reservas/usuários de teste acumulados (`teste.areas.*@sinndico.dev`) — limpar no painel
+  se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma — as duas decisões de produto (bloqueio por pendente, sem porteiro) já foram confirmadas
+  com o usuário antes de codar, não são desvios descobertos durante a implementação.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 23 (Data: 17/07/2026)
 **Completado:**

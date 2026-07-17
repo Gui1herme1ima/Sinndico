@@ -18,7 +18,10 @@ export type BadgeStatus =
   | 'ativo'
   | 'pedido-feito'
   | 'em-caminho'
-  | 'chegou';
+  | 'chegou'
+  | 'pendente'
+  | 'aprovada'
+  | 'cancelada';
 
 export interface BadgeProps {
   status: BadgeStatus;
@@ -43,6 +46,9 @@ const statusClasses: Record<BadgeStatus, string> = {
   'pedido-feito': 'bg-accent/10 text-accent',
   'em-caminho': 'bg-primary/10 text-primary',
   chegou: 'bg-accent/10 text-accent',
+  pendente: 'bg-accent/10 text-accent',
+  aprovada: 'bg-success/10 text-success',
+  cancelada: 'bg-danger/10 text-danger',
 };
 
 export function Badge({ status, children, mono = false }: BadgeProps) {

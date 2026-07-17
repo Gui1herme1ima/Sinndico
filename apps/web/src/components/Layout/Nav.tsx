@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import {
+  AreaComumIcon,
   ChatIcon,
   ComunicadoIcon,
   EncomendaIcon,
@@ -32,6 +33,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: VisitanteIcon,
   },
   { to: '/comida', label: 'Comida', roles: ['morador', 'admin', 'porteiro'] },
+  {
+    to: '/areas-comuns',
+    label: 'Áreas comuns',
+    roles: ['morador', 'admin'],
+    icon: AreaComumIcon,
+  },
   { to: '/condominios', label: 'Condomínios', roles: ['superadmin'] },
 ];
 

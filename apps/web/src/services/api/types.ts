@@ -186,3 +186,41 @@ export interface CreateComidaPayload {
   restaurante: string;
   horarioChegadaEstimada: string;
 }
+
+export interface AreaComumResponse {
+  id: string;
+  condominioId: string;
+  nome: string;
+  horarioFuncionamento: string | null;
+  descricao: string | null;
+}
+
+export interface CreateAreaComumPayload {
+  nome: string;
+  horarioFuncionamento?: string;
+  descricao?: string;
+}
+
+export interface UpdateAreaComumPayload {
+  nome?: string;
+  horarioFuncionamento?: string;
+  descricao?: string;
+}
+
+export type ReservaStatus = 'pendente' | 'aprovada' | 'cancelada';
+
+export interface ReservaResponse {
+  id: string;
+  condominioId: string;
+  areaComumId: string;
+  moradorId: string;
+  horaInicio: string;
+  horaFim: string;
+  status: ReservaStatus;
+}
+
+export interface CreateReservaPayload {
+  areaComumId: string;
+  horaInicio: string;
+  horaFim: string;
+}
