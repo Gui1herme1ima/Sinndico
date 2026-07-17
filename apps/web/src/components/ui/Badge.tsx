@@ -12,7 +12,8 @@ export type BadgeStatus =
   | 'bloqueado'
   | 'baixa'
   | 'media'
-  | 'alta';
+  | 'alta'
+  | 'novo';
 
 export interface BadgeProps {
   status: BadgeStatus;
@@ -31,6 +32,7 @@ const statusClasses: Record<BadgeStatus, string> = {
   baixa: 'bg-success/10 text-success',
   media: 'bg-accent/10 text-accent',
   alta: 'bg-danger/10 text-danger',
+  novo: 'bg-accent/10 text-accent',
 };
 
 export function Badge({ status, children, mono = false }: BadgeProps) {

@@ -101,12 +101,12 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13**, e 2 telas funcionais de módulo desde a
->   Session 15 (Solicitações — Session 14 — e Encomendas — Session 15): roteamento com guarda por
->   role, login/registro/logout contra a API real, componentes base do design system (Button/Card/
->   Input/Select/Textarea/Badge/Skeleton/ThemeToggle), fontes self-hosted, manifest de PWA, e
->   `@tanstack/react-query` como camada de cache pra telas de lista. Comunicados/Chat/Dashboard ainda
->   são placeholders "em construção" — seguem uma sessão de cada vez, mesmo padrão. `apps/mobile`
+> - **`apps/web` tem fundação real desde a Session 13**, e 3 telas funcionais de módulo desde a
+>   Session 17 (Solicitações — Session 14 —, Encomendas — Session 15 — e Comunicados — Session 17):
+>   roteamento com guarda por role, login/registro/logout contra a API real, componentes base do
+>   design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle), fontes self-hosted,
+>   manifest de PWA, e `@tanstack/react-query` como camada de cache pra telas de lista. Chat/Dashboard
+>   ainda são placeholders "em construção" — seguem uma sessão de cada vez, mesmo padrão. `apps/mobile`
 >   segue só placeholder.
 > - **Conta de porteiro de teste**: não existe self-registro pra porteiro (só morador/admin em
 >   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
@@ -121,12 +121,46 @@ Formato do checkpoint:
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
 > - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) próxima tela de módulo
->   web, seguindo a ordem do backend (Comunicados é a próxima; Chat e Dashboard depois), (2) API de
->   CRUD de condomínio + tela do painel superadmin, (3) integrar o brand kit real ao app (trocar
->   logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como componentes React,
->   decidir se adota os 3 valores de token refinados do brand kit).
+>   web, seguindo a ordem do backend (Chat, depois Dashboard), (2) API de CRUD de condomínio + tela
+>   do painel superadmin, (3) integrar o brand kit real ao app (trocar logo/favicon/ícones PWA
+>   placeholder, adicionar os 8 ícones de domínio como componentes React, decidir se adota os 3
+>   valores de token refinados do brand kit).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 17 (Data: 17/07/2026)
+**Completado:**
+- [x] **Tela de Comunicados**, consumindo a API real (`/api/comunicados`), terceira tela de módulo
+  seguindo a mesma ordem do backend e o mesmo padrão das anteriores (Solicitações/Encomendas).
+  - Tipos novos (`ComunicadoResponse`, `CreateComunicadoPayload`) + `src/services/api/comunicadosApi.ts`
+    (list/create/markAsRead).
+  - `Badge` ganhou o status `novo` (reaproveitando `accent`, já documentado desde o início em
+    `docs/DESIGN_SYSTEM.md` como uso pretendido pra "badge novo").
+  - `src/components/Comunicados/`: `CreateComunicadoForm.tsx` (só admin — título/conteúdo) e
+    `ComunicadoCard.tsx` (badge "Novo" enquanto `lido: false`, botão "Marcar como lido" que some após
+    o `POST /:id/ler`, mensagem de erro inline se falhar).
+  - `ComunicadosPage.tsx` substitui o placeholder na rota `/comunicados` — admin vê form+lista
+    completa (comunicados não são escopados por role, é mural mesmo, então admin também marca como
+    lido pra si); morador/porteiro só a lista, sem form.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais):
+- Admin publica → aparece pra ele mesmo com badge "Novo" (comunicado é mural, `lido` é por usuário,
+  inclusive pro autor). Morador registrado depois vê o mesmo comunicado, marca como lido → badge e
+  botão somem imediatamente, persistência (`lido: true`) confirmada consultando a API diretamente.
+  Porteiro (conta seedada na Session 15) também vê o comunicado, sem form de criar.
+- `npx tsc -b` limpo. Nenhum erro de console/página.
+
+**Próximo passo:**
+- [ ] Próxima tela de módulo: Chat, depois Dashboard.
+- [ ] Comunicados/usuários de teste acumulados no condomínio de teste (`teste.com.*@sinndico.dev`) —
+  limpar no painel se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — mesmo padrão de tela (tipos → API client → componentes → página → roteamento →
+  verificação Playwright) das duas sessões anteriores.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 16 (Data: 17/07/2026)
 **Completado:**

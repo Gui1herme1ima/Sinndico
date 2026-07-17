@@ -87,3 +87,18 @@ export interface CreateEncomendaPayload {
   descricao?: string;
   fotoUrl?: string;
 }
+
+export interface ComunicadoResponse {
+  id: string;
+  condominioId: string;
+  adminId: string;
+  titulo: string;
+  conteudo: string;
+  dataCriacao: string;
+  lido: boolean;
+}
+
+export interface CreateComunicadoPayload {
+  titulo: string;
+  conteudo: string;
+}
