@@ -114,9 +114,10 @@ Formato do checkpoint:
 >   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
 >   (Session 15, mesmo padrão do `seed:superadmin` já existente) só pra viabilizar testar telas que
 >   dependem desse role.
-> - **Brand kit anexado e organizado (Session 16)**: logo/símbolo real, ícones de domínio e tokens
->   machine-readable em `brand-assets/` na raiz — só organizado/documentado, **ainda não integrado**
->   ao app rodando (logo placeholder, ícones e tokens de `apps/web` continuam como estavam).
+> - **Brand kit integrado ao app desde a Session 21** (organizado na Session 16): favicon/ícones PWA
+>   reais, componente `Logo` (símbolo reativo ao tema, sem precisar trocar arquivo por claro/escuro)
+>   no header e telas de login/registro, os 8 ícones de domínio como componentes React (4 já usados
+>   na navegação), e os 3 valores de token refinados do brand kit adotados em `tokens.css`.
 > - **Painel superadmin completo desde a Session 20**: API de CRUD de condomínio (`/api/condominios`
 >   — criar/listar/editar nome, sem exclusão por decisão explícita) e tela em `apps/web` (`/condominios`
 >   — nav exclusiva do superadmin). **Com isso, a Fase 1 (MVP) está 100% completa**: API + telas de
@@ -124,12 +125,64 @@ Formato do checkpoint:
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) integrar o brand kit
->   real ao app (trocar logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como
->   componentes React, decidir se adota os 3 valores de token refinados do brand kit), (2) avançar pra Fase 2
->   (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação).
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** avançar pra Fase 2
+>   (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação) — não há mais nenhum
+>   item de produto pendente da Fase 1.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 21 (Data: 17/07/2026)
+**Completado:**
+- [x] **Brand kit real integrado ao app** (organizado desde a Session 16, nada tinha sido aplicado
+  ainda). Confirmado com o usuário antes de codar: adotar os tokens refinados agora, e adicionar o
+  símbolo real (componente React reativo ao tema) no header + telas de login/registro.
+  - **Tokens**: `apps/web/src/styles/tokens.css` atualizado com os 3 valores que
+    `brand-assets/tokens.json` trazia diferente (`--color-text-secondary` escuro, `--color-border`
+    claro/escuro) + novo token `--color-text-muted` (claro/escuro) — `primary`/`accent`/`background`/
+    `surface`/`danger`/`success` não mudaram (já eram idênticos). `tailwind.config.ts` ganhou a
+    classe `text-muted`. `docs/DESIGN_SYSTEM.md` atualizado pra refletir os valores já aplicados
+    (a antiga seção "1.1 Tokens candidatos" virou parte da tabela principal).
+  - **Favicon/ícones PWA**: `apps/web/public/favicon.svg` e `icons/icon.svg` substituídos pelo
+    `symbol.svg` real (ganhou o ponto de destaque âmbar e o raio de 28% que o placeholder não tinha).
+    PNGs (192/512/maskable-512/apple-touch) regenerados a partir dele via `npx sharp-cli` (mesma
+    conversão avulsa da Session 13, sem virar dependência permanente).
+  - **Componente `Logo`** (`apps/web/src/components/ui/Logo.tsx`, novo): reimplementa o símbolo como
+    SVG inline usando classes Tailwind (`fill-primary`/`fill-accent`/`fill-primary-contrast`) em vez
+    de importar os SVGs estáticos do brand kit (que têm uma versão por tema) — assim reage ao tema
+    automaticamente pelo mesmo mecanismo de `data-theme` que todo o resto do app já usa. Usado em
+    `Header.tsx` (substituindo o `<span>Sinndico</span>` solto que era a única presença de marca no
+    app até agora) e centralizado acima do card em `LoginPage.tsx`/`RegisterPage.tsx` (que não tinham
+    nenhuma presença de marca antes).
+  - **8 ícones de domínio**: adicionados em `apps/web/src/components/ui/icons.tsx` (mesmo `base()`
+    compartilhado dos ícones de UI já existentes — o spec dos SVGs do brand kit já batia 1:1, sem
+    reconciliar nada). Os 4 com módulo já construído (`SolicitacaoManutencaoIcon`, `EncomendaIcon`,
+    `ComunicadoIcon`, `ChatIcon`) foram usados na `Nav.tsx`, ao lado do label de cada item — Dashboard
+    e Condomínios ficaram só com texto (nenhum dos 8 ícones tem correspondência semântica com esses
+    dois). Os outros 4 (`VisitanteIcon`, `AreaComumIcon`, `AssembleiaIcon`, `NotificacaoIcon`) ficam
+    disponíveis pra quando os módulos correspondentes da Fase 2/3 existirem.
+
+**Verificação feita nesta sessão** (Playwright, contra backend+web reais):
+- `favicon.svg`, os 4 PNGs e o `manifest.webmanifest` respondendo 200; `favicon.svg` confirmado com o
+  ponto de destaque (busca por `<circle` no conteúdo servido).
+- Login, registro (morador e admin) e a área logada (nav com ícones) conferidos visualmente em claro
+  e escuro — símbolo, ícones de nav e os tokens novos (texto secundário/bordas) renderizando
+  corretamente nos dois modos, sem regressão de contraste nas telas já existentes.
+- `npx tsc -b` limpo.
+
+**Próximo passo:**
+- [ ] Não há mais nenhum item de produto pendente da Fase 1. Avançar pra Fase 2 (Visitantes,
+  Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação) — nenhuma decidida ainda.
+- [ ] Usuários de teste acumulados (`teste.brand.*@sinndico.dev`) — limpar no painel se quiser um
+  ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- O símbolo foi reimplementado como componente React (cores via Tailwind) em vez de usar os SVGs
+  estáticos do brand kit diretamente — decisão deliberada pra evitar ter que trocar de arquivo por
+  tema; os SVGs originais (`logo-lockup-light.svg`/`dark.svg` etc.) continuam em `brand-assets/` como
+  referência/fonte, só não são importados no código.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 20 (Data: 17/07/2026)
 **Completado:**

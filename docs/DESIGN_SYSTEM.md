@@ -4,7 +4,7 @@ Fonte de verdade visual do produto. Todo componente novo (web ou mobile/PWA) dev
 
 Modo claro e escuro são obrigatórios desde a primeira tela. Nenhum componente é considerado "pronto" sem ser testado nos dois modos.
 
-Os arquivos-fonte do brand kit (logo/símbolo em SVG, ícones de domínio, `tokens.json` machine-readable) vivem em `brand-assets/` na raiz do repositório — este documento é a especificação escrita, `brand-assets/` é onde estão os arquivos de verdade. Nada em `brand-assets/` foi ainda integrado ao código do app (`apps/web`) — ver seção 9.
+Os arquivos-fonte do brand kit (logo/símbolo em SVG, ícones de domínio, `tokens.json` machine-readable) vivem em `brand-assets/` na raiz do repositório — este documento é a especificação escrita, `brand-assets/` é onde estão os arquivos de verdade. Integrado ao app (`apps/web`) na Session 21: tokens, favicon/ícones PWA, logo (componente `Logo`) e os 8 ícones de domínio — ver seções 1, 2 e 4.
 
 ---
 
@@ -22,7 +22,8 @@ Implementados como CSS custom properties. O tema escuro é ativado por `[data-th
   --color-surface: #FFFFFF;
   --color-text-primary: #16211D;
   --color-text-secondary: #4B5A54;
-  --color-border: #DCE3DF;
+  --color-text-muted: #7A857F;
+  --color-border: #E1E6E3;
   --color-danger: #E5484D;
   --color-success: #3DBE7A;
 }
@@ -34,8 +35,9 @@ Implementados como CSS custom properties. O tema escuro é ativado por `[data-th
   --color-background: #0E1512;
   --color-surface: #161E1A;
   --color-text-primary: #EAF2EE;
-  --color-text-secondary: #9FB0A9;
-  --color-border: #253128;
+  --color-text-secondary: #9FD3C7;
+  --color-text-muted: #5C7168;
+  --color-border: #1E2A25;
   --color-danger: #E5484D;
   --color-success: #3DBE7A;
 }
@@ -48,35 +50,28 @@ Implementados como CSS custom properties. O tema escuro é ativado por `[data-th
 | `--color-background` | `#F7F8F7` | `#0E1512` | Fundo da página |
 | `--color-surface` | `#FFFFFF` | `#161E1A` | Cards, painéis, modais |
 | `--color-text-primary` | `#16211D` | `#EAF2EE` | Texto principal |
-| `--color-text-secondary` | `#4B5A54` | `#9FB0A9` | Texto de apoio, labels, timestamps |
-| `--color-border` | `#DCE3DF` | `#253128` | Bordas de input/card, divisores |
+| `--color-text-secondary` | `#4B5A54` | `#9FD3C7` | Texto de apoio, labels, timestamps |
+| `--color-text-muted` | `#7A857F` | `#5C7168` | Texto terciário/desabilitado — mais discreto que `text-secondary` |
+| `--color-border` | `#E1E6E3` | `#1E2A25` | Bordas de input/card, divisores |
 | `--color-danger` | `#E5484D` | `#E5484D` | Erros, chamados urgentes, bloqueios |
 | `--color-success` | `#3DBE7A` | `#3DBE7A` | Confirmações, status resolvido |
 
 **Regra:** nunca usar hex direto em componentes — sempre referenciar a variable (`var(--color-primary)` ou o token Tailwind equivalente, ver seção 9).
 
-### 1.1 Tokens candidatos (do brand kit, ainda não aplicados)
-
-`brand-assets/tokens.json` (v1.0.0, anexado em 17/07/2026) traz um token novo e três valores
-ligeiramente diferentes dos acima. Nenhum deles foi aplicado em `apps/web/src/styles/tokens.css` —
-ficam registrados aqui como referência até haver uma decisão de adotar (ou não):
-
-| Token | Claro (atual → candidato) | Escuro (atual → candidato) |
-|---|---|---|
-| `--color-text-secondary` | `#4B5A54` → `#4B5A54` (sem mudança) | `#9FB0A9` → `#9FD3C7` |
-| `--color-border` | `#DCE3DF` → `#E1E6E3` | `#253128` → `#1E2A25` |
-| `--color-text-muted` *(novo)* | — → `#7A857F` | — → `#5C7168` |
-
-`primary`/`accent`/`background`/`surface`/`text-primary`/`danger`/`success` são idênticos em ambas
-as fontes — só os tokens acima divergem.
+`--color-text-secondary`/`--color-border`/`--color-text-muted` (este último, novo) foram atualizados
+na Session 21 pra bater com `brand-assets/tokens.json` (v1.0.0) — os demais tokens já eram idênticos
+entre as duas fontes desde a Session 16.
 
 ---
 
 ## 2. Logo e símbolo
 
-Arquivos-fonte em `brand-assets/assets/brand/`. Ainda não substituem o placeholder atual do app
-(`apps/web/public/favicon.svg` e `apps/web/public/icons/icon.svg` — mesmo monograma "S", sem o ponto
-de destaque âmbar descrito abaixo).
+Arquivos-fonte em `brand-assets/assets/brand/`. `favicon.svg`/`icons/icon.svg` (+ PNGs derivados) já
+usam o `symbol.svg` real desde a Session 21. No React, o símbolo não é importado como arquivo
+estático — é reimplementado como componente (`apps/web/src/components/ui/Logo.tsx`) usando as
+mesmas classes Tailwind (`fill-primary`/`fill-accent`/`fill-primary-contrast`) do resto do app, pra
+reagir ao tema automaticamente sem precisar trocar de arquivo (`logo-lockup-light.svg`/`dark.svg`
+continuam só como referência do brand kit, não são usados no código).
 
 - **Símbolo:** monograma "S" (Space Grotesk, bold) branco sobre quadrado arredondado `--color-primary`, raio proporcional (~28% do lado — `radii.logo-mark` em `tokens.json`).
 - **Assinatura:** ponto `--color-accent` (`#F0A94E`) no canto superior direito do símbolo — pensado pra ser reaproveitado como indicador de notificação/novidade no resto da UI.
@@ -118,9 +113,14 @@ contexto, funciona em claro/escuro sem código extra) — o mesmo spec já usado
 `apps/web/src/components/ui/icons.tsx` (ícones de UI: sol/lua, menu, fechar, sair, usuário etc.).
 
 `brand-assets/assets/icons/` traz um segundo conjunto — ícones **de domínio**, um por módulo
-funcional, no mesmo estilo (drop-in natural quando forem integrados, sem precisar reconciliar
-spec): `solicitacao-manutencao`, `encomenda`, `visitante`, `comunicado`, `area-comum`, `assembleia`,
-`chat`, `notificacao`. Estado ativo no modo escuro usa `--color-primary` (`#2ED9A8`).
+funcional, no mesmo estilo (drop-in direto, sem reconciliar spec): `solicitacao-manutencao`,
+`encomenda`, `visitante`, `comunicado`, `area-comum`, `assembleia`, `chat`, `notificacao`. Integrados
+em `apps/web/src/components/ui/icons.tsx` na Session 21 (mesmo `base()` compartilhado dos ícones de
+UI) — os 4 com correspondência de módulo já construído (`SolicitacaoManutencaoIcon`,
+`EncomendaIcon`, `ComunicadoIcon`, `ChatIcon`) aparecem na navegação (`Nav.tsx`); os outros 4
+(`VisitanteIcon`, `AreaComumIcon`, `AssembleiaIcon`, `NotificacaoIcon`) ficam disponíveis pra quando
+os módulos correspondentes da Fase 2/3 forem construídos. Estado ativo no modo escuro usa
+`--color-primary` (`#2ED9A8`).
 
 ---
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Nav } from '@/components/Layout/Nav';
 import { LogOutIcon, MenuIcon, UserIcon, XIcon } from '@/components/ui/icons';
+import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/store/useAuth';
 
@@ -15,7 +16,7 @@ export function Header() {
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-6">
-          <span className="font-display text-xl font-bold text-primary">Sinndico</span>
+          <Logo />
           <div className="hidden md:block">
             <Nav role={user.role} />
           </div>

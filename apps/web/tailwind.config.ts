@@ -18,6 +18,7 @@ export default {
         surface: withOpacity('--color-surface-rgb'),
         'text-primary': withOpacity('--color-text-primary-rgb'),
         'text-secondary': withOpacity('--color-text-secondary-rgb'),
+        'text-muted': withOpacity('--color-text-muted-rgb'),
         border: withOpacity('--color-border-rgb'),
         danger: withOpacity('--color-danger-rgb'),
         success: withOpacity('--color-success-rgb'),

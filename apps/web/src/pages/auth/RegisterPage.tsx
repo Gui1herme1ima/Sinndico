@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Logo } from '@/components/ui/Logo';
 import { cn } from '@/lib/cn';
 import { ApiError } from '@/services/api/client';
 import { useAuth } from '@/store/useAuth';
@@ -43,7 +44,8 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 py-10">
+      <Logo size={40} />
       <Card className="w-full max-w-sm" title="Criar conta">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
