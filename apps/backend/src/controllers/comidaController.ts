@@ -1,0 +1,114 @@
+import { Request, Response } from 'express';
+import { z } from 'zod';
+
+import {
+  Comida,
+  createComida,
+  findComidaById,
+  listComida,
+  updateComidaStatus,
+} from '../models/Comida';
+import { listPorteiroIdsForTenant } from '../models/User';
+import { listTokensForUsers } from '../models/DeviceToken';
+import { ApiError } from '../middleware/errorHandler';
+import { sendPushToTokens } from '../services/notificationService';
+
+export const createComidaSchema = z.object({
+  restaurante: z.string().min(1),
+  horarioChegadaEstimada: z.string().datetime(),
+});
+
+export const updateStatusSchema = z.object({
+  status: z.enum(['em-caminho', 'chegou', 'retirada']),
+});
+
+function toComidaResponse(comida: Comida) {
+  return {
+    id: comida.id,
+    condominioId: comida.condominio_id,
+    moradorId: comida.morador_id,
+    restaurante: comida.restaurante,
+    horarioChegadaEstimada: comida.horario_chegada_estimada,
+    status: comida.status,
+    notificacaoPortariaEnviada: comida.notificacao_portaria_enviada,
+  };
+}
+
+function tenantContextOf(req: Request) {
+  return { userId: req.user!.id, condominioId: req.user!.condominioId };
+}
+
+export async function create(req: Request, res: Response) {
+  const input = createComidaSchema.parse(req.body);
+  const ctx = tenantContextOf(req);
+
+  const comida = await createComida(ctx, {
+    condominioId: req.user!.condominioId!,
+    moradorId: req.user!.id,
+    ...input,
+  });
+
+  const porteiroIds = await listPorteiroIdsForTenant(ctx);
+  const tokens = await listTokensForUsers(ctx, porteiroIds);
+  await sendPushToTokens(tokens, {
+    title: 'Novo pedido de comida',
+    body: `Pedido de ${comida.restaurante} a caminho.`,
+    data: { tipo: 'comida', comidaId: comida.id },
+  });
+
+  res.status(201).json(toComidaResponse(comida));
+}
+
+export async function list(req: Request, res: Response) {
+  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
+  const pedidos = await listComida(tenantContextOf(req), filter);
+  res.json(pedidos.map(toComidaResponse));
+}
+
+export async function getById(req: Request, res: Response) {
+  const id = z.string().uuid().parse(req.params.id);
+
+  const comida = await findComidaById(tenantContextOf(req), id);
+  if (!comida || (req.user!.role === 'morador' && comida.morador_id !== req.user!.id)) {
+    throw new ApiError(404, 'Pedido não encontrado');
+  }
+
+  res.json(toComidaResponse(comida));
+}
+
+export async function updateStatus(req: Request, res: Response) {
+  const id = z.string().uuid().parse(req.params.id);
+  const input = updateStatusSchema.parse(req.body);
+  const ctx = tenantContextOf(req);
+
+  const isMorador = req.user!.role === 'morador';
+  const isPortaria = req.user!.role === 'porteiro' || req.user!.role === 'admin';
+
+  if ((input.status === 'em-caminho' || input.status === 'retirada') && !isMorador) {
+    throw new ApiError(403, 'Só o morador pode atualizar esse status');
+  }
+  if (input.status === 'chegou' && !isPortaria) {
+    throw new ApiError(403, 'Só porteiro ou admin podem confirmar a chegada');
+  }
+
+  const comida = await updateComidaStatus(
+    ctx,
+    id,
+    input.status,
+    isMorador ? req.user!.id : undefined
+  );
+  if (!comida) {
+    throw new ApiError(404, 'Pedido não encontrado');
+  }
+
+  if (input.status === 'chegou') {
+    const tokens = await listTokensForUsers(ctx, [comida.morador_id]);
+    await sendPushToTokens(tokens, {
+      title: 'Seu pedido chegou',
+      body: `${comida.restaurante} chegou na portaria.`,
+      data: { tipo: 'comida', comidaId: comida.id },
+    });
+  }
+
+  res.json(toComidaResponse(comida));
+}

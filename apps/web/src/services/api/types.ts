@@ -169,3 +169,20 @@ export interface CreateVisitantePayload {
   placaVeiculo?: string;
   dataVisita: string;
 }
+
+export type ComidaStatus = 'pedido-feito' | 'em-caminho' | 'chegou' | 'retirada';
+
+export interface ComidaResponse {
+  id: string;
+  condominioId: string;
+  moradorId: string;
+  restaurante: string;
+  horarioChegadaEstimada: string;
+  status: ComidaStatus;
+  notificacaoPortariaEnviada: boolean;
+}
+
+export interface CreateComidaPayload {
+  restaurante: string;
+  horarioChegadaEstimada: string;
+}

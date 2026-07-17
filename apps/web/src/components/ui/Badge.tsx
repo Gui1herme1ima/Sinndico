@@ -15,7 +15,10 @@ export type BadgeStatus =
   | 'alta'
   | 'novo'
   | 'aprovado'
-  | 'ativo';
+  | 'ativo'
+  | 'pedido-feito'
+  | 'em-caminho'
+  | 'chegou';
 
 export interface BadgeProps {
   status: BadgeStatus;
@@ -37,6 +40,9 @@ const statusClasses: Record<BadgeStatus, string> = {
   novo: 'bg-accent/10 text-accent',
   aprovado: 'bg-success/10 text-success',
   ativo: 'bg-primary/10 text-primary',
+  'pedido-feito': 'bg-accent/10 text-accent',
+  'em-caminho': 'bg-primary/10 text-primary',
+  chegou: 'bg-accent/10 text-accent',
 };
 
 export function Badge({ status, children, mono = false }: BadgeProps) {

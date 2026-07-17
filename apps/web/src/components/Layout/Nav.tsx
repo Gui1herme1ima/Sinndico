@@ -31,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['morador', 'admin', 'porteiro'],
     icon: VisitanteIcon,
   },
+  { to: '/comida', label: 'Comida', roles: ['morador', 'admin', 'porteiro'] },
   { to: '/condominios', label: 'Condomínios', roles: ['superadmin'] },
 ];
 

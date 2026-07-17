@@ -125,13 +125,56 @@ Formato do checkpoint:
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Fase 2 iniciada na Session 22**: módulo de Visitantes completo (API + tela) — morador registra
->   visitante (auto-aprovado), porteiro/admin registram entrada/saída na portaria ou bloqueiam antes
->   da chegada. Falta só Comida/Delivery pra fechar a Fase 2.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Comida/Delivery (fecha a
->   Fase 2) ou pular pra Fase 3 (Áreas comuns, Assembleia/votação).
+> - **Fase 2 completa desde a Session 23** (iniciada na Session 22): Visitantes (morador registra
+>   visitante auto-aprovado, porteiro/admin registram entrada/saída ou bloqueiam) e Comida/Delivery
+>   (morador avisa pedido feito com ETA, porteiro/admin confirmam chegada e notificam o morador,
+>   morador confirma retirada) — API + tela dos dois módulos, testados ponta a ponta.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Fase 3 (Áreas comuns,
+>   Assembleia/votação) — não há mais nenhum módulo pendente das Fases 1 e 2.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 23 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Comida/Delivery (API + tela)** — fecha a Fase 2. Sem ambiguidade entre os docs
+  desta vez (README e CLAUDE.md batiam). Primeiro módulo com **atores diferentes fazendo transições
+  de status diferentes no mesmo recurso**: morador avisa "a caminho" e confirma retirada, porteiro/
+  admin confirma chegada — diferente de todo módulo anterior, que tinha um único ator dono da
+  transição de status.
+  - Migration `1700000000015_create-comida.ts` — RLS + `tenant_isolation` no mesmo molde de
+    `visitantes`/`device_tokens`.
+  - `models/User.ts` ganhou `listPorteiroIdsForTenant` (cópia de `listAdminIdsForTenant` trocando o
+    filtro de role) — usado pra notificar todos os porteiros quando um pedido é criado (mesmo padrão
+    de notificação de toda sessão anterior, só invertendo quem é notificado). Quando o porteiro
+    confirma a chegada, o morador é notificado de volta (`"Seu pedido chegou"`), espelhando a
+    notificação de encomenda mas na direção oposta.
+  - `controllers/comidaController.ts`: como não tem um ator fixo, o `PATCH` de status valida por
+    dentro do controller quem pode setar qual valor — `em-caminho`/`retirada` só morador (dono, via
+    `restrictToMoradorId` no próprio `UPDATE`, mesmo estilo do `signEncomenda`), `chegou` só
+    porteiro/admin. A rota autoriza os 3 papéis; a granularidade fica no controller.
+  - Frontend: `ComidaCard.tsx` mostra botões diferentes por papel **e** status atual (não só por
+    papel, como nos módulos anteriores). Nav ganhou o item "Comida" sem ícone — nenhum dos 8 ícones
+    de domínio do brand kit cobre esse módulo.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais):
+- Morador cria pedido → porteiro tenta marcar "a caminho" direto na API → 403 → morador marca "a
+  caminho" pela tela → morador tenta marcar "chegou" → 403 → porteiro confirma chegada pela tela →
+  porteiro tenta confirmar retirada → 403 → morador confirma retirada pela tela. Estado final
+  (`status: retirada`, `notificacaoPortariaEnviada: true`) confirmado via API direta.
+- `npx tsc --noEmit` (backend) e `npx tsc -b` (web) limpos.
+
+**Próximo passo:**
+- [ ] **Fases 1 e 2 completas.** Fase 3 (Áreas comuns, Assembleia/votação) é o próximo passo natural,
+  nenhuma decisão tomada ainda sobre por qual módulo começar.
+- [ ] Pedidos/usuários de teste acumulados (`teste.comida.*@sinndico.dev`) — limpar no painel se
+  quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma — a granularidade de autorização por status (em vez de por rota) já estava prevista no
+  plano desde o início, dado que o módulo genuinamente tem mais de um ator mudando o mesmo campo.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 22 (Data: 17/07/2026)
 **Completado:**

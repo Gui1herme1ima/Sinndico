@@ -5,6 +5,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ChatPage } from '@/pages/Chat/ChatPage';
+import { ComidaPage } from '@/pages/Comida/ComidaPage';
 import { CondominiosPage } from '@/pages/Condominios/CondominiosPage';
 import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
@@ -102,6 +103,14 @@ export function AppRoutes() {
           element={
             <RequireAuth roles={['morador', 'admin', 'porteiro']}>
               <VisitantesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="comida"
+          element={
+            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+              <ComidaPage />
             </RequireAuth>
           }
         />

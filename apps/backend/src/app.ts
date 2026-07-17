@@ -7,6 +7,7 @@ import { pool } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
+import comidaRoutes from './routes/comida';
 import comunicadosRoutes from './routes/comunicados';
 import condominiosRoutes from './routes/condominios';
 import dashboardRoutes from './routes/dashboard';
@@ -40,5 +41,6 @@ app.use('/api/chats', chatsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/device-tokens', deviceTokensRoutes);
 app.use('/api/visitantes', visitantesRoutes);
+app.use('/api/comida', comidaRoutes);
 
 app.use(errorHandler);

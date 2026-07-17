@@ -54,6 +54,15 @@ export async function listAdminIdsForTenant(ctx: TenantContext): Promise<string[
   });
 }
 
+// Usado pelo gatilho de notificação de novo pedido de comida: avisa todos os porteiros do
+// condomínio (não tem um "porteiro dono do portão" fixo), mesmo espírito de listAdminIdsForTenant.
+export async function listPorteiroIdsForTenant(ctx: TenantContext): Promise<string[]> {
+  return withTenantContext(ctx, async (client) => {
+    const result = await client.query<{ id: string }>("SELECT id FROM users WHERE role = 'porteiro'");
+    return result.rows.map((r) => r.id);
+  });
+}
+
 export async function createUser(input: CreateUserInput): Promise<User> {
   return withTenantContext({ userId: input.id, condominioId: input.condominioId }, async (client) => {
     const result = await client.query<User>(
