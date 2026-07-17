@@ -37,3 +37,32 @@ export interface LoginPayload {
   email: string;
   senha: string;
 }
+
+export type SolicitacaoCategoria = 'manutencao' | 'seguranca' | 'animal' | 'outra';
+export type SolicitacaoStatus = 'aberto' | 'em-progresso' | 'resolvido';
+export type SolicitacaoPrioridade = 'baixa' | 'media' | 'alta';
+
+export interface SolicitacaoResponse {
+  id: string;
+  condominioId: string;
+  moradorId: string;
+  assignedTo: string | null;
+  categoria: SolicitacaoCategoria;
+  titulo: string;
+  descricao: string;
+  status: SolicitacaoStatus;
+  prioridade: SolicitacaoPrioridade;
+  dataCriacao: string;
+  dataResolvimento: string | null;
+}
+
+export interface CreateSolicitacaoPayload {
+  categoria: SolicitacaoCategoria;
+  titulo: string;
+  descricao: string;
+}
+
+export interface UpdateSolicitacaoPayload {
+  status?: SolicitacaoStatus;
+  prioridade?: SolicitacaoPrioridade;
+}

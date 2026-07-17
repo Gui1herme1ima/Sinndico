@@ -100,12 +100,64 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13**: roteamento com guarda por role, login/registro/logout contra a API real, componentes base do design system (Button/Card/Input/Badge/Skeleton/ThemeToggle), fontes self-hosted, manifest de PWA. As 5 telas de módulo (Solicitações, Encomendas, Comunicados, Chat, Dashboard) ainda são placeholders "em construção" — conteúdo funcional fica pra próximas sessões, uma de cada vez. `apps/mobile` segue só placeholder.
-> - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
-> - **Firebase configurado (Session 12), mas envio real de push ainda não confirmado ponta a ponta** — falta um device token de verdade (só existe emissão via SDK do Firebase rodando num client real; agora que `apps/web` existe, isso é destravável numa próxima sessão).
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas funcionais de cada módulo web (Solicitações é a candidata natural — desbloqueia testar o resto), (2) API de CRUD de condomínio + tela do painel superadmin.
+> - **`apps/web` tem fundação real desde a Session 13**, e a primeira tela funcional de módulo
+>   (Solicitações) desde a Session 14: roteamento com guarda por role, login/registro/logout contra a
+>   API real, componentes base do design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/
+>   ThemeToggle), fontes self-hosted, manifest de PWA, e `@tanstack/react-query` como camada de cache
+>   pra telas de lista. Encomendas/Comunicados/Chat/Dashboard ainda são placeholders "em construção" —
+>   seguem uma sessão de cada vez, mesmo padrão. `apps/mobile` segue só placeholder.
+> - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via
+>   `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
+> - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
+>   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
+>   funcional, isso é destravável assim que fizer sentido priorizar.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) próxima tela de módulo
+>   web (Encomendas, Comunicados, Chat ou Dashboard — Dashboard é a mais simples, só leitura), (2) API
+>   de CRUD de condomínio + tela do painel superadmin.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 14 (Data: 17/07/2026)
+**Completado:**
+- [x] **Primeira tela funcional de módulo: Solicitações**, consumindo a API real (`/api/solicitacoes`).
+  - `@tanstack/react-query` entrou como dependência nesta sessão (decisão já prevista desde a Session
+    13 — "sem telas de lista ainda para justificar cache" deixou de valer assim que a primeira lista
+    apareceu). `src/lib/queryClient.ts` + `QueryClientProvider` envolvendo o app em `App.tsx`.
+  - `src/services/api/solicitacoesApi.ts` + tipos novos em `types.ts` (`SolicitacaoResponse`,
+    `CreateSolicitacaoPayload`, `UpdateSolicitacaoPayload`), espelhando o contrato do backend.
+  - Dois componentes base novos no design system: `Select` e `Textarea` (mesmo padrão visual/estados
+    do `Input` — label sempre visível, erro/helper, foco). `Badge` ganhou 3 status novos
+    (`baixa`/`media`/`alta`) reaproveitando as cores já existentes (baixa→success, media→accent,
+    alta→danger, no mesmo esquema do "urgente") em vez de inventar uma paleta nova pra prioridade.
+  - `src/components/Solicitacoes/`: `CreateSolicitacaoForm.tsx` (só morador — categoria/título/
+    descrição, `useMutation` invalidando a query da lista no sucesso) e `SolicitacaoCard.tsx` (lista
+    read-only pro morador; admin ganha selects de Status/Prioridade que fazem `PATCH` imediato ao
+    mudar, com invalidação de cache e mensagem de erro inline se falhar).
+  - `SolicitacoesPage.tsx` substitui o placeholder "em construção" na rota `/solicitacoes`.
+
+**Verificação feita nesta sessão** (Playwright contra backend+web reais, não mocado):
+- Morador cria uma solicitação → aparece na própria lista, sem os controles de admin.
+- Admin (mesmo condomínio) vê a solicitação do morador na lista completa do condomínio, muda Status
+  pra "Em progresso" e Prioridade pra "Alta" via select — confirmado como persistido de verdade
+  consultando a API diretamente (não só lendo o DOM), e o morador vê o reflexo ao recarregar.
+- Um teste inicial deu falso-negativo por ler o DOM cedo demais (antes do refetch disparado pela
+  invalidação do react-query terminar) — corrigido esperando a resposta do `GET` de refetch, não só
+  do `PATCH`; não era bug do app, era o script de verificação lendo estado antes da hora.
+- `npx tsc -b` limpo. Nenhum erro de console/página nos fluxos testados.
+
+**Próximo passo:**
+- [ ] Próxima tela de módulo (Encomendas, Comunicados, Chat ou Dashboard — Dashboard é a mais simples,
+  só leitura de `GET /api/dashboard/summary`, sem mutação).
+- [ ] Usuários e solicitações de teste ficaram acumulados no condomínio de teste do Supabase
+  (`teste.sol*.{morador,admin}.*@sinndico.dev`) — limpar no painel se quiser um ambiente raso pra
+  demonstrações.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — a entrada do `@tanstack/react-query` já estava prevista explicitamente desde o plano
+  da Session 13 pra este exato momento (primeira tela de lista).
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 13 (Data: 17/07/2026)
 **Completado:**

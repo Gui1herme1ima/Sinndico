@@ -5,6 +5,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
 import { RequireGuest } from '@/routes/RequireGuest';
 import { roleHome } from '@/routes/roleHome';
@@ -55,7 +56,7 @@ export function AppRoutes() {
           path="solicitacoes"
           element={
             <RequireAuth roles={['morador', 'admin']}>
-              <ComingSoonPage title="Solicitações" />
+              <SolicitacoesPage />
             </RequireAuth>
           }
         />
