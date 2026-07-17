@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import comunicadosRoutes from './routes/comunicados';
+import dashboardRoutes from './routes/dashboard';
 import encomendasRoutes from './routes/encomendas';
 import solicitacoesRoutes from './routes/solicitacoes';
 
@@ -32,5 +33,6 @@ app.use('/api/solicitacoes', solicitacoesRoutes);
 app.use('/api/encomendas', encomendasRoutes);
 app.use('/api/comunicados', comunicadosRoutes);
 app.use('/api/chats', chatsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use(errorHandler);
