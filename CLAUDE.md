@@ -37,11 +37,12 @@ Se o usuário não especificar identidade visual em uma tarefa nova, use os toke
 
 ## 4. Stack (resumo — detalhes no README.md)
 
-- Backend: Node.js + Express/Fastify + TypeScript, PostgreSQL + Redis
+- Backend: Node.js + Express/Fastify + TypeScript, PostgreSQL (gerenciado via Supabase) + Redis
 - Web admin: React + TypeScript + Tailwind
 - Mobile morador: PWA (prioridade) — React Native como evolução futura
 - Notificações: Firebase Cloud Messaging
-- Auth: JWT + refresh token
+- Auth: Supabase Auth (GoTrue) — JWT verificado no backend via JWKS
+- Hospedagem: Hostinger (app) + Supabase (Postgres + Auth), integração oficial entre as duas
 
 ## 5. Ordem de desenvolvimento (fases)
 
@@ -95,18 +96,85 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
-### Session 1 (Data: a definir)
+### Session 3 (Data: 16/07/2026)
 **Completado:**
-- (aguardando início do desenvolvimento)
+- [x] Projeto Supabase real conectado (`myiopwypyujfwzovkfyh`) e **fluxo de Auth testado ponta a ponta pela primeira vez**: `register` (201, cria usuário no Supabase Auth + perfil em `users`) → `login` (200) → `GET /api/auth/me` (200, resolve role/condominio via JWKS + lookup no banco) → `refresh` (200, rotaciona tokens) → `logout` (204) → `refresh` com o token revogado → 401, como esperado.
+- [x] Todas as 6 migrations rodaram com sucesso contra o Postgres do Supabase (`condominios`, `users`, `chamados`, `encomendas`, `comunicados`, `comunicado_leituras`) e o seed criou o condomínio de teste.
+
+**Dois bugs de ambiente encontrados e corrigidos:**
+- **Conexão direta do Supabase (`db.<projeto>.supabase.co:5432`) só resolve em IPv6** — nesta rede/ambiente isso dá `ETIMEDOUT`. Corrigido usando a connection string do **Transaction Pooler** (`aws-<n>-<regiao>.pooler.supabase.com:6543`, usuário `postgres.<project-ref>`), que tem host IPv4. Documentado no README seção 8.
+- **`node-pg-migrate` não carregava as migrations `.ts`** (`Cannot use import statement outside a module`) porque a flag `-j ts` sozinha não registra nenhum loader de TypeScript — precisa da flag `--tsx` (ou `--ts-node` + `--tsconfig`) explicitamente. Corrigido adicionando `--tsx` nos scripts `migrate`/`migrate:down` do `apps/backend/package.json` (já tínhamos `tsx` como dependência) e removida a dependência `ts-node`, que ficou sem uso.
+- Senha do Postgres continha `@` e `+` — precisou de URL-encode (`%40`, `%2B`) na `DATABASE_URL`, senão o parser da connection string quebra o usuário/host no lugar errado.
 
 **Próximo passo:**
-- [ ] Setup inicial do monorepo (apps/backend, apps/web, apps/mobile)
-- [ ] Criar design system básico em `docs/DESIGN_SYSTEM.md` (cores, tipografia, componentes base — ver seção 3 deste arquivo) antes de qualquer tela funcional
-- [ ] Configurar PostgreSQL + migrations iniciais (schema do README)
-- [ ] Implementar Auth (login/registro morador e admin, JWT)
+- [ ] Segue tudo que já estava pendente: módulos funcionais (Chamados, Encomendas, Comunicados, Chat, Dashboard, notificações FCM), telas web/PWA, implementação real dos componentes React do design system, RLS como hardening futuro se o Postgres vier a ser exposto direto pro frontend.
+- [ ] Ficou um usuário de teste (`teste.morador.*@sinndico.dev`) no Supabase Auth do projeto — remover no painel se quiser um ambiente limpo antes de convidar usuários de verdade.
 
 **Decisões técnicas / desvios do plano original:**
-- Nenhuma ainda.
+- Nenhuma decisão de arquitetura nova — só correções de configuração de ambiente (pooler + `--tsx`) pra fazer o que já tinha sido desenhado na Session 2 funcionar de verdade.
 
 **Bugs conhecidos:**
-- Nenhum ainda.
+- Nenhum. O fluxo de Auth foi validado ponta a ponta contra o Supabase real nesta sessão.
+
+### Session 2 (Data: 16/07/2026)
+**Completado:**
+- [x] Decisão de hospedagem registrada: **Hostinger** (app) + **Supabase** (Postgres gerenciado + Auth), pela integração oficial entre as duas e por Supabase ser Postgres (encaixa no schema relacional já existente, ao contrário do MongoDB Atlas, outra opção oferecida pela Hostinger).
+- [x] **Auth migrado de custom (bcrypt + JWT próprio) para Supabase Auth (GoTrue)**: `register`/`login`/`refresh`/`logout`/`me` continuam com o mesmo contrato de rota, mas agora o motor por baixo é o Supabase — `supabaseAdmin.auth.admin.createUser` (registro), `supabaseAuth.auth.signInWithPassword` (login), `supabaseAuth.auth.refreshSession` (refresh), `supabaseAdmin.auth.admin.signOut` (logout, revoga a sessão via access token no header `Authorization`).
+- [x] Verificação de token no backend via **JWKS** (`jose` + `createRemoteJWKSet`, sem round-trip pro Supabase a cada request) em `src/services/authTokenService.ts`.
+- [x] Migration `users` ajustada: sem `senha_hash`, `id` agora referencia `auth.users(id)` do Supabase (é o mesmo id, cascade on delete). Migration e model `refresh_tokens`/`RefreshToken.ts` removidos — sessão é gerenciada pelo Supabase, não precisamos mais rastrear/revogar isso na nossa base.
+- [x] `docker-compose.yml`: removido o serviço `postgres` (dev também usa projeto Supabase real agora, não container local); ficou só `redis`.
+- [x] `.env.example` (backend e web) e README/CLAUDE.md atualizados para as novas variáveis (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL` agora apontando pro Postgres do Supabase).
+
+**Verificação feita nesta sessão:**
+- `npx tsc --noEmit` limpo em `apps/backend` após a reescrita.
+- Grep confirmando que nada mais referencia `jwtService`, `RefreshToken`, `bcrypt` ou `refresh_tokens`.
+- `npm install` resolvendo `@supabase/supabase-js` e `jose` sem conflito.
+- **Não foi possível testar `signUp`/`signIn`/`refresh`/`logout` de verdade** — não existe ainda um projeto Supabase real com credenciais configuradas neste ambiente.
+
+**Próximo passo:**
+- [ ] **Ação do usuário:** criar o projeto no supabase.com, colar `DATABASE_URL`/`SUPABASE_URL`/`SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY` no `.env` do backend, rodar `npm run migrate` e `npm run seed`, depois testar o fluxo completo (register morador e admin → login → `GET /api/auth/me` → refresh → logout) contra o Supabase de verdade. Reportar qualquer erro — em especial checar a assinatura exata de `supabaseAdmin.auth.admin.signOut` contra a versão instalada de `@supabase/supabase-js` (a documentação consultada teve sinais conflitantes sobre o parâmetro).
+- [ ] Confirmar no painel do Supabase se o projeto novo usa chaves de assinatura assimétricas (JWKS) — é o padrão atual, mas se for um projeto legado com JWT secret simétrico (HS256), `src/services/authTokenService.ts` precisa de ajuste.
+- [ ] Avaliar mais pra frente: ativar Row Level Security (RLS) nas tabelas se o Postgres do Supabase vier a ser exposto direto pro frontend — hoje não é o caso (só o backend Express acessa o banco), então RLS não foi implementado, mas fica como hardening recomendado.
+- [ ] Segue tudo mais que já estava pendente da Session 1: módulos funcionais (Chamados, Encomendas, Comunicados, Chat, Dashboard, notificações FCM), telas web/PWA, implementação real dos componentes React do design system.
+
+**Decisões técnicas / desvios do plano original:**
+- Supabase escolhido em vez de MongoDB Atlas (ambos com integração oficial na Hostinger) — o domínio do Sinndico é relacional (FKs, tabela de junção `comunicado_leituras`, integridade condomínio/usuário/chamado), o que não se beneficiaria de um banco de documentos.
+- Auth migrado pra Supabase Auth em vez de manter o módulo custom da Session 1 — decisão explícita do usuário, mesmo custando o retrabalho do que tinha sido construído.
+- Identidade do usuário agora vive em duas tabelas: `auth.users` (Supabase, gerencia email/senha/sessão) e `public.users` (nosso perfil de negócio: role, condominio_id, apto, telefone), ligadas pelo mesmo `id`.
+- RLS não foi ativado — decisão consciente de manter a autorização centralizada no middleware Express (`authorize`) por enquanto, já que o Postgres não é acessado direto por nenhum client além do nosso backend.
+
+**Bugs conhecidos:**
+- Nenhum bug confirmado — mas, como não há projeto Supabase real conectado ainda, o fluxo de Auth (incluindo a chamada de `admin.signOut` no logout) não foi validado ponta a ponta. Tratar como não testado até a verificação do usuário.
+
+### Session 1 (Data: 16/07/2026)
+**Completado:**
+- [x] `docs/DESIGN_SYSTEM.md`: tokens de cor (claro/escuro), tipografia, espaçamento/raio/elevação, spec dos componentes base (botão, card, input, badge, toggle de tema) e motion — tudo conforme README seção 3.
+- [x] Monorepo com npm workspaces (`apps/*`): `apps/backend` funcional (ver abaixo), `apps/web` com scaffold Vite+React+TS+Tailwind (tokens do design system já plugados via CSS variables + `tailwind.config.ts`, tema claro/escuro funcionando via `data-theme` + `prefers-color-scheme`), `apps/mobile` só com placeholder de estrutura de pastas (implementação funcional fica pra quando o PWA entrar em pauta, mais adiante na Fase 1). `docker-compose.yml` na raiz com Postgres 16 + Redis 7.
+- [x] Backend: Node + TypeScript + Express, `pg.Pool` de conexão, middlewares (`helmet`, `cors`, `morgan`, `errorHandler`, `asyncHandler`), rota `GET /health` (testada manualmente — retorna 200 com banco up e 503 com banco down).
+- [x] Migrations (`node-pg-migrate`, SQL via `pgm`) para as entidades da Fase 1: `condominios`, `users`, `refresh_tokens`, `chamados`, `encomendas`, `comunicados`, `comunicado_leituras`.
+- [x] Auth completo: `POST /api/auth/register` (morador/admin), `POST /api/auth/login`, `POST /api/auth/refresh` (com rotação — revoga o token antigo e emite um novo), `POST /api/auth/logout`, `GET /api/auth/me` (protegida). Middleware `authenticate`/`authorize(...roles)`. Senhas com `bcrypt`; refresh tokens são JWT assinados com secret próprio e also armazenados hasheados (SHA-256) em `refresh_tokens` pra permitir revogação.
+- [x] Seed script (`npm run seed` no backend) que cria um condomínio de teste, necessário porque o registro de usuário exige um `condominio_id` existente e ainda não há CRUD de condomínio nesta fase.
+
+**Verificação feita nesta sessão:**
+- `npx tsc --noEmit` limpo em `apps/backend` e `apps/web`.
+- `npx vite build` gerando o bundle de `apps/web` sem warnings (corrigido um warning de ordem de `@import` no CSS).
+- Backend subiu com `tsx` e respondeu corretamente: `GET /health` → 503 (banco indisponível, como esperado) e `POST /api/auth/login` → 500 tratado pelo `errorHandler` (também esperado, sem banco).
+- **Não foi possível testar o fluxo completo de Auth contra um Postgres real** — o ambiente onde essas mudanças foram feitas não tem Docker nem PostgreSQL instalado. O `docker-compose.yml` está pronto, mas ainda não foi validado de fato subindo os containers.
+
+**Próximo passo:**
+- [ ] **Ação do usuário:** com Docker Desktop instalado e rodando, executar `docker compose up -d`, depois `npm install` na raiz, `npm run migrate` (roda as migrations no backend) e `npm run seed --workspace=apps/backend`, e então `npm run dev:backend` — validar o fluxo completo: register (morador e admin) → login → `GET /api/auth/me` com o access token → refresh → logout → confirmar que o refresh revogado não funciona mais. Reportar qualquer erro encontrado.
+- [ ] Módulos funcionais restantes da Fase 1 (ainda não iniciados): Chamados, Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM).
+- [ ] Telas web (React) e mobile (PWA) — hoje só existe o scaffold, sem nenhuma tela funcional além da home placeholder.
+- [ ] Implementação real dos componentes React do design system (Botão, Card, Input, Badge, ThemeToggle) em `apps/web/src/components` — hoje `docs/DESIGN_SYSTEM.md` só tem a especificação.
+
+**Decisões técnicas / desvios do plano original:**
+- Adicionada a tabela `condominios` (não estava explícita na seção 5 do README) — necessária como FK de `users.condominio_id` e para o modelo de negócio multi-tenant (SaaS por condomínio).
+- Adicionada a tabela `refresh_tokens` — necessária pra revogação de refresh tokens (rotação no `/refresh`, invalidação no `/logout`).
+- `comunicados.lido_por` (descrito no README como "array de user_ids ou relação separada") foi implementado como tabela de junção `comunicado_leituras (comunicado_id, user_id, lido_em)` em vez de array — normalização mais correta pra um relacional.
+- PKs como `uuid` (`gen_random_uuid()`, extensão `pgcrypto`) em vez de serial/int, e enums via `CHECK constraint` em vez de `CREATE TYPE ENUM` do Postgres (mais simples de alterar depois).
+- Framework HTTP: Express. Camada de dados: `pg` + `node-pg-migrate` (SQL puro, sem ORM). Confirmado com o usuário no início da sessão.
+- `role: porteiro` existe no schema mas não tem rota de auto-registro — contas de porteiro serão criadas pelo admin em uma sessão futura (não fazia parte do pedido "registro e login de morador e admin").
+- Registro de usuário exige `condominioId` de um condomínio já existente (não há ainda fluxo de criação de condomínio) — por isso o seed script `npm run seed`.
+
+**Bugs conhecidos:**
+- Nenhum bug — mas o fluxo de Auth ainda não foi validado ponta a ponta contra um Postgres real (ver "Próximo passo" acima). Rodar antes de considerar o módulo Auth definitivamente pronto.

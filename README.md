@@ -22,9 +22,9 @@ Sistema completo de gestão condominial que centraliza comunicação entre morad
 ### Backend
 - **Runtime:** Node.js (v18+)
 - **Framework:** Express.js ou Fastify
-- **Banco:** PostgreSQL (principal) + Redis (cache/sessions)
-- **Auth:** JWT + refresh tokens
-- **File Storage:** AWS S3 ou Cloudinary (fotos encomenda/vistoria)
+- **Banco:** PostgreSQL gerenciado via **Supabase** (principal) + Redis (cache)
+- **Auth:** **Supabase Auth (GoTrue)** — access token JWT verificado no backend via JWKS (lib `jose`), refresh de sessão gerenciado pela plataforma. Perfil de negócio (role, condomínio, apto etc.) fica numa tabela própria (`users`) referenciando `auth.users` do Supabase.
+- **File Storage:** AWS S3, Cloudinary ou Supabase Storage (fotos encomenda/vistoria)
 - **Notificações:** Firebase Cloud Messaging (FCM) + email (Nodemailer/SendGrid)
 
 ### Frontend Web (Admin/Diretoria)
@@ -40,11 +40,13 @@ Sistema completo de gestão condominial que centraliza comunicação entre morad
 - **Push Notifications:** Firebase Cloud Messaging
 
 ### DevOps
-- **Hosting Backend:** Heroku, Railway, ou AWS EC2
-- **Hosting Web:** Vercel, Netlify
+- **Hosting Backend:** **Hostinger** (integração oficial com Supabase)
+- **Hosting Web:** Vercel, Netlify (ou a própria Hostinger)
 - **CI/CD:** GitHub Actions
-- **Database:** Railway PostgreSQL ou AWS RDS
+- **Database:** **Supabase** (Postgres gerenciado + Auth) — decidido por causa da integração oficial com a Hostinger e por ser Postgres (encaixa no modelo relacional do schema, ao contrário de um banco de documentos tipo MongoDB Atlas, também oferecido pela Hostinger)
 - **Monitoramento:** Sentry (errors), LogRocket (frontend)
+
+> **Nota de hardening futuro:** hoje o backend Express é o único cliente do Postgres (conecta direto via `DATABASE_URL`), então a autorização é toda feita no middleware (`authorize(...roles)`). Se algum dia o Postgres for exposto direto pro frontend (PostgREST/Supabase client), ativar Row Level Security (RLS) nas tabelas antes disso.
 
 ---
 
@@ -204,8 +206,8 @@ sinndico/
 
 ### Entidades Principais
 
-**users** (moradores + admin + porteiro)
-- id, email, senha (hashed), nome, apto, telefone, role (morador/admin/porteiro), condominio_id, created_at
+**users** (moradores + admin + porteiro) — perfil de negócio; identidade e senha ficam no Supabase Auth
+- id (mesmo id do `auth.users` do Supabase, sem senha própria armazenada aqui), email, nome, apto, telefone, role (morador/admin/porteiro), condominio_id, created_at
 
 **chamados**
 - id, morador_id, categoria (manutenção/segurança/animal/outra), titulo, descricao, status (aberto/em-progresso/resolvido), prioridade, data_criacao, data_resolvimento, assigned_to (admin)
@@ -297,15 +299,29 @@ A cada mudança de sessão, registre aqui **o que foi concluído** pra retomar s
 
 ## 8. Como Rodar Local (Setup)
 
+O banco (Postgres) e o Auth rodam no **Supabase** — inclusive em desenvolvimento, não só em produção. Não precisa instalar Postgres localmente.
+
 ```bash
+# 0. Criar um projeto gratuito em supabase.com
+#    Copiar em Project Settings > API: Project URL, anon key (publishable), service_role key (secret)
+#    Copiar em Project Settings > Database > Connect: a connection string do "Transaction pooler" (porta 6543)
+#    -> NÃO usar a connection string "direta" (db.<projeto>.supabase.co:5432): ela só resolve em IPv6,
+#       o que trava com ETIMEDOUT em redes/ambientes sem saída IPv6. O pooler tem host IPv4.
+#    -> Se a senha do Postgres tiver caracteres especiais (@, +, etc.), fazer URL-encode antes de colar
+#       na DATABASE_URL (@ -> %40, + -> %2B), senão a connection string quebra.
+
 # Clone
 git clone <repo-url>
 cd sinndico
+
+# Redis (opcional, cache futuro)
+docker compose up -d
 
 # Backend
 cd apps/backend
 npm install
 cp .env.example .env
+# preencher DATABASE_URL / SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY no .env
 npm run migrate
 npm run seed
 npm run dev
@@ -313,6 +329,7 @@ npm run dev
 # Em outro terminal: Web
 cd apps/web
 npm install
+cp .env.example .env
 npm run dev
 
 # Em outro terminal: Mobile (PWA)
@@ -327,8 +344,10 @@ npm run dev
 
 ```
 # Backend
-DATABASE_URL=postgresql://user:pass@localhost:5432/sinndico
-JWT_SECRET=seu_secret_aqui
+DATABASE_URL=postgresql://postgres:sua_senha@db.seu-projeto.supabase.co:5432/postgres
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
 REDIS_URL=redis://localhost:6379
 FIREBASE_PROJECT_ID=...
 FIREBASE_PRIVATE_KEY=...
@@ -336,8 +355,9 @@ AWS_S3_BUCKET=sinndico-app
 NODE_ENV=development
 
 # Frontend
-REACT_APP_API_URL=http://localhost:5000
-REACT_APP_FIREBASE_CONFIG={...}
+VITE_API_URL=http://localhost:5000
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=...
 ```
 
 ---
