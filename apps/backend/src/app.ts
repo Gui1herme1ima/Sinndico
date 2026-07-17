@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { pool } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
+import chamadosRoutes from './routes/chamados';
 
 export const app = express();
 
@@ -24,5 +25,6 @@ app.get('/health', async (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/chamados', chamadosRoutes);
 
 app.use(errorHandler);
