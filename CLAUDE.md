@@ -97,6 +97,43 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 8 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Comunicados (API)**: `src/models/Comunicado.ts`, `src/controllers/comunicadoController.ts`,
+  `src/routes/comunicados.ts`, montado em `app.ts` como `/api/comunicados`.
+  - `POST /api/comunicados` (só admin — titulo/conteudo).
+  - `GET /api/comunicados` / `GET /api/comunicados/:id` (morador/admin/porteiro veem todos os
+    comunicados do condomínio — não é escopado por usuário como Solicitações/Encomendas, é mural
+    mesmo). Cada item vem com `lido: boolean`, calculado via `LEFT JOIN` em `comunicado_leituras`
+    filtrado pelo usuário da request.
+  - `POST /api/comunicados/:id/ler` (marca como lido pro usuário atual — idempotente via
+    `ON CONFLICT DO NOTHING` na PK composta `(comunicado_id, user_id)`).
+- [x] Usa a tabela `comunicado_leituras` criada lá na Session 1 (join table em vez do `lido_por` como
+  array que o README original sugeria) — primeira vez que ela é realmente exercitada em código.
+
+**Verificação feita nesta sessão (contra o Supabase real):**
+- Admin posta → morador lista (`lido: false`) → morador marca como lido (`lido: true`) → lista de
+  novo confirma.
+- **Leitura é por usuário, não global**: um segundo morador do mesmo condomínio, que ainda não leu,
+  continua vendo `lido: false` no mesmo comunicado.
+- Morador tentando `POST` (postar comunicado) → 403 (só admin).
+- Morador de outro condomínio não vê o comunicado na listagem (isolamento por RLS, incluindo o join
+  com `comunicado_leituras`).
+
+**Próximo passo:**
+- [ ] Chat básico, Dashboard admin, notificações push (FCM) — únicos itens funcionais que faltam da
+  Fase 1 (Auth, Solicitações, Encomendas, Comunicados já feitos).
+- [ ] Telas web/PWA — nenhum módulo tem tela ainda, só API.
+- [ ] Painel superadmin (tela) e CRUD de condomínio — segue pendente da Session 4.
+- [ ] Notificação de fato (FCM) quando um comunicado novo é postado — hoje só existe o dado, sem
+  push.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma nova — mesmo padrão de acesso a dados e autorização por role dos módulos anteriores.
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 7 (Data: 17/07/2026)
 **Completado:**
 - [x] **Módulo de Encomendas (API)**: `src/models/Encomenda.ts`, `src/controllers/encomendaController.ts`,
