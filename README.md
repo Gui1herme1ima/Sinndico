@@ -237,7 +237,7 @@ sinndico/
 - id, assembleia_id, morador_id, voto (sim/nao/abstencao), timestamp
 
 **chats**
-- id, morador_id, admin_id, mensagem, timestamp, lido
+- id, condominio_id, morador_id (dono da thread), autor_id (quem escreveu — morador ou o admin que respondeu), mensagem, created_at, lido (se o outro lado já leu)
 
 ### Multi-tenancy e isolamento de dados
 

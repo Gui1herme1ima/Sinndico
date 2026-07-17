@@ -97,6 +97,45 @@ Formato do checkpoint:
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
 
+### Session 9 (Data: 17/07/2026)
+**Completado:**
+- [x] **Módulo de Chat básico (API)** — último item funcional que faltava da Fase 1 (com
+  Solicitações/Encomendas/Comunicados já prontos, só falta Dashboard admin e notificações FCM).
+  - Nova tabela `chats` (migration `1700000000012`) — **desvio do schema original do README**: em vez
+    de `admin_id` fixo, uso `autor_id` (quem escreveu — morador ou qualquer admin) + `morador_id`
+    (dono da thread). O schema original não deixava claro quem era o remetente de cada mensagem.
+  - `src/models/Chat.ts`, `src/controllers/chatController.ts`, `src/routes/chats.ts`, montado em
+    `app.ts` como `/api/chats`.
+  - `POST /api/chats` — morador escreve na própria thread (sempre); admin escreve especificando
+    `moradorId` (valida que existe, é do mesmo condomínio e tem role morador).
+  - `GET /api/chats` — morador vê a própria thread; admin precisa passar `?moradorId=` (400 se não
+    passar). **Sem endpoint separado de "marcar como lido"** — abrir a thread (`GET`) já marca como
+    lidas as mensagens do outro lado automaticamente (padrão comum de chat: ler a conversa = enviar
+    confirmação de leitura).
+  - Porteiro não tem acesso (chat é só morador-admin, como no README).
+
+**Verificação feita nesta sessão (contra o Supabase real):**
+- Morador escreve → admin abre a thread (mensagem do morador vira `lido:true` na próxima leitura) →
+  admin responde → morador abre (resposta do admin vira `lido:true` na próxima leitura dele).
+- Admin sem `moradorId` no `GET` → 400.
+- Porteiro tentando acessar → 403.
+- Um morador tentando escrever passando o `moradorId` de outro morador → o valor é ignorado, a
+  mensagem sempre vai pra própria thread dele (não dá pra "sequestrar" a conversa de outro morador).
+
+**Próximo passo:**
+- [ ] **Dashboard admin** e **notificações push (FCM)** — únicos itens funcionais que faltam pra
+  fechar a API inteira da Fase 1.
+- [ ] Telas web/PWA — nenhum módulo tem tela ainda, só API (Auth, Solicitações, Encomendas,
+  Comunicados, Chat).
+- [ ] Painel superadmin (tela) e CRUD de condomínio — segue pendente da Session 4.
+
+**Decisões técnicas / desvios do plano original:**
+- Schema de `chats` mudou de `admin_id` fixo pra `autor_id` (ver acima) — mais correto pro modelo de
+  "morador escreve, qualquer admin responde".
+
+**Bugs conhecidos:**
+- Nenhum.
+
 ### Session 8 (Data: 17/07/2026)
 **Completado:**
 - [x] **Módulo de Comunicados (API)**: `src/models/Comunicado.ts`, `src/controllers/comunicadoController.ts`,
