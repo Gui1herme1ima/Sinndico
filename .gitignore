@@ -5,3 +5,8 @@ build/
 .DS_Store
 *.log
 *.tsbuildinfo
+
+# Chaves de conta de serviço (Firebase, Google Cloud etc.) — nunca commitar
+*serviceAccount*.json
+sinndico-*firebase*.json
+firebase-adminsdk*.json

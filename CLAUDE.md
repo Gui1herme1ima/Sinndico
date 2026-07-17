@@ -99,13 +99,55 @@ Formato do checkpoint:
 >
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
-> - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — código completo, mas com fallback gracioso porque falta o usuário configurar um projeto Firebase real). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **Nada tem tela ainda.** `apps/web` e `apps/mobile` não passam do scaffold inicial (Session 1) — todo o trabalho até aqui (Sessions 2–11) foi 100% backend/API.
+> - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
+> - **Nada tem tela ainda.** `apps/web` e `apps/mobile` não passam do scaffold inicial (Session 1) — todo o trabalho até aqui (Sessions 2–12) foi 100% backend/API.
 > - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
-> - **Ação pendente do usuário:** criar projeto Firebase e preencher `FIREBASE_PROJECT_ID`/`FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` no `.env` do backend, se quiser notificações push de verdade (Session 11).
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas web/PWA consumindo a API já pronta, (2) API de CRUD de condomínio + tela do painel superadmin, (3) configurar o Firebase de verdade e validar o envio de push.
+> - **Firebase configurado (Session 12), mas envio real de push ainda não confirmado ponta a ponta** — falta um device token de verdade (só existe emissão via SDK do Firebase rodando num client real, e não há frontend ainda).
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas web/PWA consumindo a API já pronta, (2) API de CRUD de condomínio + tela do painel superadmin.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 12 (Data: 17/07/2026)
+**Completado:**
+- [x] **Firebase configurado de verdade** — usuário gerou a chave de conta de serviço no Firebase Console
+  e deixou o JSON solto na raiz do repo (`sinndico-92950-4e2893d2732b.json`, **não coberto pelo
+  `.gitignore`** até então — risco real de vazar credencial num commit futuro). Extraí os 3 campos
+  (`project_id`, `client_email`, `private_key`) pro `apps/backend/.env`, apaguei o arquivo JSON da raiz
+  (a chave já vive só no `.env`, gitignored) e reforcei o `.gitignore` com padrões pra arquivo de conta
+  de serviço (`*serviceAccount*.json`, `firebase-adminsdk*.json` etc.) — hardening pra não depender só
+  de lembrar de não commitar.
+- [x] **Validação de inicialização real do Firebase Admin SDK**: subi o backend local, registrei admin +
+  morador de teste, registrei um device token (necessariamente fake, sem frontend/SDK client pra gerar
+  um de verdade) e criei um comunicado (dispara push pro condomínio inteiro). Log resultante:
+  `push "Novo comunicado": 0 ok, 1 falhas` — a métrica vem de uma resposta estruturada por token do
+  FCM, não do catch genérico de erro; ou seja, o SDK autenticou de verdade com o Google e fez a chamada
+  real à API do FCM. A falha é exatamente a esperada (token fake não existe em nenhum device
+  registrado), não um erro de credencial/config.
+
+**Verificação feita nesta sessão:**
+- `GET /health` → 200 antes de qualquer teste.
+- Registro de admin/morador de teste, registro de device token (201), criação de comunicado (201) — tudo
+  contra o Supabase real.
+- Log do `notificationService` confirmando envio real tentado (contagem de sucesso/falha por token),
+  não o aviso de "Firebase não configurado" que aparecia até a Session 11.
+- Servidor de teste derrubado ao final (processo na porta 5000 finalizado).
+
+**Próximo passo:**
+- [ ] **Não foi possível confirmar entrega de push de fato** (precisa de um token de dispositivo real,
+  que só existe com um client rodando o SDK do Firebase — web ou mobile). Isso só é testável quando
+  houver alguma tela (mesmo que mínima) capaz de chamar `getToken()` do Firebase JS SDK e registrar em
+  `POST /api/device-tokens`.
+- [ ] Escolher entre: (1) telas web/PWA (o que também destravaria o teste de push real), (2) API de
+  CRUD de condomínio + painel superadmin.
+- [ ] Usuários de teste ficaram no Supabase Auth do projeto (`teste.fcm.admin.*@sinndico.dev`,
+  `teste.fcm.morador.*@sinndico.dev`) — remover no painel se quiser um ambiente limpo.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma de arquitetura — só o hardening de `.gitignore` pra chaves de conta de serviço, motivado por
+  um risco real observado nesta sessão (arquivo de credencial fora do controle do gitignore).
+
+**Bugs conhecidos:**
+- Nenhum. Entrega de push de fato (não só inicialização do SDK) segue pendente de um client real.
 
 ### Session 11 (Data: 17/07/2026)
 **Completado:**
