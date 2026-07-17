@@ -101,13 +101,15 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **`apps/web` tem fundação real desde a Session 13**, e 4 telas funcionais de módulo desde a
->   Session 18 (Solicitações — Session 14 —, Encomendas — Session 15 —, Comunicados — Session 17 — e
->   Chat — Session 18): roteamento com guarda por role, login/registro/logout contra a API real,
->   componentes base do design system (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle),
->   fontes self-hosted, manifest de PWA, e `@tanstack/react-query` como camada de cache pra telas de
->   lista. Só falta o Dashboard admin — placeholder "em construção", próxima sessão. `apps/mobile`
->   segue só placeholder.
+> - **`apps/web` tem fundação real desde a Session 13, e as 5 telas de módulo da Fase 1 estão
+>   completas desde a Session 19** (Solicitações — Session 14 —, Encomendas — Session 15 —,
+>   Comunicados — Session 17 —, Chat — Session 18 — e Dashboard admin — Session 19): roteamento com
+>   guarda por role, login/registro/logout contra a API real, componentes base do design system
+>   (Button/Card/Input/Select/Textarea/Badge/Skeleton/ThemeToggle/StatTile), fontes self-hosted,
+>   manifest de PWA, e `@tanstack/react-query` como camada de cache. **Com isso, a Fase 1 (MVP) está
+>   funcionalmente completa ponta a ponta — API + telas.** `apps/mobile` segue só placeholder (o PWA
+>   ainda não tem manifest com service worker/instalação offline, só o manifest estático — ver
+>   Session 13).
 > - **Conta de porteiro de teste**: não existe self-registro pra porteiro (só morador/admin em
 >   `/register`, gap conhecido desde a Session 1 do backend) — criado `npm run seed:porteiro`
 >   (Session 15, mesmo padrão do `seed:superadmin` já existente) só pra viabilizar testar telas que
@@ -120,14 +122,58 @@ Formato do checkpoint:
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) tela de Dashboard admin
->   — única tela de módulo que falta, fecha o ciclo de telas da Fase 1 —, (2) API de CRUD de
->   condomínio + tela do painel superadmin, (3) integrar o brand kit real ao app (trocar
->   logo/favicon/ícones PWA
->   placeholder, adicionar os 8 ícones de domínio como componentes React, decidir se adota os 3
->   valores de token refinados do brand kit).
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) API de CRUD de
+>   condomínio + tela do painel superadmin (único item de produto que falta pra Fase 1 estar 100%
+>   completa — hoje só existe a fundação de role), (2) integrar o brand kit real ao app (trocar
+>   logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como componentes React,
+>   decidir se adota os 3 valores de token refinados do brand kit), (3) avançar pra Fase 2
+>   (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 19 (Data: 17/07/2026)
+**Completado:**
+- [x] **Tela de Dashboard admin**, consumindo `GET /api/dashboard/summary` — quinta e última tela de
+  módulo da Fase 1. **Com isso, `apps/web` cobre toda a API da Fase 1: Auth, Solicitações,
+  Encomendas, Comunicados, Chat e Dashboard, todas com tela funcional.**
+  - Antes de codar, consultei a skill `dataviz` (o pedido bate com os gatilhos "dashboard"/"stat
+    tile" dela) — a orientação relevante pra esse caso (sem gráfico nenhum, só números): rótulo em
+    sentence case, valor grande em fonte proporcional (não `tabular-nums`, isso é só pra colunas de
+    tabela), e o texto do valor/rótulo sempre em tokens neutros (texto nunca "veste" a cor do dado) —
+    por isso os 4 números não têm cor por severidade, todos em `text-primary`/`text-secondary` como o
+    resto do app.
+  - Tipos novos (`DashboardSummaryResponse`) + `src/services/api/dashboardApi.ts` (`getSummary`).
+  - `src/components/Dashboard/StatTile.tsx` — rótulo + número grande (`text-3xl`, `font-display`,
+    já especificado desde o início em `docs/DESIGN_SYSTEM.md` como uso pretendido pra "números de
+    destaque no dashboard").
+  - `DashboardPage.tsx` substitui o placeholder em `/dashboard` — grid de 4 `StatTile` (solicitações
+    abertas/em progresso, encomendas aguardando/chegadas hoje) + card com os 5 comunicados mais
+    recentes (título + data, sem número).
+
+**Verificação feita nesta sessão** (Playwright + consulta direta à API, contra backend+web reais):
+- Capturado o resumo via API antes de criar dado novo, depois criada 1 solicitação, 1 encomenda e 1
+  comunicado (papéis morador/porteiro/admin reais) e capturado de novo — confirmado que "abertas" e
+  "aguardando retirada" incrementaram exatamente +1 cada, e que o comunicado novo apareceu como o
+  primeiro item de "recentes". Os mesmos números foram conferidos batendo na tela renderizada
+  (`DashboardPage`), não só na resposta crua da API.
+- Testado visualmente em claro e escuro — grid de stat tiles e lista de comunicados renderizando
+  corretamente nos dois modos.
+- `npx tsc -b` limpo. Nenhum erro de console/página.
+
+**Próximo passo:**
+- [ ] **Fase 1 (MVP) está completa** (API + telas). Próximas direções, nenhuma decidida: (1) API de
+  CRUD de condomínio + painel superadmin, (2) integrar o brand kit real ao app (Session 16), (3)
+  avançar pra Fase 2 (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação) —
+  seguindo a regra do CLAUDE.md de não pular fase sem confirmação explícita.
+- [ ] Dados de teste seguem acumulando no condomínio de teste (`teste.dash.*@sinndico.dev`) — limpar
+  no painel se quiser um ambiente raso pra demonstrações.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma — mesmo padrão de tela das sessões anteriores, com a skill `dataviz` consultada pra validar
+  o tratamento visual dos números (nenhuma mudança de tokens/paleta, só confirmação do approach).
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 18 (Data: 17/07/2026)
 **Completado:**

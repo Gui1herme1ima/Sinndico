@@ -117,3 +117,17 @@ export interface CreateChatPayload {
   moradorId?: string;
   mensagem: string;
 }
+
+export interface DashboardSummaryResponse {
+  solicitacoes: {
+    abertas: number;
+    emProgresso: number;
+  };
+  encomendas: {
+    aguardandoRetirada: number;
+    chegaramHoje: number;
+  };
+  comunicados: {
+    recentes: { id: string; titulo: string; dataCriacao: string }[];
+  };
+}

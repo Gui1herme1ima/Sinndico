@@ -7,6 +7,7 @@ import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ChatPage } from '@/pages/Chat/ChatPage';
 import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
+import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
@@ -51,7 +52,7 @@ export function AppRoutes() {
           path="dashboard"
           element={
             <RequireAuth roles={['admin']}>
-              <ComingSoonPage title="Dashboard" />
+              <DashboardPage />
             </RequireAuth>
           }
         />
