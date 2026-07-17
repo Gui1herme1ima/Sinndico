@@ -11,6 +11,19 @@
   --color-danger: #E5484D;
   --color-success: #3DBE7A;
 
+  /* Mesmos tokens em RGB (sem "rgb()"), consumidos só pela função de opacidade do Tailwind
+     (tailwind.config.ts) — permite bg-primary/10 etc. Fonte de verdade continua o hex acima. */
+  --color-primary-rgb: 20 108 91;
+  --color-primary-contrast-rgb: 255 255 255;
+  --color-accent-rgb: 240 169 78;
+  --color-background-rgb: 247 248 247;
+  --color-surface-rgb: 255 255 255;
+  --color-text-primary-rgb: 22 33 29;
+  --color-text-secondary-rgb: 75 90 84;
+  --color-border-rgb: 220 227 223;
+  --color-danger-rgb: 229 72 77;
+  --color-success-rgb: 61 190 122;
+
   --shadow-sm: 0 1px 2px rgba(14, 21, 18, 0.06);
   --shadow-md: 0 4px 12px rgba(14, 21, 18, 0.08);
 }
@@ -26,4 +39,15 @@
   --color-border: #253128;
   --color-danger: #E5484D;
   --color-success: #3DBE7A;
+
+  --color-primary-rgb: 46 217 168;
+  --color-primary-contrast-rgb: 14 21 18;
+  --color-accent-rgb: 240 169 78;
+  --color-background-rgb: 14 21 18;
+  --color-surface-rgb: 22 30 26;
+  --color-text-primary-rgb: 234 242 238;
+  --color-text-secondary-rgb: 159 176 169;
+  --color-border-rgb: 37 49 40;
+  --color-danger-rgb: 229 72 77;
+  --color-success-rgb: 61 190 122;
 }

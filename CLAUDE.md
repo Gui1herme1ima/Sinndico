@@ -100,12 +100,82 @@ Formato do checkpoint:
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **API da Fase 1 está 100% completa:** Auth (Supabase Auth/GoTrue), Solicitações (ex-"Chamados", renomeado na Session 6), Encomendas, Comunicados, Chat básico, Dashboard admin, Notificações push (FCM — projeto Firebase real configurado e inicialização validada na Session 12). Todos testados ponta a ponta contra o Supabase real, não com mocks.
-> - **Nada tem tela ainda.** `apps/web` e `apps/mobile` não passam do scaffold inicial (Session 1) — todo o trabalho até aqui (Sessions 2–12) foi 100% backend/API.
+> - **`apps/web` tem fundação real desde a Session 13**: roteamento com guarda por role, login/registro/logout contra a API real, componentes base do design system (Button/Card/Input/Badge/Skeleton/ThemeToggle), fontes self-hosted, manifest de PWA. As 5 telas de módulo (Solicitações, Encomendas, Comunicados, Chat, Dashboard) ainda são placeholders "em construção" — conteúdo funcional fica pra próximas sessões, uma de cada vez. `apps/mobile` segue só placeholder.
 > - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
-> - **Firebase configurado (Session 12), mas envio real de push ainda não confirmado ponta a ponta** — falta um device token de verdade (só existe emissão via SDK do Firebase rodando num client real, e não há frontend ainda).
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas web/PWA consumindo a API já pronta, (2) API de CRUD de condomínio + tela do painel superadmin.
+> - **Firebase configurado (Session 12), mas envio real de push ainda não confirmado ponta a ponta** — falta um device token de verdade (só existe emissão via SDK do Firebase rodando num client real; agora que `apps/web` existe, isso é destravável numa próxima sessão).
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) telas funcionais de cada módulo web (Solicitações é a candidata natural — desbloqueia testar o resto), (2) API de CRUD de condomínio + tela do painel superadmin.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 13 (Data: 17/07/2026)
+**Completado:**
+- [x] **Fundação do web/PWA** (`apps/web`), escopo combinado com o usuário: só a base, sem as telas de
+  módulo ainda (essas ficam pra sessões seguintes, uma por vez).
+  - Dependências novas: `react-router-dom`, `@fontsource/space-grotesk`/`inter`/`jetbrains-mono` (fontes
+    self-hosted — antes só estavam referenciadas no Tailwind config, nunca carregadas de fato).
+    Deliberadamente **não** entrou axios/`@tanstack/react-query`/zustand/clsx/ícones prontos/
+    `vite-plugin-pwa` — ver `docs/DESIGN_SYSTEM.md` e o plano da sessão para a justificativa de cada
+    corte (mesma leveza de dependências do backend: raw `pg`+zod, sem ORM).
+  - **Cliente de API** (`src/services/api/{client,types,authApi}.ts` + `src/services/tokenStorage.ts`):
+    `apiFetch<T>` injeta o Bearer token, e em `401` deduplica refresh concorrente (só um
+    `POST /api/auth/refresh` mesmo com N chamadas simultâneas tomando 401 ao mesmo tempo — verificado
+    de verdade, não só no papel) e reexecuta a chamada original uma vez; se o refresh falhar, limpa os
+    tokens e desloga.
+  - **Auth**: `AuthContext`/`useAuth` (Context + `useReducer`, sem lib de estado) hidrata via `GET /me`
+    no boot se já existe token salvo. `RequireAuth`/`RequireGuest`/`roleHome` fazem o roteamento por
+    role (`admin→/dashboard`, `morador→/solicitacoes`, `porteiro→/encomendas`,
+    `superadmin→/em-construcao` — não tem painel próprio ainda).
+  - **Componentes base do design system** implementados de verdade pela primeira vez (até então só
+    existia a especificação em `docs/DESIGN_SYSTEM.md`): Button, Card, Input, Badge, Skeleton,
+    ThemeToggle — este último **corrige um bug real do scaffold da Session 1**: `main.tsx` só lia o
+    tema (localStorage/`prefers-color-scheme`) pra aplicar no boot, mas nunca escrevia de volta quando
+    o usuário clicava em algo, porque não existia nenhum toggle de fato ainda.
+  - Pré-requisito de plumbing pro Badge/hover: os tokens de cor em `tokens.css` são hex, e a sintaxe de
+    opacidade do Tailwind (`bg-accent/10`) precisa do valor em RGB — adicionei variáveis irmãs
+    `--color-*-rgb` (claro e escuro) e troquei as entradas de cor do `tailwind.config.ts` pra função de
+    opacidade documentada do Tailwind. Aditivo, não mudou nenhum valor hex da tabela de tokens.
+  - **Páginas**: Login, Register (aceita o `condominioId` como campo de texto cru — não existe fluxo de
+    convite/descoberta ainda, gap conhecido, não resolvido agora) e placeholders "em construção" pros 5
+    módulos + painel do superadmin, só provando que roteamento/role-gating funcionam ponta a ponta.
+  - **PWA (só manifest, sem service worker ainda)**: `public/manifest.webmanifest`, ícones gerados a
+    partir de um monograma "S" desenhado à mão em SVG (não existe logo real ainda) — rasterizado pra
+    PNG via `npx sharp-cli` como conversão avulsa, sem virar dependência permanente do projeto. Tags
+    novas no `index.html` (manifest, theme-color light/dark, apple-touch-icon, favicon SVG).
+    Deliberadamente sem `navigator.serviceWorker.register(...)` — cache offline fica pra quando entrar
+    em pauta de verdade.
+
+**Verificação feita nesta sessão** (com backend e web reais rodando, não mocado — dirigido de verdade
+num Chromium headless via Playwright, já que não há suíte de testes automatizados neste repo):
+- Registro de morador → `/solicitacoes`, nav mostra Solicitações/Encomendas/Comunicados/Chat sem
+  Dashboard. Registro de admin → `/dashboard`, nav completo.
+- Morador forçando a URL `/dashboard` → ricocheteia de volta pra `/solicitacoes`, sem tela de erro.
+- Tema: alternar no `ThemeToggle` muda o atributo `data-theme` e grava
+  `localStorage['sinndico:theme']`; sobrevive a um reload completo da página sem flash do tema errado.
+- Logout: limpa os tokens do `localStorage`, redireciona pra `/login`.
+- **401 → refresh → retry, com dedup confirmado de verdade**: forcei um access token inválido; o log de
+  rede mostrou duas chamadas `GET /api/auth/me` tomando 401 quase simultaneamente (efeito do
+  `React.StrictMode` remontando o `AuthProvider` em dev) e **só um único** `POST /api/auth/refresh`
+  disparou — as duas chamadas originais foram reexecutadas com sucesso depois. Corrompendo também o
+  refresh token, o fluxo falha graciosamente: um único `POST /refresh` retorna 401, tokens são limpos,
+  app redireciona pra `/login`, sem loop.
+- Nenhum erro de console/página em nenhum dos fluxos acima.
+- `npx tsc -b` e `npx vite build` limpos.
+
+**Próximo passo:**
+- [ ] Construir as telas funcionais de cada módulo, uma por vez (Solicitações é a candidata natural pra
+  ir primeiro — desbloqueia validar o resto do fluxo de ponta a ponta pela UI).
+- [ ] Isso também destrava testar o envio de push de verdade (Session 12 ficou pendente por falta de um
+  client real capaz de gerar um device token via SDK do Firebase).
+- [ ] Usuários de teste ficaram no Supabase Auth (`teste.web.morador.*@sinndico.dev`,
+  `teste.web.admin.*@sinndico.dev`) — remover no painel se quiser um ambiente limpo.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhuma de arquitetura — as escolhas de dependência (o que entrou e o que ficou de fora) estão
+  documentadas acima e no arquivo de plano da sessão, todas justificadas pela leveza que o resto do
+  projeto já pratica.
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 12 (Data: 17/07/2026)
 **Completado:**
