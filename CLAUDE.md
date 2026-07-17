@@ -117,19 +117,78 @@ Formato do checkpoint:
 > - **Brand kit anexado e organizado (Session 16)**: logo/símbolo real, ícones de domínio e tokens
 >   machine-readable em `brand-assets/` na raiz — só organizado/documentado, **ainda não integrado**
 >   ao app rodando (logo placeholder, ícones e tokens de `apps/web` continuam como estavam).
-> - **Painel superadmin:** só a fundação existe (role `superadmin` sem `condominio_id`, criado via
->   `npm run seed:superadmin` — Session 4). Não existe API de CRUD de condomínio nem tela.
+> - **Painel superadmin completo desde a Session 20**: API de CRUD de condomínio (`/api/condominios`
+>   — criar/listar/editar nome, sem exclusão por decisão explícita) e tela em `apps/web` (`/condominios`
+>   — nav exclusiva do superadmin). **Com isso, a Fase 1 (MVP) está 100% completa**: API + telas de
+>   todos os módulos + painel superadmin.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade (SDK do Firebase rodando num client real); com `apps/web` já tendo tela
 >   funcional, isso é destravável assim que fizer sentido priorizar.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) API de CRUD de
->   condomínio + tela do painel superadmin (único item de produto que falta pra Fase 1 estar 100%
->   completa — hoje só existe a fundação de role), (2) integrar o brand kit real ao app (trocar
->   logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como componentes React,
->   decidir se adota os 3 valores de token refinados do brand kit), (3) avançar pra Fase 2
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** (1) integrar o brand kit
+>   real ao app (trocar logo/favicon/ícones PWA placeholder, adicionar os 8 ícones de domínio como
+>   componentes React, decidir se adota os 3 valores de token refinados do brand kit), (2) avançar pra Fase 2
 >   (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação).
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 20 (Data: 17/07/2026)
+**Completado:**
+- [x] **Painel superadmin (API + tela)** — último item de produto pendente da Fase 1. Escopo
+  confirmado com o usuário antes de codar: só CRUD de condomínio (criar/listar/editar nome), sem
+  criar a primeira conta de admin pelo painel (fica pra sessão futura) e sem exclusão/desativação
+  (ação destrutiva não pedida, tabela não tem soft-delete).
+  - **Achado que definiu o desenho do backend**: a tabela `condominios` só tem `id`/`nome`/
+    `created_at`, com RLS habilitada só numa policy `FOR SELECT` (`id = app.condominio_id`). Um
+    superadmin sempre tem `condominioId: null`; passando isso por `withTenantContext`, a policy nunca
+    casa (`id = NULL` nunca é `TRUE`) — ou seja, **RLS bloqueia o superadmin, não libera "todos os
+    condomínios"**. Isso já estava antecipado no comentário de `tenantContext.ts` ("operações
+    cross-tenant de superadmin usam `pool` direto") e é como os seeds já existentes
+    (`createSuperadmin.ts`, `run.ts`) sempre operaram. Além disso não existe nenhuma policy de
+    INSERT/UPDATE/DELETE em `condominios` (só `SELECT`), então escrever via `appPool` seria rejeitado
+    de qualquer forma.
+  - `apps/backend/src/models/Condominio.ts` — **primeiro model do código a usar o `pool` privilegiado
+    direto** (bypassa RLS de propósito, com `authorize('superadmin')` na rota como única porta de
+    acesso) em vez de `withTenantContext`/`appPool` como todo outro model — comentário no arquivo
+    explica o porquê, no mesmo espírito dos comentários já existentes em `tenantContext.ts`.
+    `listCondominios`/`findCondominioById` fazem `LEFT JOIN` com `users` pra contar usuários por
+    condomínio (`totalUsuarios`) — dado extra que não foi pedido explicitamente mas dá visibilidade
+    real de gestão sem precisar de coluna/tabela nova.
+  - `condominioController.ts` + `routes/condominios.ts` (mesmo padrão de todo controller/rota
+    existente) + montado em `app.ts`.
+  - **Frontend**: `condominiosApi.ts`, `CreateCondominioForm.tsx`, `CondominioCard.tsx` (nome como
+    título, `id` em `font-mono` visível — dá ao superadmin de onde copiar o UUID que o `/register`
+    já exige hoje, mitigando parte do gap conhecido de "sem convite/descoberta" —, contagem de
+    usuários, botão "Editar" que revela edição inline do nome), `CondominiosPage.tsx`. `roleHome.ts`:
+    `superadmin` passa a cair em `/condominios` (era `/em-construcao`). `router.tsx`: nova rota +
+    removida a rota `em-construcao`/import de `ComingSoonPage` (ficou sem nenhum uso — o arquivo
+    `ComingSoonPage.tsx` continua existindo, só não é mais importado). `Nav.tsx`: item exclusivo do
+    superadmin.
+
+**Verificação feita nesta sessão** (Playwright + consulta direta à API, contra backend+web reais):
+- Login como superadmin → cai em `/condominios`, nav mostra só "Condomínios". Cria condomínio → some
+  na lista com `totalUsuarios: 0`. Edita o nome inline → persistência confirmada via API direta.
+  Copia o `id` exibido no card e registra um morador de teste nesse condomínio novo → confirma que o
+  UUID exposto na tela é utilizável de ponta a ponta, e que `totalUsuarios` sobe pra `1` depois.
+  Morador chamando `/api/condominios` direto → 403; nav do morador não mostra "Condomínios".
+- Um teste inicial deu falso-negativo porque o locator do Playwright perdia a referência do card ao
+  entrar em modo de edição (o nome deixa de ser texto renderizado e vira valor de `<input>`) —
+  corrigido localizando o card pelo `id` (que fica visível nos dois estados); não era bug do app.
+- `npx tsc --noEmit` (backend) e `npx tsc -b` (web) limpos.
+
+**Próximo passo:**
+- [ ] **Fase 1 (MVP) está 100% completa** (API + telas + painel superadmin). Direções em aberto,
+  nenhuma decidida: (1) integrar o brand kit real ao app (Session 16), (2) avançar pra Fase 2
+  (Visitantes, Comida/Delivery) ou Fase 3 (Áreas comuns, Assembleia/votação).
+- [ ] Condomínios/usuários de teste acumulados (`teste.painel.*@sinndico.dev`,
+  `teste.superadmin@sinndico.dev`) — limpar no painel se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- `models/Condominio.ts` usa o `pool` privilegiado direto em vez de `withTenantContext` — única
+  exceção deliberada ao padrão de acesso a dados do resto do código, motivada pela análise de RLS
+  acima (não uma escolha arbitrária).
+
+**Bugs conhecidos:**
+- Nenhum.
 
 ### Session 19 (Data: 17/07/2026)
 **Completado:**

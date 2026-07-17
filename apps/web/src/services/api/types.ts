@@ -131,3 +131,18 @@ export interface DashboardSummaryResponse {
     recentes: { id: string; titulo: string; dataCriacao: string }[];
   };
 }
+
+export interface CondominioResponse {
+  id: string;
+  nome: string;
+  createdAt: string;
+  totalUsuarios: number;
+}
+
+export interface CreateCondominioPayload {
+  nome: string;
+}
+
+export interface UpdateCondominioPayload {
+  nome: string;
+}

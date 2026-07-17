@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/Layout/AppShell';
-import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ChatPage } from '@/pages/Chat/ChatPage';
+import { CondominiosPage } from '@/pages/Condominios/CondominiosPage';
 import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
@@ -88,7 +88,14 @@ export function AppRoutes() {
             </RequireAuth>
           }
         />
-        <Route path="em-construcao" element={<ComingSoonPage title="Área do superadmin" />} />
+        <Route
+          path="condominios"
+          element={
+            <RequireAuth roles={['superadmin']}>
+              <CondominiosPage />
+            </RequireAuth>
+          }
+        />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

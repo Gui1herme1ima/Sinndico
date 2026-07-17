@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/encomendas', label: 'Encomendas', roles: ['morador', 'admin', 'porteiro'] },
   { to: '/comunicados', label: 'Comunicados', roles: ['morador', 'admin', 'porteiro'] },
   { to: '/chat', label: 'Chat', roles: ['morador', 'admin'] },
+  { to: '/condominios', label: 'Condomínios', roles: ['superadmin'] },
 ];
 
 export function Nav({ role }: { role: UserRole }) {

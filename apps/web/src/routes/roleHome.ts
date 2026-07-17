@@ -9,6 +9,6 @@ export function roleHome(role: UserRole): string {
     case 'porteiro':
       return '/encomendas';
     case 'superadmin':
-      return '/em-construcao';
+      return '/condominios';
   }
 }
