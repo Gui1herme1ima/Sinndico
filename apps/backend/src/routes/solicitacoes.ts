@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { create, getById, list, update } from '../controllers/chamadoController';
+import { create, getById, list, update } from '../controllers/solicitacaoController';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { authenticate, authorize } from '../middleware/auth';
 
