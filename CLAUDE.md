@@ -96,7 +96,7 @@ Formato do checkpoint:
 
 ## 8. Checkpoint Log
 
-> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 26; detalhes sessão a sessão abaixo):**
+> **Estado atual do projeto (resumo rápido — 18/07/2026, fim da Session 27; detalhes sessão a sessão abaixo):**
 >
 > - **Reformulação de acesso em andamento (iniciada na Session 25) — pivô de produto sobre o que já
 >   estava construído**: o usuário decidiu abandonar o auto-registro livre em favor de um modelo
@@ -109,17 +109,19 @@ Formato do checkpoint:
 >   contato/tipo_residencia), fim do `/register`, login por username OU e-mail (e-mail obrigatório só
 >   pra morador), "ver como" via header, admin reseta senha de porteiro/outro admin, esqueci-minha-
 >   senha, troca de senha obrigatória.
-> - **Fatia 2 (Residências) completa nesta sessão**: novo módulo `residencias`, cadastro só pelo admin,
->   schema condicional pelo `tipo_residencia` do condomínio (bloco+número pra apartamento, rua+número
->   pra casa) — decidido no controller, não em `CHECK` de banco, porque depende de uma linha de outra
->   tabela. Novo `GET /api/condominios/me` (config do próprio tenant, reutilizável por módulos
->   futuros). Pré-requisito de Moradores/Visitantes (Fatia 3).
-> - **Bug real encontrado e corrigido nesta sessão** (não durante a Fatia 1 — passou pela verificação
->   anterior porque só checava efeitos indiretos, não o corpo de `/me`): `GET /api/auth/me` ignorava
->   a elevação de "ver como", sempre devolvendo a identidade verdadeira do superadmin em vez da visão
->   impersonada — quebrava `RequireAuth roles={[...]}` em qualquer navegação durante "ver como" depois
->   de um `refreshUser()`. Corrigido usando `req.user.role`/`condominioId` (já elevados pelo
->   middleware) em vez de re-derivar tudo do perfil no banco.
+> - **Fatia 2 (Residências) completa desde a Session 26**: módulo `residencias`, cadastro só pelo
+>   admin, schema condicional pelo `tipo_residencia` do condomínio (bloco+número pra apartamento,
+>   rua+número pra casa) — decidido no controller, não em `CHECK` de banco. `GET /api/condominios/me`
+>   (config do próprio tenant, reutilizável por módulos futuros). Bug real do "ver como" em `/me`
+>   também corrigido na Session 26.
+> - **Fatia 3 (Moradores e Equipe) completa nesta sessão**: admin cadastra morador vinculado a uma
+>   residência existente (e-mail obrigatório, username derivado automaticamente do e-mail) e cadastra
+>   administradores/porteiros (username escolhido, e-mail opcional) — primeira UI a usar o endpoint
+>   `PATCH /:id/senha` que já existia desde a Fatia 1. Nova coluna `users.residencia_id` com `CHECK
+>   ... NOT VALID` (exige a coluna em toda escrita nova sem quebrar moradores de teste pré-existentes
+>   sem residência real). Criação de usuário com senha temporária extraída pra
+>   `services/userProvisioning.ts`, reaproveitada por três fluxos (primeiro admin do condomínio,
+>   admin/porteiro novo, morador novo).
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **Módulos operacionais da Fase 1/2/Áreas Comuns seguem completos** (API + tela, todos testados
@@ -129,11 +131,108 @@ Formato do checkpoint:
 >   ícones de domínio, tokens do brand kit em `tokens.css`.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Fatia 3 (Moradores e
->   Administradores administrados pelo admin) é o próximo item natural do roadmap — apresentar o plano
->   antes de começar, conforme o fluxo de aprovação combinado.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Fatia 4 (Barra lateral —
+>   nav em coluna + bloco "Cadastros") é o próximo item natural do roadmap — apresentar o plano antes
+>   de começar, conforme o fluxo de aprovação combinado. Diretório real de morador (seletor em vez de
+>   UUID cru) em Encomendas/Comida/Chat/Visitantes ficou registrado como melhoria futura fora do
+>   escopo da Fatia 3.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 27 (Data: 18/07/2026)
+**Completado:**
+- [x] **Fatia 3 — Moradores e Equipe (API + telas)**, plano apresentado e aprovado antes de codar
+  (conforme o fluxo combinado). Fecha o roadmap item 3: admin cadastra morador (vinculado a uma
+  residência já existente) e cadastra outros administradores/porteiros.
+  - **Migration `1700000000022_add-residencia-id-to-users.ts`**: `users.residencia_id` (nullable, FK
+    → `residencias` `ON DELETE RESTRICT`) + `CHECK (role <> 'morador' OR residencia_id IS NOT NULL)
+    NOT VALID`. O `NOT VALID` foi decisão deliberada: há moradores de teste de sessões anteriores,
+    criados antes da Fatia 1 remover o self-registro, sem nenhuma residência real pra vincular
+    retroativamente — `NOT VALID` exige a coluna em toda escrita nova sem validar linhas existentes
+    contra a regra. Rodou contra o Supabase real sem quebrar nada, confirmando que a abordagem
+    funcionou como esperado.
+  - **Username do morador é derivado automaticamente do e-mail** (parte antes do `@`, sufixo numérico
+    em colisão via `findUserByUsername` em loop) — o admin nunca digita/vê esse campo, já que login de
+    morador sempre pode ser feito por e-mail (obrigatório pra esse papel). Diferente de admin/porteiro,
+    onde o admin escolhe o `username` explicitamente (e-mail é opcional).
+  - **`services/userProvisioning.ts`** (novo) — `provisionUsuario(...)` extrai o bloco Supabase Auth
+    `createUser` + `models/User.createUser` (senha temporária) que antes só existia inline em
+    `condominioController.create`; agora reaproveitado por três chamadores: primeiro admin do
+    condomínio (refatorado, comportamento idêntico), admin/porteiro novo e morador novo. Reverificado
+    ponta a ponta que criar condomínio+primeiro admin (fluxo do superadmin, Fatia 1) continua
+    funcionando depois do refactor.
+  - **`models/User.ts`**: `residencia_id` no `User`/`CreateUserInput`; `listUsersForTenant(ctx,
+    roles?)` (novo — `LEFT JOIN residencias` pra Moradores não precisar de uma segunda chamada só pra
+    saber a unidade de cada um; preenche a lacuna que só existiam `listAdminIdsForTenant`/
+    `listPorteiroIdsForTenant`, que devolviam só ids); `updateUser(ctx, id, {nome?, telefone?,
+    residenciaId?})` (novo).
+  - **`controllers/userController.ts`** (estendido, só tinha `resetSenha` desde a Fatia 1):
+    `createUserSchema` como Zod `discriminatedUnion('role', ...)` — variante morador exige
+    `nome`/`email`/`residenciaId`, variante admin/porteiro exige `nome`/`username`; `create` valida a
+    residência contra o tenant (404 se não for do admin), envia e-mail de boas-vindas sempre pra
+    morador (obrigatório) e só condicionalmente pra admin/porteiro (mesma regra da Fatia 1); `list`
+    aceita `?roles=morador` ou `?roles=admin,porteiro`; `update` reedita nome/telefone/residência.
+    Novas rotas `POST /`, `GET /`, `PATCH /:id` em `routes/users.ts`, mantendo `PATCH /:id/senha`.
+  - **Frontend**: `pages/Moradores/MoradoresPage.tsx` (mesmo padrão "config-primeiro" de Residências —
+    busca a lista de residências pra popular o `<Select>` do form, depois lista os moradores) +
+    `CreateMoradorForm`/`MoradorCard` (edição inline de nome/telefone/residência); `pages/Equipe/
+    EquipePage.tsx` + `CreateStaffUserForm`/`StaffUserCard` (botão "Redefinir senha" — primeira UI a
+    consumir o endpoint que já existia desde a Fatia 1). `Badge` ganhou os status `admin`/`porteiro`
+    pro badge de papel na Equipe. Nav ganhou "Moradores"/"Equipe" (só admin, sem ícone, mesmo caso de
+    Dashboard/Condomínios/Residências).
+  - **Decisão deliberada, fora do escopo desta fatia**: Encomendas/Comida/Chat/Visitantes continuam
+    recebendo `moradorId` como campo de texto cru — virar um seletor de verdade usando a nova
+    listagem de moradores é melhoria natural futura, registrada mas não implementada agora (não foi
+    pedido).
+
+**Bug real encontrado e corrigido nesta sessão** (via inspeção visual em claro/escuro, não só
+`tsc`/testes de API — o teste de API não checava o campo, e o teste de UI original criava o morador
+sem telefone e só verificava a edição, então nunca exercitou o caminho de criação): `telefone` era
+descartado silenciosamente na criação de morador e de admin/porteiro — `userController.create` nunca
+repassava `input.telefone` pra `provisionUsuario`, e `ProvisionUsuarioInput` nem tinha o campo.
+Confirmado pelo print de tela (morador criado com telefone via API não mostrava o telefone na lista).
+Corrigido adicionando `telefone` em `ProvisionUsuarioInput` e nos dois pontos de chamada em
+`userController.create`. Reconfirmado por API e Playwright depois do fix (print de tela mostra o
+telefone agora). Aproveitado pra também mostrar telefone no card compacto de `MoradorCard` (antes só
+aparecia em modo de edição, então uma edição bem-sucedida não tinha como ser confirmada visualmente
+sem reabrir o form).
+
+**Verificação feita nesta sessão:**
+- Migration rodada contra o Supabase real — confirmado que passa mesmo com moradores de teste
+  pré-existentes sem `residencia_id` (prova de que o `NOT VALID` funciona como esperado).
+- `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web) limpos.
+- API real (script descartável): criar morador com residência de outro tenant → 404; sem
+  `residenciaId` → 400; válido → 201 com senha temporária e username derivado do e-mail (sem `@`);
+  login do morador por e-mail → 200; `GET /api/users?roles=morador` traz o morador com a residência
+  embutida; `PATCH /:id` troca residência de outro tenant → 404, edita telefone → 200; criar admin/
+  porteiro sem e-mail → 201 + senha; username duplicado → 409; `GET /api/users?roles=admin,porteiro`
+  traz os dois papéis; `PATCH /:id/senha` funciona pro porteiro recém-criado e continua bloqueando
+  morador (400); morador/porteiro chamando `/api/users` → 403 nos dois. Reconfirmado que criar
+  condomínio+primeiro admin (superadmin) continua 201 depois do refactor pra `provisionUsuario`.
+- Playwright contra backend+web reais: login admin → cria residência → Moradores: cria morador
+  vinculado à residência → senha aparece uma vez → aparece na lista com a unidade certa → edita
+  telefone inline → persiste. Equipe: cria porteiro sem e-mail → senha aparece → lista mostra badge de
+  papel → "Redefinir senha" → nova senha aparece.
+- Prints de tela em claro e escuro de Moradores e Equipe (`docs`/nenhum arquivo comitado, só inspeção
+  visual) — badges de papel legíveis nos dois modos, telefone visível no card depois do fix, sem
+  regressão de contraste.
+
+**Próximo passo:**
+- [ ] Confirmar com o usuário antes de começar: Fatia 4 (Barra lateral — nav em coluna + bloco
+  "Cadastros") é o próximo item natural do roadmap.
+- [ ] Diretório real de morador (seletor em vez de UUID cru) em Encomendas/Comida/Chat/Visitantes —
+  melhoria natural depois da Fatia 3 existir, mas não foi pedida; registrada aqui só pra não esquecer.
+- [ ] Condomínios/moradores/equipe de teste acumulados (`condo-fatia3-*`, `morador.fatia3.*`,
+  `porteiro.fatia3.*`) — limpar no painel se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhum desvio — Fatia 3 saiu exatamente como planejado. O bug do `telefone` foi encontrado e
+  corrigido na própria sessão (não fazia parte do plano original, mas é o mesmo padrão de toda sessão
+  anterior: bug achado na verificação, corrigido e documentado, não silenciado).
+
+**Bugs conhecidos:**
+- Nenhum em aberto — o bug do `telefone` descartado na criação foi encontrado e corrigido nesta
+  própria sessão (ver acima).
 
 ### Session 26 (Data: 17/07/2026)
 **Completado:**

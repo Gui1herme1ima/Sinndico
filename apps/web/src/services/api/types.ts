@@ -284,3 +284,61 @@ export interface CreateReservaPayload {
   horaInicio: string;
   horaFim: string;
 }
+
+export interface ResidenciaResumo {
+  bloco: string | null;
+  rua: string | null;
+  numero: string | null;
+}
+
+export interface MoradorResponse {
+  id: string;
+  nome: string;
+  username: string;
+  email: string | null;
+  telefone: string | null;
+  role: 'morador';
+  residencia: ResidenciaResumo | null;
+  createdAt: string;
+}
+
+export interface StaffUserResponse {
+  id: string;
+  nome: string;
+  username: string;
+  email: string | null;
+  telefone: string | null;
+  role: 'admin' | 'porteiro';
+  residencia: null;
+  createdAt: string;
+}
+
+export interface CreateMoradorPayload {
+  role: 'morador';
+  nome: string;
+  email: string;
+  residenciaId: string;
+  telefone?: string;
+}
+
+export interface CreateStaffUserPayload {
+  role: 'admin' | 'porteiro';
+  nome: string;
+  username: string;
+  email?: string;
+  telefone?: string;
+}
+
+export interface CreateUserResponse {
+  senhaTemporaria: string;
+}
+
+export interface UpdateMoradorPayload {
+  nome?: string;
+  telefone?: string;
+  residenciaId?: string;
+}
+
+export interface ResetSenhaResponse {
+  senhaTemporaria: string;
+}

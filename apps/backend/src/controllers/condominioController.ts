@@ -11,10 +11,9 @@ import {
   listCondominios,
   updateCondominioNome,
 } from '../models/Condominio';
-import { createUser, findUserByUsername, syntheticEmailFor } from '../models/User';
-import { supabaseAdmin } from '../services/supabaseClient';
+import { findUserByUsername } from '../models/User';
 import { sendWelcomeEmail } from '../services/emailService';
-import { generateTempPassword } from '../utils/generatePassword';
+import { provisionUsuario } from '../services/userProvisioning';
 
 const SLUG_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const USERNAME_REGEX = /^[a-z0-9._]+$/;
@@ -74,27 +73,12 @@ export async function create(req: Request, res: Response) {
     contatoTelefone: input.contatoTelefone,
   });
 
-  const senhaTemporaria = generateTempPassword();
-  const authEmail = input.adminEmail ?? syntheticEmailFor(input.adminUsername);
-
-  const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
-    email: authEmail,
-    password: senhaTemporaria,
-    email_confirm: true,
-  });
-
-  if (createError || !created.user) {
-    throw new ApiError(400, createError?.message ?? 'Não foi possível criar o usuário administrador');
-  }
-
-  await createUser({
-    id: created.user.id,
+  const { senhaTemporaria } = await provisionUsuario({
     condominioId: condominio.id,
     username: input.adminUsername,
-    email: input.adminEmail ?? null,
     nome: input.adminNome,
+    email: input.adminEmail ?? null,
     role: 'admin',
-    senhaTemporaria: true,
   });
 
   if (input.adminEmail) {

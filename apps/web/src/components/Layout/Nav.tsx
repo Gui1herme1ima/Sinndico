@@ -23,6 +23,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', roles: ['admin'] },
   { to: '/residencias', label: 'Residências', roles: ['admin'] },
+  { to: '/moradores', label: 'Moradores', roles: ['admin'] },
+  { to: '/equipe', label: 'Equipe', roles: ['admin'] },
   { to: '/solicitacoes', label: 'Solicitações', roles: ['morador', 'admin'], icon: SolicitacaoManutencaoIcon },
   { to: '/encomendas', label: 'Encomendas', roles: ['morador', 'admin', 'porteiro'], icon: EncomendaIcon },
   { to: '/comunicados', label: 'Comunicados', roles: ['morador', 'admin', 'porteiro'], icon: ComunicadoIcon },

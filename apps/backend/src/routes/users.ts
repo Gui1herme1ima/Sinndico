@@ -1,13 +1,17 @@
 import { Router } from 'express';
 
-import { resetSenha } from '../controllers/userController';
+import { create, list, resetSenha, update } from '../controllers/userController';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 
 router.use(asyncHandler(authenticate));
+router.use(authorize('admin'));
 
-router.patch('/:id/senha', authorize('admin'), asyncHandler(resetSenha));
+router.post('/', asyncHandler(create));
+router.get('/', asyncHandler(list));
+router.patch('/:id', asyncHandler(update));
+router.patch('/:id/senha', asyncHandler(resetSenha));
 
 export default router;

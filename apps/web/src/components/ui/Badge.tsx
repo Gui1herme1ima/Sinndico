@@ -21,7 +21,9 @@ export type BadgeStatus =
   | 'chegou'
   | 'pendente'
   | 'aprovada'
-  | 'cancelada';
+  | 'cancelada'
+  | 'admin'
+  | 'porteiro';
 
 export interface BadgeProps {
   status: BadgeStatus;
@@ -49,6 +51,8 @@ const statusClasses: Record<BadgeStatus, string> = {
   pendente: 'bg-accent/10 text-accent',
   aprovada: 'bg-success/10 text-success',
   cancelada: 'bg-danger/10 text-danger',
+  admin: 'bg-primary/10 text-primary',
+  porteiro: 'bg-accent/10 text-accent',
 };
 
 export function Badge({ status, children, mono = false }: BadgeProps) {
