@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { pool } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import areasComunsRoutes from './routes/areas-comuns';
+import assembleiasRoutes from './routes/assembleias';
 import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import comidaRoutes from './routes/comida';
@@ -50,5 +51,6 @@ app.use('/api/areas-comuns', areasComunsRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/residencias', residenciasRoutes);
+app.use('/api/assembleias', assembleiasRoutes);
 
 app.use(errorHandler);

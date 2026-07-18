@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 import {
   AreaComumIcon,
+  AssembleiaIcon,
   ChatIcon,
   ComunicadoIcon,
   EncomendaIcon,
@@ -56,6 +57,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Áreas comuns',
     roles: ['morador', 'admin'],
     icon: AreaComumIcon,
+  },
+  {
+    to: '/assembleias',
+    label: 'Assembleias',
+    roles: ['morador', 'admin'],
+    icon: AssembleiaIcon,
   },
   { to: '/residencias', label: 'Residências', roles: ['admin'], group: 'cadastros' },
   { to: '/moradores', label: 'Moradores', roles: ['admin'], group: 'cadastros' },

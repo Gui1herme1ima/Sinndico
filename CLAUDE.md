@@ -118,10 +118,12 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
   explicitamente pelo usuário antes de instalar (URL externa, fora do npm registry).
 - **Login fixo de teste** (condomínio "Condominio Teste", slug `teste`): usuário `admin`, senha
   `Admin123!`.
-- **Verificação pendente do usuário**: Fatias 5 e 6 foram testadas via API real (todas passaram) mas
-  a verificação de UI (Playwright) não foi conferida nesta sessão — usuário pediu pra completar as
-  duas fatias primeiro e testar manualmente no final, em vez de pausar a cada uma.
-- **Próximo passo:** nenhuma fatia pendente do roadmap de reformulação de acesso. Direções em aberto,
-  nenhuma decidida: retomar a Fase 3 antiga (Assembleia/votação, pausada desde a Session 25) ou
-  diretório real de morador (seletor em vez de UUID cru) em Encomendas/Comida/Chat/Visitantes —
-  melhoria registrada, nunca formalmente agendada.
+- **Fase 3 antiga completa**: módulo de Assembleia/Votação implementado (`assembleias`/`votos`,
+  admin convoca → abre votação → encerra, morador vota uma vez por assembleia, contagem em tempo real
+  faz o papel de "ata automática"). Com isso o roadmap funcional inteiro do README está implementado —
+  só falta o diretório real de morador (ver próximo passo) e o polimento contínuo da Fase 4/5+.
+- **Verificação pendente do usuário**: Fatias 5 e 6 (Session 29) e o módulo de Assembleia foram
+  testados via API real (todos passaram) mas a verificação de UI (Playwright) não foi conferida nesta
+  sessão — usuário pediu pra completar tudo primeiro e testar manualmente no final.
+- **Próximo passo:** diretório real de morador (seletor em vez de UUID cru) em Encomendas (porteiro) e
+  Chat (admin) — em andamento nesta sessão.

@@ -356,6 +356,44 @@ export interface ResetSenhaResponse {
   senhaTemporaria: string;
 }
 
+export type AssembleiaStatus = 'planejada' | 'em-votacao' | 'encerrada';
+export type OpcaoVoto = 'sim' | 'nao' | 'abstencao';
+
+export interface ContagemVotos {
+  sim: number;
+  nao: number;
+  abstencao: number;
+  total: number;
+}
+
+export interface AssembleiaResponse {
+  id: string;
+  condominioId: string;
+  titulo: string;
+  data: string;
+  descricao: string | null;
+  pauta: string | null;
+  status: AssembleiaStatus;
+  votos: ContagemVotos;
+  // presente só pro papel morador — o próprio voto, ou null se ainda não votou.
+  meuVoto?: OpcaoVoto | null;
+}
+
+export interface CreateAssembleiaPayload {
+  titulo: string;
+  data: string;
+  descricao?: string;
+  pauta?: string;
+}
+
+export interface UpdateAssembleiaStatusPayload {
+  status: 'em-votacao' | 'encerrada';
+}
+
+export interface VotarPayload {
+  voto: OpcaoVoto;
+}
+
 export interface ImportarErro {
   linha: number;
   motivo: string;

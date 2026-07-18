@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/Layout/AppShell';
 import { AreasComunsPage } from '@/pages/AreasComuns/AreasComunsPage';
+import { AssembleiasPage } from '@/pages/Assembleias/AssembleiasPage';
 import { ChangePasswordPage } from '@/pages/auth/ChangePasswordPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -176,6 +177,14 @@ export function AppRoutes() {
           element={
             <RequireAuth roles={['morador', 'admin']}>
               <AreasComunsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="assembleias"
+          element={
+            <RequireAuth roles={['morador', 'admin']}>
+              <AssembleiasPage />
             </RequireAuth>
           }
         />

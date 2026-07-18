@@ -2,6 +2,56 @@
 
 > Arquivo de arquivo do log de progresso sessão a sessão. O CLAUDE.md guarda só o estado atual e os próximos passos (seção 8); o histórico detalhado de cada sessão passada vive aqui, mais recente primeiro. Consulte quando precisar entender o raciocínio ou uma decisão técnica de uma sessão específica.
 
+### Session 30 (Data: 18/07/2026) — Assembleia e votação
+
+**Completado:**
+- [x] **Módulo de Assembleia/Votação**, fecha a Fase 3 antiga (pausada desde a Session 25). Plano
+  aprovado antes de codar (junto com o item de diretório de morador, ambos autorizados pelo usuário
+  a rodar em sequência: "Faça tudo o que ficou pendente").
+  - Schema já vinha definido no README (não foi decisão nova): `assembleias` (titulo/data/descricao/
+    pauta/status) + `votos` (assembleia_id/morador_id/voto/timestamp, `UNIQUE (assembleia_id,
+    morador_id)` — um voto por morador por assembleia).
+  - **Escopo deliberado**: só morador+admin (mesmo padrão de Áreas Comuns/Reservas, nem porteiro nem
+    edição de título/pauta/data depois de criada — README só descreve "convoca/vota/ata", não
+    editar). Transições de status lineares e só pra frente (`planejada → em-votacao → encerrada`),
+    validadas no controller (`PROXIMO_STATUS_VALIDO`), 400 se tentar pular etapa ou voltar.
+  - **"Ata automática"** implementada como contagem de votos em tempo real
+    (`models/Voto.contarVotos`/`contarVotosPorAssembleias`), sempre presente na resposta da API — não
+    um documento gerado à parte. `meuVoto` (o próprio voto do morador, ou `null`) só aparece na
+    resposta pro papel morador, resolvido em lote pra listagem (`listVotosDoMorador`, evita N+1).
+  - `votos` não tem `condominio_id` próprio (mesmo caso de `comunicado_leituras`) — RLS isola via
+    `EXISTS` join com `assembleias`.
+  - Notificação por push: na convocação (todos os moradores) e na abertura de votação (todos os
+    moradores) — reaproveita `listUsersForTenant(ctx, ['morador'])` + `listTokensForUsers`, mesmo
+    padrão de todo outro módulo.
+  - Frontend: `AssembleiasPage`/`CreateAssembleiaForm`/`AssembleiaCard` — card mostra pauta/data,
+    badge de status (`Badge` ganhou `planejada`/`em-votacao`/`encerrada`), contagem de votos sempre
+    visível, botão de avançar status (admin) e botões Sim/Não/Abstenção (morador, só quando
+    `em-votacao` e ainda sem voto — depois mostra "Você votou: X"). Nav ganhou "Assembleias" usando o
+    `AssembleiaIcon` que existia no design system desde a Session 21 sem nunca ter sido usado.
+
+**Verificação feita nesta sessão:**
+- Migrations rodadas contra o Supabase real. `npx tsc --noEmit` (backend) e `npx tsc -b --force`
+  (web) limpos.
+- API real (script descartável): criar assembleia → `planejada`; morador vota antes de abrir votação
+  → 400; admin pula de `planejada` direto pra `encerrada` → 400; abre votação → `em-votacao`;
+  morador1 vota `sim` (contagem `{sim:1,total:1}`); morador1 vota de novo → 409; morador2 vota `nao`
+  (contagem `{sim:1,nao:1,total:2}`); `GET` reflete `meuVoto` certo por morador (`sim`/`nao`) e
+  **não** inclui `meuVoto` pra admin; encerra → `encerrada`; morador tenta votar depois → 400;
+  porteiro chamando `/api/assembleias` → 403; `list` traz a mesma contagem e `meuVoto` corretos.
+- Verificação de UI (Playwright) não rodada nesta sessão — mesmo acordo de sempre, usuário testa
+  manualmente no final.
+
+**Próximo passo:**
+- [ ] Diretório real de morador (Encomendas/Chat) — próximo item do que ficou pendente, mesma sessão.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhum desvio — saiu exatamente como planejado.
+
+**Bugs conhecidos:**
+- Nenhum confirmado — verificação de UI não rodada (ver Verificação acima); API real confirma o
+  comportamento de backend ponta a ponta, incluindo as transições de status e a regra de voto único.
+
 ### Session 29 (Data: 18/07/2026) — Fatia 5
 
 **Completado:**
