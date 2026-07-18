@@ -17,9 +17,6 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-6">
           <Logo />
-          <div className="hidden md:block">
-            <Nav role={user.role} />
-          </div>
         </div>
 
         <div className="flex items-center gap-2">

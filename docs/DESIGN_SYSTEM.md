@@ -214,7 +214,7 @@ Ainda sem nenhuma imagem de verdade no produto; esta seção é guia pra quando 
 - Skeleton loading (não spinner genérico) para listas e cards em carregamento — blocos com leve pulsação (`opacity` 0.6 ↔ 1, 1.5s loop).
 - "Assinatura" de confirmação: quando um chamado é resolvido ou uma encomenda é retirada, usar uma transição de check único e reconhecível (ex.: ícone de círculo que preenche + check que desenha via `stroke-dashoffset`) — reutilizada em todo o sistema como o "momento de resolução".
 - Sempre envolver animações não essenciais em `@media (prefers-reduced-motion: no-preference)`; sem essa media query, tudo deve reduzir a um fade simples ou instantâneo.
-- Biblioteca sugerida: Framer Motion (web/React), Reanimated (se/quando migrar pra React Native) — ainda não instalada em `apps/web` (ver Session 13 do Checkpoint Log: transições desta fase foram resolvidas só com utilitários do Tailwind, sem precisar da lib ainda).
+- Biblioteca sugerida: Framer Motion (web/React), Reanimated (se/quando migrar pra React Native) — ainda não instalada em `apps/web` (ver Session 13 em docs/CHECKPOINT_HISTORY.md: transições desta fase foram resolvidas só com utilitários do Tailwind, sem precisar da lib ainda).
 
 ---
 

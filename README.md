@@ -218,7 +218,7 @@ sinndico/
 **comida**
 - id, morador_id, restaurante, horario_chegada_estimada, status (pedido-feito/em-caminho/chegou/retirada), notificacao_portaria_enviada
 
-**visitantes** (implementado na Fase 2, Session 22 — ver Checkpoint Log no CLAUDE.md)
+**visitantes** (implementado na Fase 2, Session 22 — ver docs/CHECKPOINT_HISTORY.md)
 - id, condominio_id, morador_id, nome_visitante, rg, placa_veiculo, data_visita, hora_entrada, hora_saida, aprovado_por, status (aprovado/bloqueado/ativo)
 - `aprovado_por`: sempre o próprio morador na criação (auto-aprovação — é o convidado dele; não há
   gate de admin separado, resolvendo uma ambiguidade que existia entre este README e o CLAUDE.md).
@@ -329,7 +329,8 @@ Funcionalidades core que entregam valor imediato:
 
 ## 7. Checkpoint de Progresso
 
-A cada mudança de sessão, registre aqui **o que foi concluído** pra retomar sem perder contexto. O checkpoint detalhado fica centralizado no CLAUDE.md (seção 7 — Checkpoint Log).
+O estado atual do projeto (fatia/fase em andamento, próximo passo) fica no CLAUDE.md (seção 8 —
+Estado atual). O histórico detalhado sessão a sessão fica em `docs/CHECKPOINT_HISTORY.md`.
 
 ---
 
