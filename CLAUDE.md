@@ -95,7 +95,7 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
 
 ## 8. Estado atual
 
-> Atualizado em 18/07/2026, fim da Session 29. Histórico completo sessão a sessão em
+> Atualizado em 18/07/2026, fim da Session 30. Histórico completo sessão a sessão em
 > `docs/CHECKPOINT_HISTORY.md`.
 
 - **Reformulação de acesso — as 6 fatias do roadmap estão completas** (iniciada Session 25, fechada
@@ -120,10 +120,14 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
   `Admin123!`.
 - **Fase 3 antiga completa**: módulo de Assembleia/Votação implementado (`assembleias`/`votos`,
   admin convoca → abre votação → encerra, morador vota uma vez por assembleia, contagem em tempo real
-  faz o papel de "ata automática"). Com isso o roadmap funcional inteiro do README está implementado —
-  só falta o diretório real de morador (ver próximo passo) e o polimento contínuo da Fase 4/5+.
-- **Verificação pendente do usuário**: Fatias 5 e 6 (Session 29) e o módulo de Assembleia foram
-  testados via API real (todos passaram) mas a verificação de UI (Playwright) não foi conferida nesta
-  sessão — usuário pediu pra completar tudo primeiro e testar manualmente no final.
-- **Próximo passo:** diretório real de morador (seletor em vez de UUID cru) em Encomendas (porteiro) e
-  Chat (admin) — em andamento nesta sessão.
+  faz o papel de "ata automática"). Com isso o roadmap funcional inteiro do README está implementado.
+- **Diretório real de morador**: `GET /api/users/diretorio` (novo, admin + porteiro, devolve só
+  `{id, nome, residencia}`) substituiu os campos de UUID cru em `CreateEncomendaForm` (porteiro) e
+  `ChatPage` (admin) por um `<Select>` de verdade.
+- **Todos os itens que estavam registrados como pendentes no início desta sessão foram concluídos** —
+  não há mais nenhum item de roadmap funcional em aberto. Próximas direções (RBAC mais granular,
+  papéis nomeados livremente, integração de push real, etc.) ficam pra quando o usuário priorizar.
+- **Verificação pendente do usuário**: Fatias 5 e 6 (Session 29), o módulo de Assembleia e o diretório
+  de morador foram testados via API real (todos passaram) mas a verificação de UI (Playwright) não foi
+  conferida nesta sessão — usuário pediu pra completar tudo primeiro e testar manualmente no final.
+- **Próximo passo:** nenhum item pendente conhecido. Aguardar prioridade do usuário.

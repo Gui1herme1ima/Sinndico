@@ -4,17 +4,31 @@ import { useQuery } from '@tanstack/react-query';
 import { ChatMessageForm } from '@/components/Chat/ChatMessageForm';
 import { ChatThread } from '@/components/Chat/ChatThread';
 import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { chatsApi } from '@/services/api/chatsApi';
+import { usersApi } from '@/services/api/usersApi';
 import { useAuth } from '@/store/useAuth';
+
+function labelMorador(morador: { nome: string; residencia: { bloco: string | null; rua: string | null; numero: string | null } | null }) {
+  if (!morador.residencia) return morador.nome;
+  const { bloco, rua, numero } = morador.residencia;
+  const local = bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
+  return `${morador.nome} — ${local}`;
+}
 
 export function ChatPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
-  const [moradorIdInput, setMoradorIdInput] = useState('');
+  const [moradorIdSelecionado, setMoradorIdSelecionado] = useState('');
 
-  const moradorId = isAdmin ? moradorIdInput.trim() : (user?.id ?? '');
+  const diretorioQuery = useQuery({
+    queryKey: ['moradores-diretorio'],
+    queryFn: () => usersApi.listDiretorio(),
+    enabled: isAdmin,
+  });
+
+  const moradorId = isAdmin ? moradorIdSelecionado : (user?.id ?? '');
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['chats', moradorId],
@@ -22,24 +36,33 @@ export function ChatPage() {
     enabled: Boolean(moradorId),
   });
 
+  const moradores = diretorioQuery.data ?? [];
+
   return (
     <div className="flex flex-col gap-6">
       <h2 className="font-display text-xl font-semibold text-text-primary">Chat</h2>
 
       {isAdmin && (
         <Card title="Conversar com morador">
-          <Input
-            label="ID do morador"
-            helperText="UUID do morador cuja conversa você quer ver/responder."
-            value={moradorIdInput}
-            onChange={(e) => setMoradorIdInput(e.target.value)}
+          {diretorioQuery.isError && (
+            <p className="text-sm text-danger">Não foi possível carregar a lista de moradores.</p>
+          )}
+          <Select
+            label="Morador"
+            disabled={diretorioQuery.isLoading || moradores.length === 0}
+            value={moradorIdSelecionado}
+            onChange={(e) => setMoradorIdSelecionado(e.target.value)}
+            options={[
+              { value: '', label: diretorioQuery.isLoading ? 'Carregando...' : 'Selecione o morador' },
+              ...moradores.map((m) => ({ value: m.id, label: labelMorador(m) })),
+            ]}
           />
         </Card>
       )}
 
       {isAdmin && !moradorId && (
         <Card>
-          <p className="text-text-secondary">Informe o ID de um morador pra ver a conversa.</p>
+          <p className="text-text-secondary">Selecione um morador pra ver a conversa.</p>
         </Card>
       )}
 

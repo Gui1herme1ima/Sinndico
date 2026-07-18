@@ -205,6 +205,23 @@ export async function importarMoradores(req: Request, res: Response) {
   res.json({ criadas, erros });
 }
 
+// Diretório enxuto de moradores, acessível também por porteiro (diferente de list()/GET '/', que é
+// admin-only) — usado por seletores de morador em outros módulos (ex.: dono de uma encomenda). Só
+// {id, nome, residencia}, sem e-mail/username/telefone: porteiro não precisa desse dado só pra
+// escolher um morador.
+export async function diretorioMoradores(req: Request, res: Response) {
+  const moradores = await listUsersForTenant(tenantContextOf(req), ['morador']);
+  res.json(
+    moradores.map((m) => ({
+      id: m.id,
+      nome: m.nome,
+      residencia: m.residencia_id
+        ? { bloco: m.residencia_bloco, rua: m.residencia_rua, numero: m.residencia_numero }
+        : null,
+    }))
+  );
+}
+
 export async function list(req: Request, res: Response) {
   const rolesParam = typeof req.query.roles === 'string' ? req.query.roles : undefined;
   const roles = rolesParam ? (rolesParam.split(',').filter(Boolean) as UserRole[]) : undefined;

@@ -52,6 +52,47 @@
 - Nenhum confirmado — verificação de UI não rodada (ver Verificação acima); API real confirma o
   comportamento de backend ponta a ponta, incluindo as transições de status e a regra de voto único.
 
+---
+
+## Diretório real de morador (mesma Session 30, continuação)
+
+**Completado:**
+- [x] **Diretório real de morador** — último item do que estava pendente no início da sessão. Hoje
+  quem cria Encomenda (porteiro) ou abre uma conversa de Chat (admin) digitava um UUID de morador cru
+  num `<Input>` de texto. Vira um `<Select>` de verdade nos dois lugares.
+  - Pesquisado antes de codar: `/api/users` é 100% bloqueado pra `porteiro` (`router.use(authorize
+    ('admin'))` global) — em vez de relaxar isso, `GET /api/users/diretorio` (novo) registrado
+    **antes** desse `router.use` (mesmo truque de ordenação já usado em `condominios.ts` pra rotas
+    com regra de acesso diferente do resto do router), `authorize('admin', 'porteiro')`. Devolve só
+    `{id, nome, residencia}` — sem e-mail/username/telefone, porteiro não precisa desse dado só pra
+    escolher o dono de uma encomenda.
+  - Confirmado por pesquisa que só **dois** pontos realmente precisavam do seletor: `POST /api/
+    encomendas` (porteiro digita o `moradorId`) e `POST/GET /api/chats` (admin escolhe de qual
+    morador ver/responder). Comida e Visitantes são 100% self-service (o próprio morador cria,
+    resolvido via `req.user.id`) — não têm nenhum campo de `moradorId` no payload, não precisavam de
+    seletor nenhum.
+  - Frontend: `CreateEncomendaForm.tsx`/`ChatPage.tsx` trocam o `<Input>` de UUID cru por `<Select>`
+    populado via `usersApi.listDiretorio()`, rótulo "Nome — Bloco X/Rua Y, número". Sem componente de
+    combobox novo — lista de moradores por condomínio é pequena o bastante pro `<Select>` nativo já
+    existente (mesmo padrão do seletor de residência em `CreateMoradorForm`).
+
+**Verificação feita nesta sessão:**
+- `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web) limpos.
+- API real (script descartável): admin e porteiro acessam `/api/users/diretorio` (200, resposta sem
+  `email`/`username`); morador → 403; porteiro continua bloqueado no resto do CRUD (`GET /api/users`
+  completo → 403); porteiro cria uma encomenda usando o `moradorId` obtido do diretório → 201.
+- Verificação de UI (Playwright) não rodada — usuário vai testar tudo manualmente.
+
+**Próximo passo:**
+- [ ] Nenhum item pendente conhecido — todos os itens registrados no início da sessão foram
+  concluídos (Fatias 5/6, Assembleia, diretório de morador).
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhum desvio — saiu exatamente como planejado.
+
+**Bugs conhecidos:**
+- Nenhum confirmado — verificação de UI não rodada; API real confirma o comportamento ponta a ponta.
+
 ### Session 29 (Data: 18/07/2026) — Fatia 5
 
 **Completado:**

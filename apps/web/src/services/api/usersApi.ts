@@ -5,6 +5,7 @@ import type {
   CreateUserResponse,
   ImportarMoradoresPayload,
   ImportarResultado,
+  MoradorDiretorioResponse,
   MoradorResponse,
   ResetSenhaResponse,
   StaffUserResponse,
@@ -14,6 +15,10 @@ import type {
 export const usersApi = {
   listMoradores(): Promise<MoradorResponse[]> {
     return apiFetch<MoradorResponse[]>('/api/users?roles=morador');
+  },
+
+  listDiretorio(): Promise<MoradorDiretorioResponse[]> {
+    return apiFetch<MoradorDiretorioResponse[]>('/api/users/diretorio');
   },
 
   listEquipe(): Promise<StaffUserResponse[]> {

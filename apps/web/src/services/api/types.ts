@@ -356,6 +356,12 @@ export interface ResetSenhaResponse {
   senhaTemporaria: string;
 }
 
+export interface MoradorDiretorioResponse {
+  id: string;
+  nome: string;
+  residencia: ResidenciaResumo | null;
+}
+
 export type AssembleiaStatus = 'planejada' | 'em-votacao' | 'encerrada';
 export type OpcaoVoto = 'sim' | 'nao' | 'abstencao';
 
