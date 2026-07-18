@@ -1,5 +1,12 @@
 export type UserRole = 'morador' | 'admin' | 'porteiro' | 'superadmin';
 
+export interface PermissoesPorteiro {
+  encomendas: boolean;
+  visitantes: boolean;
+  comida: boolean;
+  comunicados: boolean;
+}
+
 export interface UserResponse {
   id: string;
   email: string | null;
@@ -10,6 +17,8 @@ export interface UserResponse {
   apto: string | null;
   telefone: string | null;
   mustChangePassword: boolean;
+  // presente só quando role === 'porteiro' — ver Fatia 5 (RBAC).
+  permissoesPorteiro?: PermissoesPorteiro;
 }
 
 export interface AuthResponse {
@@ -148,6 +157,7 @@ export interface CondominioResponse {
   contatoEmail: string | null;
   contatoTelefone: string | null;
   tipoResidencia: TipoResidencia;
+  permissoesPorteiro: PermissoesPorteiro;
   createdAt: string;
   totalUsuarios: number;
 }
@@ -178,13 +188,16 @@ export interface UpdateCondominioPayload {
 }
 
 // GET /api/condominios/me — só os campos que telas de admin precisam pra decidir comportamento
-// condicional (ex.: Residências mostrar "Bloco" ou "Rua").
+// condicional (ex.: Residências mostrar "Bloco" ou "Rua", Permissões mostrar os toggles atuais).
 export interface CondominioAtualResponse {
   id: string;
   nome: string;
   slug: string;
   tipoResidencia: TipoResidencia;
+  permissoesPorteiro: PermissoesPorteiro;
 }
+
+export type UpdatePermissoesPorteiroPayload = PermissoesPorteiro;
 
 export interface ResidenciaResponse {
   id: string;

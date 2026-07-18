@@ -11,7 +11,7 @@ import {
   VisitanteIcon,
 } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
-import type { UserRole } from '@/services/api/types';
+import type { PermissoesPorteiro, UserRole } from '@/services/api/types';
 
 interface NavItem {
   to: string;
@@ -20,21 +20,37 @@ interface NavItem {
   icon?: ComponentType<IconProps>;
   // sem group = módulo operacional (topo, sem rótulo); 'cadastros' = agrupado sob o rótulo "Cadastros".
   group?: 'cadastros';
+  // presente só nos módulos onde o acesso do porteiro é configurável por tenant (Fatia 5/RBAC) —
+  // some do menu se o admin desligou o módulo pra portaria daquele condomínio.
+  moduleKey?: keyof PermissoesPorteiro;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', roles: ['admin'] },
   { to: '/solicitacoes', label: 'Solicitações', roles: ['morador', 'admin'], icon: SolicitacaoManutencaoIcon },
-  { to: '/encomendas', label: 'Encomendas', roles: ['morador', 'admin', 'porteiro'], icon: EncomendaIcon },
-  { to: '/comunicados', label: 'Comunicados', roles: ['morador', 'admin', 'porteiro'], icon: ComunicadoIcon },
+  {
+    to: '/encomendas',
+    label: 'Encomendas',
+    roles: ['morador', 'admin', 'porteiro'],
+    icon: EncomendaIcon,
+    moduleKey: 'encomendas',
+  },
+  {
+    to: '/comunicados',
+    label: 'Comunicados',
+    roles: ['morador', 'admin', 'porteiro'],
+    icon: ComunicadoIcon,
+    moduleKey: 'comunicados',
+  },
   { to: '/chat', label: 'Chat', roles: ['morador', 'admin'], icon: ChatIcon },
   {
     to: '/visitantes',
     label: 'Visitantes',
     roles: ['morador', 'admin', 'porteiro'],
     icon: VisitanteIcon,
+    moduleKey: 'visitantes',
   },
-  { to: '/comida', label: 'Comida', roles: ['morador', 'admin', 'porteiro'] },
+  { to: '/comida', label: 'Comida', roles: ['morador', 'admin', 'porteiro'], moduleKey: 'comida' },
   {
     to: '/areas-comuns',
     label: 'Áreas comuns',
@@ -44,6 +60,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/residencias', label: 'Residências', roles: ['admin'], group: 'cadastros' },
   { to: '/moradores', label: 'Moradores', roles: ['admin'], group: 'cadastros' },
   { to: '/equipe', label: 'Equipe', roles: ['admin'], group: 'cadastros' },
+  { to: '/permissoes', label: 'Permissões', roles: ['admin'], group: 'cadastros' },
   { to: '/condominios', label: 'Condomínios', roles: ['superadmin'], group: 'cadastros' },
 ];
 
@@ -56,8 +73,19 @@ function linkClassName({ isActive }: { isActive: boolean }) {
   );
 }
 
-export function Nav({ role }: { role: UserRole }) {
-  const items = NAV_ITEMS.filter((item) => item.roles.includes(role));
+export interface NavProps {
+  role: UserRole;
+  permissoesPorteiro?: PermissoesPorteiro;
+}
+
+export function Nav({ role, permissoesPorteiro }: NavProps) {
+  const items = NAV_ITEMS.filter((item) => {
+    if (!item.roles.includes(role)) return false;
+    if (role === 'porteiro' && item.moduleKey && permissoesPorteiro?.[item.moduleKey] === false) {
+      return false;
+    }
+    return true;
+  });
 
   if (items.length === 0) return null;
 

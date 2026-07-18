@@ -95,7 +95,7 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
 
 ## 8. Estado atual
 
-> Atualizado em 18/07/2026, fim da Session 28. Histórico completo sessão a sessão em
+> Atualizado em 18/07/2026, fim da Session 29 (em andamento). Histórico completo sessão a sessão em
 > `docs/CHECKPOINT_HISTORY.md`.
 
 - **Reformulação de acesso (iniciada Session 25)**: fim do auto-registro livre, modelo hierárquico
@@ -108,7 +108,12 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
     (`Sidebar.tsx`, `sticky`, `md:`+), agrupada em módulos operacionais (sem rótulo) + bloco
     "Cadastros" (Residências/Moradores/Equipe/Condomínios). `Nav.tsx` não tem mais variante
     horizontal — sempre vertical, reaproveitado igual no `Sidebar` e no drawer mobile do `Header`.
-  - Fatia 5 (RBAC) e Fatia 6 (importação em massa) — não iniciadas.
+  - Fatia 5 (RBAC) — completa (Session 29): os 4 papéis fixos continuam intactos; o admin agora liga/
+    desliga o acesso do próprio porteiro a 4 módulos (Encomendas/Visitantes/Comida/Comunicados) por
+    condomínio, via `PATCH /api/condominios/me/permissoes` + tela `/permissoes`. Escopo deliberado —
+    não é criação livre de papéis (custaria reescrever CHECK/RLS/frontend do zero) — ver detalhe no
+    `docs/CHECKPOINT_HISTORY.md`.
+  - Fatia 6 (importação em massa) — **em andamento nesta sessão**.
   - Fase 3 antiga (Assembleia/votação) pausada até a reformulação de acesso terminar — não abandonada.
 - **Infra real:** Supabase conectado (Postgres + Auth) via Transaction Pooler. Multi-tenancy de verdade
   (banco único + `condominio_id` + RLS, role `app_user` restrita). Hospedagem alvo: Hostinger + Supabase.
@@ -118,7 +123,8 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
 - **Firebase configurado, envio real de push ainda não confirmado ponta a ponta** — falta um device
   token de verdade.
 - **Login fixo de teste** (condomínio "Condominio Teste", slug `teste`): usuário `admin`, senha
-  `Admin123!` — criado manualmente nesta sessão pra facilitar teste visual, não é seed automatizado.
-- **Próximo passo:** apresentar o plano da Fatia 5 (RBAC) antes de começar, conforme o fluxo de
-  aprovação combinado. Diretório real de morador (seletor em vez de UUID cru) em Encomendas/Comida/
-  Chat/Visitantes é melhoria futura fora de escopo, registrada mas não agendada.
+  `Admin123!`.
+- **Próximo passo:** terminar Fatia 6 (importação em massa CSV/XLSX de Moradores e Residências) —
+  última fatia do roadmap de reformulação de acesso. Diretório real de morador (seletor em vez de
+  UUID cru) em Encomendas/Comida/Chat/Visitantes é melhoria futura fora de escopo, registrada mas não
+  agendada.

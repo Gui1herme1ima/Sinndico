@@ -10,6 +10,7 @@ import {
   findCondominioBySlug,
   listCondominios,
   updateCondominioNome,
+  updateCondominioPermissoesPorteiro,
 } from '../models/Condominio';
 import { findUserByUsername } from '../models/User';
 import { sendWelcomeEmail } from '../services/emailService';
@@ -35,6 +36,13 @@ export const updateCondominioSchema = z.object({
   nome: z.string().min(1),
 });
 
+export const updatePermissoesPorteiroSchema = z.object({
+  encomendas: z.boolean(),
+  visitantes: z.boolean(),
+  comida: z.boolean(),
+  comunicados: z.boolean(),
+});
+
 function toCondominioResponse(condominio: Condominio | CondominioComContagem) {
   return {
     id: condominio.id,
@@ -45,6 +53,12 @@ function toCondominioResponse(condominio: Condominio | CondominioComContagem) {
     contatoEmail: condominio.contato_email,
     contatoTelefone: condominio.contato_telefone,
     tipoResidencia: condominio.tipo_residencia,
+    permissoesPorteiro: {
+      encomendas: condominio.porteiro_acesso_encomendas,
+      visitantes: condominio.porteiro_acesso_visitantes,
+      comida: condominio.porteiro_acesso_comida,
+      comunicados: condominio.porteiro_acesso_comunicados,
+    },
     createdAt: condominio.created_at,
     totalUsuarios: 'total_usuarios' in condominio ? Number(condominio.total_usuarios) : undefined,
   };
@@ -146,6 +160,18 @@ export async function update(req: Request, res: Response) {
   const input = updateCondominioSchema.parse(req.body);
 
   const condominio = await updateCondominioNome(id, input.nome);
+  if (!condominio) {
+    throw new ApiError(404, 'Condomínio não encontrado');
+  }
+
+  res.json(toCondominioResponse(condominio));
+}
+
+// Autenticado (admin) — liga/desliga o acesso do próprio porteiro a cada módulo (Fatia 5/RBAC).
+export async function updatePermissoesPorteiro(req: Request, res: Response) {
+  const input = updatePermissoesPorteiroSchema.parse(req.body);
+
+  const condominio = await updateCondominioPermissoesPorteiro(req.user!.condominioId!, input);
   if (!condominio) {
     throw new ApiError(404, 'Condomínio não encontrado');
   }

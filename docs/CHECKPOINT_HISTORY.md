@@ -2,6 +2,66 @@
 
 > Arquivo de arquivo do log de progresso sessão a sessão. O CLAUDE.md guarda só o estado atual e os próximos passos (seção 8); o histórico detalhado de cada sessão passada vive aqui, mais recente primeiro. Consulte quando precisar entender o raciocínio ou uma decisão técnica de uma sessão específica.
 
+### Session 29 (Data: 18/07/2026) — Fatia 5
+
+**Completado:**
+- [x] **Fatia 5 — RBAC ("papéis customizáveis por tenant")**, plano apresentado e aprovado antes de
+  codar. Usuário autorizou seguir direto pra Fatia 6 sem pausa (verificação manual fica pro final).
+  - **Escopo deliberado**: os 4 papéis fixos (`morador`/`admin`/`porteiro`/`superadmin`) continuam
+    intactos — criar papéis nomeados livremente pelo admin exigiria reescrever o `CHECK` constraint
+    de `users.role`, as RLS policies e 3 pontos desacoplados do frontend (`RequireAuth`/`Nav`/
+    `types.ts`), desproporcional ao que o roadmap descrevia como "por último, de propósito".
+    Interpretação escolhida: o admin liga/desliga o acesso do **próprio porteiro** a 4 módulos
+    operacionais (Encomendas/Visitantes/Comida/Comunicados — os únicos que a pesquisa confirmou
+    serem "porteiro-dependentes, não estruturais"); `morador`/`admin`/`superadmin` seguem fixos.
+  - **Migration `1700000000023_...`**: 4 colunas booleanas em `condominios` (mesmo padrão de
+    `tipo_residencia` — config do tenant direto na tabela), default `true` (preserva o comportamento
+    atual de todo condomínio existente).
+  - **`middleware/porteiroModuleAccess.ts`** (novo): `requirePorteiroModuleAccess(modulo)` — só
+    restringe quem já é `porteiro`; admin/morador nunca são afetados mesmo nas mesmas rotas. Aplicado
+    **depois** de `authorize(...)` nas rotas de Encomendas/Visitantes/Comida/Comunicados que incluíam
+    `porteiro`, sem alterar `authorize` em si.
+  - **`GET /api/condominios/me`** ganhou `permissoesPorteiro`; **`PATCH /api/condominios/me/
+    permissoes`** (novo, admin) atualiza as 4 flags; `GET /api/auth/me` e `login()` passam a incluir
+    `permissoesPorteiro` na resposta do usuário quando `role === 'porteiro'` (função compartilhada
+    `getPermissoesPorteiro`, evita duplicar a busca).
+  - **Frontend**: `components/ui/Toggle.tsx` (novo, switch genérico — design system só tinha o
+    `ThemeToggle` especializado); `pages/Permissoes/PermissoesPage.tsx` (admin, 4 toggles, salva a
+    cada mudança); `Nav.tsx` ganhou `moduleKey` por item — porteiro não vê mais o item se o módulo
+    estiver desligado pro próprio tenant; `RequireAuth.tsx` ganhou prop `moduleKey` (mesma checagem,
+    bloqueia navegação direta por URL).
+  - **Bug em potencial evitado antes de existir** (não um bug encontrado, uma armadilha identificada
+    no desenho): `roleHome('porteiro')` sempre apontava pra `/encomendas` — se o admin desligasse
+    justamente Encomendas, um porteiro seria redirecionado pra uma rota que ele mesmo não pode
+    acessar, causando loop infinito de redirect. Corrigido tornando `roleHome` ciente das permissões
+    (escolhe o primeiro módulo habilitado); no caso degenerado de o admin desligar os 4 módulos ao
+    mesmo tempo, `roleHome` devolve `null` e um componente novo (`SemAcessoAoModulo.tsx`) mostra uma
+    mensagem em vez de tentar mais um `Navigate` (que loopar​ia de novo).
+
+**Verificação feita nesta sessão:**
+- Migration rodada contra o Supabase real. `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web)
+  limpos.
+- API real (script descartável): condomínio novo nasce com as 4 flags `true`; porteiro acessa Comida
+  normalmente → admin desliga só `comida` → porteiro recebe 403 em `/api/comida` mas continua 200 em
+  `/api/encomendas` (flags são independentes) → admin continua 200 em `/api/comida` mesmo desligado
+  (a flag nunca afeta admin) → porteiro tentando `PATCH /me/permissoes` → 403 → `/me`/login do
+  porteiro refletem a flag atualizada → religar a flag restaura o acesso.
+- Verificação de UI (Playwright) escrita e disparada, mas a sessão seguiu pra Fatia 6 antes do
+  resultado — usuário pediu pra completar tudo primeiro e testar manualmente no final, em vez de
+  pausar a cada fatia pra verificação visual.
+
+**Próximo passo:**
+- [ ] Fatia 6 (importação em massa) — última fatia do roadmap.
+- [ ] Usuário vai testar manualmente Fatia 5 (e as demais) no final da sessão.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhum desvio do plano aprovado — a interpretação de escopo do RBAC já estava explicitada e
+  aprovada no plano antes de codar, não foi descoberta durante a implementação.
+
+**Bugs conhecidos:**
+- Nenhum confirmado — verificação de UI (Playwright) disparada mas não conferida nesta sessão (ver
+  Verificação acima); a API real já confirma o enforcement de backend ponta a ponta.
+
 ### Session 28 (Data: 18/07/2026)
 **Completado:**
 - [x] **Fatia 4 — Barra lateral**, plano apresentado e aprovado antes de codar. Fecha o roadmap item

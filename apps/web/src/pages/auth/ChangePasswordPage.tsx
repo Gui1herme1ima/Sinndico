@@ -25,7 +25,7 @@ export function ChangePasswordPage() {
     try {
       await authApi.changePassword({ novaSenha });
       await refreshUser();
-      navigate(user ? roleHome(user.role) : '/', { replace: true });
+      navigate(user ? (roleHome(user.role, user.permissoesPorteiro) ?? '/') : '/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao trocar a senha.');
     } finally {

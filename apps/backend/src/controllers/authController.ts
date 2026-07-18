@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
+import { findCondominioById } from '../models/Condominio';
 import { findUserById, findUserByUsername, setSenhaTemporaria, syntheticEmailFor, User } from '../models/User';
 import { supabaseAdmin, supabaseAuth } from '../services/supabaseClient';
 
@@ -41,6 +42,22 @@ function toUserResponse(user: User) {
   };
 }
 
+// Compartilhado por login() e me() — busca as flags do próprio condomínio só quando o papel é
+// porteiro (as outras roles nunca são restringidas por módulo, ver middleware/porteiroModuleAccess).
+async function getPermissoesPorteiro(role: string, condominioId: string | null) {
+  if (role !== 'porteiro' || !condominioId) return undefined;
+
+  const condominio = await findCondominioById(condominioId);
+  if (!condominio) return undefined;
+
+  return {
+    encomendas: condominio.porteiro_acesso_encomendas,
+    visitantes: condominio.porteiro_acesso_visitantes,
+    comida: condominio.porteiro_acesso_comida,
+    comunicados: condominio.porteiro_acesso_comunicados,
+  };
+}
+
 // Login por username OU e-mail: se o identificador não parece e-mail, resolve pra que e-mail (real ou
 // sintético — ver syntheticEmailFor em models/User.ts) o Supabase Auth tem cadastrado pra esse
 // username, antes de chamar signInWithPassword (que só entende e-mail/telefone, não username).
@@ -74,7 +91,10 @@ export async function login(req: Request, res: Response) {
     accessToken: signIn.session.access_token,
     refreshToken: signIn.session.refresh_token,
     expiresIn: signIn.session.expires_in,
-    user: toUserResponse(user),
+    user: {
+      ...toUserResponse(user),
+      permissoesPorteiro: await getPermissoesPorteiro(user.role, user.condominio_id),
+    },
   });
 }
 
@@ -121,6 +141,7 @@ export async function me(req: Request, res: Response) {
     ...toUserResponse(profile),
     role: req.user!.role,
     condominioId: req.user!.condominioId,
+    permissoesPorteiro: await getPermissoesPorteiro(req.user!.role, req.user!.condominioId),
   });
 }
 

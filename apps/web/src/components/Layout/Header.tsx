@@ -50,7 +50,7 @@ export function Header() {
 
       {mobileOpen && (
         <div className="border-t border-border px-4 py-3 md:hidden">
-          <Nav role={user.role} />
+          <Nav role={user.role} permissoesPorteiro={user.permissoesPorteiro} />
           <button
             type="button"
             onClick={() => void logout()}

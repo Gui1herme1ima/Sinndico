@@ -5,6 +5,7 @@ import type {
   CreateCondominioPayload,
   CreateCondominioResponse,
   UpdateCondominioPayload,
+  UpdatePermissoesPorteiroPayload,
 } from '@/services/api/types';
 
 export const condominiosApi = {
@@ -29,6 +30,13 @@ export const condominiosApi = {
 
   update(id: string, payload: UpdateCondominioPayload): Promise<CondominioResponse> {
     return apiFetch<CondominioResponse>(`/api/condominios/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  updatePermissoesPorteiro(payload: UpdatePermissoesPorteiroPayload): Promise<CondominioResponse> {
+    return apiFetch<CondominioResponse>('/api/condominios/me/permissoes', {
       method: 'PATCH',
       body: JSON.stringify(payload),
     });

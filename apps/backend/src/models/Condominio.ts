@@ -17,7 +17,20 @@ export interface Condominio {
   contato_email: string | null;
   contato_telefone: string | null;
   tipo_residencia: TipoResidencia;
+  // Fatia 5 (RBAC): controla se o porteiro deste condomínio acessa cada módulo — só restringe o
+  // papel porteiro; admin/morador/superadmin nunca são afetados por essas flags.
+  porteiro_acesso_encomendas: boolean;
+  porteiro_acesso_visitantes: boolean;
+  porteiro_acesso_comida: boolean;
+  porteiro_acesso_comunicados: boolean;
   created_at: Date;
+}
+
+export interface PermissoesPorteiroInput {
+  encomendas: boolean;
+  visitantes: boolean;
+  comida: boolean;
+  comunicados: boolean;
 }
 
 export interface CondominioComContagem extends Condominio {
@@ -85,6 +98,23 @@ export async function updateCondominioNome(id: string, nome: string): Promise<Co
   const result = await pool.query<Condominio>(
     'UPDATE condominios SET nome = $1 WHERE id = $2 RETURNING *',
     [nome, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateCondominioPermissoesPorteiro(
+  id: string,
+  input: PermissoesPorteiroInput
+): Promise<Condominio | null> {
+  const result = await pool.query<Condominio>(
+    `UPDATE condominios SET
+       porteiro_acesso_encomendas = $1,
+       porteiro_acesso_visitantes = $2,
+       porteiro_acesso_comida = $3,
+       porteiro_acesso_comunicados = $4
+     WHERE id = $5
+     RETURNING *`,
+    [input.encomendas, input.visitantes, input.comida, input.comunicados, id]
   );
   return result.rows[0] ?? null;
 }

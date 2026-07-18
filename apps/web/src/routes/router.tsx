@@ -15,17 +15,22 @@ import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
 import { EquipePage } from '@/pages/Equipe/EquipePage';
 import { MoradoresPage } from '@/pages/Moradores/MoradoresPage';
+import { PermissoesPage } from '@/pages/Permissoes/PermissoesPage';
 import { ResidenciasPage } from '@/pages/Residencias/ResidenciasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
 import { VisitantesPage } from '@/pages/Visitantes/VisitantesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
 import { RequireGuest } from '@/routes/RequireGuest';
 import { roleHome } from '@/routes/roleHome';
+import { SemAcessoAoModulo } from '@/routes/SemAcessoAoModulo';
 import { useAuth } from '@/store/useAuth';
 
 function IndexRedirect() {
   const { user } = useAuth();
-  return <Navigate to={user ? roleHome(user.role) : '/login'} replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  const home = roleHome(user.role, user.permissoesPorteiro);
+  if (!home) return <SemAcessoAoModulo />;
+  return <Navigate to={home} replace />;
 }
 
 export function AppRoutes() {
@@ -103,6 +108,14 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="permissoes"
+          element={
+            <RequireAuth roles={['admin']}>
+              <PermissoesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="solicitacoes"
           element={
             <RequireAuth roles={['morador', 'admin']}>
@@ -113,7 +126,7 @@ export function AppRoutes() {
         <Route
           path="encomendas"
           element={
-            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+            <RequireAuth roles={['morador', 'admin', 'porteiro']} moduleKey="encomendas">
               <EncomendasPage />
             </RequireAuth>
           }
@@ -121,7 +134,7 @@ export function AppRoutes() {
         <Route
           path="comunicados"
           element={
-            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+            <RequireAuth roles={['morador', 'admin', 'porteiro']} moduleKey="comunicados">
               <ComunicadosPage />
             </RequireAuth>
           }
@@ -145,7 +158,7 @@ export function AppRoutes() {
         <Route
           path="visitantes"
           element={
-            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+            <RequireAuth roles={['morador', 'admin', 'porteiro']} moduleKey="visitantes">
               <VisitantesPage />
             </RequireAuth>
           }
@@ -153,7 +166,7 @@ export function AppRoutes() {
         <Route
           path="comida"
           element={
-            <RequireAuth roles={['morador', 'admin', 'porteiro']}>
+            <RequireAuth roles={['morador', 'admin', 'porteiro']} moduleKey="comida">
               <ComidaPage />
             </RequireAuth>
           }
