@@ -68,10 +68,10 @@ Sempre seguir a ordem abaixo. Não pular fase nem implementar módulo de fase fu
 
 Ao final de cada sessão de desenvolvimento (ou sempre que o usuário disser "vamos parar por aqui" / fechar o terminal), o Claude Code deve:
 
-1. **Sobrescrever** (não acrescentar) a seção `## 8. Estado atual` deste arquivo com o estado mais recente: em que fatia/fase o projeto está, o que foi concluído na sessão, o próximo passo, decisões técnicas relevantes e bugs conhecidos em aberto. Este bloco deve ficar **curto o bastante pra ler em menos de 1 minuto** — nada de histórico de sessões anteriores aqui.
+1. **Sobrescrever** (não acrescentar) a seção `## 9. Estado atual` deste arquivo com o estado mais recente: em que fatia/fase o projeto está, o que foi concluído na sessão, o próximo passo, decisões técnicas relevantes e bugs conhecidos em aberto. Este bloco deve ficar **curto o bastante pra ler em menos de 1 minuto** — nada de histórico de sessões anteriores aqui.
 2. Adicionar o registro detalhado da sessão (mesmo formato de sempre, ver abaixo) no **topo** de `docs/CHECKPOINT_HISTORY.md`. É aí que mora o histórico completo, sessão a sessão — CLAUDE.md nunca acumula esse detalhe.
 
-Ao **iniciar** uma nova sessão, ler primeiro a seção `## 8. Estado atual` (rápido). Só abrir
+Ao **iniciar** uma nova sessão, ler primeiro a seção `## 9. Estado atual` (rápido). Só abrir
 `docs/CHECKPOINT_HISTORY.md` se precisar entender o raciocínio ou uma decisão técnica de uma sessão
 específica mais antiga — não é leitura obrigatória a cada início de sessão.
 
@@ -93,41 +93,113 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
 - (se houver)
 ```
 
-## 8. Estado atual
+## 8. Fase 4 — Robustez e Expansão
 
-> Atualizado em 18/07/2026, fim da Session 30. Histórico completo sessão a sessão em
+Fase 3 concluída (roadmap funcional inteiro do README implementado). A Fase 4 evolui o Sinndico de
+MVP para produto robusto. **Regra de fatiamento:** uma fatia = uma sessão de desenvolvimento;
+seguir a ordem numérica; não pular fatia nem antecipar fatia futura sem confirmação explícita do
+usuário (vale a mesma regra da seção 6). A fundação de UX (Bloco A) vem **antes** de qualquer módulo
+novo — não começar módulo do Bloco C sem o Bloco A estar pronto.
+
+> Nota de numeração: esta "Fase 4 — Robustez e Expansão" substitui, na prática, a antiga "Fase 4:
+> Polish + Deployment" do README (seção 6). Testes/otimização/deploy continuam válidos e aparecem
+> diluídos nas fatias abaixo (ex.: 4.1 é auditoria de performance).
+
+### Bloco A — Fundação de UX (base pra todo o resto)
+
+- **Fatia 4.1 — Auditoria e correção de performance.** Lazy loading de rotas (code splitting),
+  cache/prefetch com a lib de data-fetching atual, eliminar re-renders desnecessários. Medir com
+  Lighthouse + React Profiler antes e depois (registrar os números no checkpoint).
+- **Fatia 4.2 — Componente de listagem padrão (base + 2 telas).** Tabela/lista reutilizável com
+  busca, filtros (status/categoria/data), ordenação e paginação. Construir o componente e aplicar em
+  Solicitações e Encomendas.
+- **Fatia 4.3 — Rollout da listagem padrão.** Aplicar o componente da 4.2 em Visitantes, Comida,
+  Reservas e Moradores.
+- **Fatia 4.4 — Seletor de moradores com busca.** Substituir todo campo de UUID cru por seletor com
+  busca (nome/apto). Em Encomendas e Chat já existe (`GET /api/users/diretorio`, Session 30);
+  estender pra Comida e Visitantes e padronizar o componente entre as quatro telas.
+- **Fatia 4.5 — Polimento visual.** Ícones faltantes na nav (Comida, Dashboard, Cadastros), empty
+  states ilustrados com call-to-action, skeleton loading em todas as listas, revisão de
+  espaçamento/grid (hoje sobra espaço vazio). Testar nos dois modos (claro/escuro).
+- **Fatia 4.6 — Drawer de detalhe.** Detalhe de item em drawer lateral em vez de expandir inline,
+  como padrão reutilizável nas listas do Bloco A.
+- **Fatia 4.7 — Central de notificações in-app.** Sino no header com badge de não lidas, alimentado
+  pelos mesmos eventos que já disparam push.
+
+### Bloco B — Dashboard rico
+
+- **Fatia 4.8 — Dashboard admin.** Gráficos com Recharts (já previsto na stack): solicitações por
+  status e por categoria ao longo do tempo, ocupação de áreas comuns, encomendas por dia. Feed de
+  atividade recente + atalhos rápidos. Inadimplência fica placeholder até o Financeiro existir
+  (Bloco C).
+- **Fatia 4.9 — Dashboard do porteiro.** Encomendas pendentes, visitantes esperados hoje, entregas a
+  caminho.
+- **Fatia 4.10 — Dashboard do morador.** Minhas pendências, próximas reservas, últimos comunicados.
+
+### Bloco C — Módulos novos (ordem de valor)
+
+- **Fatia 4.11 — Financeiro (cobranças).** Taxa condominial por residência, geração de cobranças
+  mensais, registro de pagamento, inadimplência visível no admin. Integração de boleto/PIX fica pra
+  depois — começar com controle manual.
+- **Fatia 4.12 — Financeiro (despesas + prestação de contas).** Despesas do condomínio com
+  categorias e prestação de contas mensal (relatório). Habilita o gráfico de inadimplência da 4.8.
+- **Fatia 4.13 — Ocorrências e penalidades.** Admin registra ocorrência contra uma residência
+  (barulho, infração de regimento), fluxo advertência → multa, morador visualiza e pode contestar.
+- **Fatia 4.14 — Documentos.** Repositório de atas, regimento interno, convenção, contratos e
+  prestações de contas (upload pelo admin, leitura por morador), usando o storage já previsto na
+  stack (Supabase Storage / S3).
+- **Fatia 4.15 — Manutenção preventiva.** Cadastro de ativos (elevador, bomba, portão) com
+  agendamento recorrente de manutenção e histórico — complementa as Solicitações reativas.
+- **Fatia 4.16 — Portaria avançada (QR de visitante).** QR code de pré-autorização: morador gera,
+  porteiro escaneia/valida.
+- **Fatia 4.17 — Portaria avançada (veículos, pets, mudanças).** Cadastro de veículos e pets por
+  residência + agendamento de mudanças.
+- **Fatia 4.18 — Enquetes rápidas.** Votação leve criada pelo admin, separada do módulo formal de
+  Assembleias.
+- **Fatia 4.19 — Auditoria.** Tabela de log de ações sensíveis (quem mudou status, quem
+  cadastrou/excluiu), visível ao admin — substitui o `console.log` do "ver como".
+- **Fatia 4.20 — Onboarding real.** Convite por e-mail com link de cadastro (elimina o UUID cru no
+  `/register`), fluxo de primeiro acesso do condomínio.
+
+### Bloco D — Relatórios e exportação
+
+- **Fatia 4.21 — Exportar PDF/planilha.** Relatório mensal de solicitações, financeiro e ocupação de
+  áreas, usando os dados já existentes. Depende do Financeiro (4.11–4.12).
+
+---
+
+## 9. Estado atual
+
+> Atualizado em 18/07/2026, fim da Session 31. Histórico completo sessão a sessão em
 > `docs/CHECKPOINT_HISTORY.md`.
 
-- **Reformulação de acesso — as 6 fatias do roadmap estão completas** (iniciada Session 25, fechada
-  nesta sessão): fim do auto-registro livre, modelo hierárquico (superadmin cria condomínio+primeiro
-  admin; admin cadastra tudo o mais; morador só recebe acesso via e-mail de boas-vindas); Residências;
-  Moradores e Equipe; barra lateral agrupada; acesso do porteiro configurável por módulo; importação
-  em massa (CSV/XLSX) de residências e moradores. Detalhe de cada fatia em
-  `docs/CHECKPOINT_HISTORY.md` (Sessions 25-29).
+- **Fase 4 — Robustez e Expansão em andamento.** Roadmap aprovado, dividido em 21 fatias (seção 8).
+  **Fatia 4.1 (performance) concluída nesta sessão.** Próxima: Fatia 4.2 (componente de listagem
+  padrão).
+- **Fatia 4.1 — o que mudou em `apps/web`:** code splitting por rota (`router.tsx` com `React.lazy`
+  + Suspense; `RouteFallback` skeleton); `xlsx` carregado via `await import('xlsx')` (fora do bundle
+  inicial); `queryClient` com `staleTime` 30s + `gcTime` 5min; prefetch on hover na nav
+  (`routes/routePrefetch.ts`); `AuthContext` memoizado. Bundle inicial gzip caiu ~66% (209.83 →
+  70.48 kB). Lighthouse/Profiler ficam como verificação manual do usuário (headless não roda).
+- **Roadmap funcional do README 100% implementado** (Fases 1/2/3): Solicitações, Encomendas,
+  Comunicados, Chat, Dashboard admin, Notificações push (FCM), Visitantes, Comida/Delivery, Áreas
+  Comuns/Reservas, Assembleia/Votação. Brand kit integrado desde a Session 21.
+- **Acesso hierárquico (Sessions 25-30):** fim do auto-registro; superadmin cria condomínio+primeiro
+  admin; admin cadastra o resto; morador recebe acesso por e-mail. Residências, Moradores, Equipe,
+  barra lateral agrupada, acesso do porteiro configurável por módulo, importação em massa CSV/XLSX,
+  diretório real de morador (`GET /api/users/diretorio`).
 - **Infra real:** Supabase conectado (Postgres + Auth) via Transaction Pooler. Multi-tenancy de verdade
   (banco único + `condominio_id` + RLS, role `app_user` restrita). Hospedagem alvo: Hostinger + Supabase.
-- **Módulos operacionais da Fase 1/2/Áreas Comuns completos** (API + tela, testados ponta a ponta):
-  Solicitações, Encomendas, Comunicados, Chat, Dashboard admin, Notificações push (FCM), Visitantes,
-  Comida/Delivery, Áreas Comuns/Reservas. Brand kit integrado desde a Session 21.
 - **Firebase configurado, envio real de push ainda não confirmado ponta a ponta** — falta um device
   token de verdade.
-- **`apps/web` ganhou a dependência `xlsx` (SheetJS) instalada direto do CDN oficial deles**
-  (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), não do npm registry — a versão publicada no
-  npm (`0.18.5`) está travada com 2 vulnerabilidades high (prototype pollution + ReDoS) sem fix ali;
-  o próprio SheetJS recomenda instalar builds corrigidas via CDN deles. Decisão confirmada
-  explicitamente pelo usuário antes de instalar (URL externa, fora do npm registry).
+- **`apps/web` usa `xlsx` (SheetJS) instalado do CDN oficial deles**
+  (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), não do npm — a versão do npm (`0.18.5`)
+  tem 2 vulnerabilidades high sem fix; o próprio SheetJS recomenda o CDN. Decisão confirmada pelo
+  usuário. (A partir da 4.1 o SheetJS é importado dinamicamente, então nem entra no bundle inicial.)
 - **Login fixo de teste** (condomínio "Condominio Teste", slug `teste`): usuário `admin`, senha
   `Admin123!`.
-- **Fase 3 antiga completa**: módulo de Assembleia/Votação implementado (`assembleias`/`votos`,
-  admin convoca → abre votação → encerra, morador vota uma vez por assembleia, contagem em tempo real
-  faz o papel de "ata automática"). Com isso o roadmap funcional inteiro do README está implementado.
-- **Diretório real de morador**: `GET /api/users/diretorio` (novo, admin + porteiro, devolve só
-  `{id, nome, residencia}`) substituiu os campos de UUID cru em `CreateEncomendaForm` (porteiro) e
-  `ChatPage` (admin) por um `<Select>` de verdade.
-- **Todos os itens que estavam registrados como pendentes no início desta sessão foram concluídos** —
-  não há mais nenhum item de roadmap funcional em aberto. Próximas direções (RBAC mais granular,
-  papéis nomeados livremente, integração de push real, etc.) ficam pra quando o usuário priorizar.
-- **Verificação pendente do usuário**: Fatias 5 e 6 (Session 29), o módulo de Assembleia e o diretório
-  de morador foram testados via API real (todos passaram) mas a verificação de UI (Playwright) não foi
-  conferida nesta sessão — usuário pediu pra completar tudo primeiro e testar manualmente no final.
-- **Próximo passo:** nenhum item pendente conhecido. Aguardar prioridade do usuário.
+- **Verificação pendente do usuário:** mudanças de UI da 4.1 e das Sessions 29-30 testadas via
+  build/API (passam), mas verificação visual no browser (dois modos, Playwright) ainda não conferida —
+  usuário testa manualmente.
+- **Próximo passo:** Fatia 4.2 — componente de listagem padrão (busca/filtros/ordenação/paginação) +
+  aplicar em Solicitações e Encomendas.

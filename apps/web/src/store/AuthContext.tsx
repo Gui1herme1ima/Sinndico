@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useReducer } from 'react';
 import type { ReactNode } from 'react';
 
 import { authApi } from '@/services/api/authApi';
@@ -63,13 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void bootstrap();
   }, []);
 
-  async function login(payload: LoginPayload) {
+  // Callbacks estáveis (useCallback) + value memoizado (useMemo): sem isso, cada render do provider
+  // criaria novas referências e re-renderizaria todo consumidor de useAuth à toa. Agora o value só
+  // muda quando `state` muda de fato (Fatia 4.1, eliminar re-renders).
+  const login = useCallback(async (payload: LoginPayload) => {
     const response = await authApi.login(payload);
     tokenStorage.set(response);
     dispatch({ type: 'AUTHENTICATED', user: response.user });
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       await authApi.logout();
     } catch {
@@ -77,14 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     tokenStorage.clear();
     dispatch({ type: 'UNAUTHENTICATED' });
-  }
+  }, []);
 
-  async function refreshUser() {
+  const refreshUser = useCallback(async () => {
     const user = await authApi.me();
     dispatch({ type: 'AUTHENTICATED', user });
-  }
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ state, login, logout, refreshUser }}>{children}</AuthContext.Provider>
+  const value = useMemo<AuthContextValue>(
+    () => ({ state, login, logout, refreshUser }),
+    [state, login, logout, refreshUser],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

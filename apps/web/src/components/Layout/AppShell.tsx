@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 import { Header } from '@/components/Layout/Header';
+import { RouteFallback } from '@/components/Layout/RouteFallback';
 import { Sidebar } from '@/components/Layout/Sidebar';
 import { impersonation } from '@/services/impersonation';
 import { useAuth } from '@/store/useAuth';
@@ -36,7 +38,9 @@ export function AppShell() {
       <div className="mx-auto flex max-w-7xl">
         <Sidebar />
         <main className="min-w-0 flex-1 px-4 py-6 md:px-6">
-          <Outlet />
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   VisitanteIcon,
 } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
+import { prefetchRoute } from '@/routes/routePrefetch';
 import type { PermissoesPorteiro, UserRole } from '@/services/api/types';
 
 interface NavItem {
@@ -102,7 +103,13 @@ export function Nav({ role, permissoesPorteiro }: NavProps) {
   return (
     <nav className="flex flex-col gap-1">
       {principais.map((item) => (
-        <NavLink key={item.to} to={item.to} className={linkClassName}>
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={linkClassName}
+          onMouseEnter={() => prefetchRoute(item.to)}
+          onFocus={() => prefetchRoute(item.to)}
+        >
           {item.icon && <item.icon width={16} height={16} />}
           {item.label}
         </NavLink>
@@ -114,7 +121,13 @@ export function Nav({ role, permissoesPorteiro }: NavProps) {
             Cadastros
           </p>
           {cadastros.map((item) => (
-            <NavLink key={item.to} to={item.to} className={linkClassName}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={linkClassName}
+              onMouseEnter={() => prefetchRoute(item.to)}
+              onFocus={() => prefetchRoute(item.to)}
+            >
               {item.icon && <item.icon width={16} height={16} />}
               {item.label}
             </NavLink>

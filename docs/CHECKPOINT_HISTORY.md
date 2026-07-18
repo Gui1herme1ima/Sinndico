@@ -2,6 +2,48 @@
 
 > Arquivo de arquivo do log de progresso sessão a sessão. O CLAUDE.md guarda só o estado atual e os próximos passos (seção 8); o histórico detalhado de cada sessão passada vive aqui, mais recente primeiro. Consulte quando precisar entender o raciocínio ou uma decisão técnica de uma sessão específica.
 
+### Session 31 (Data: 18/07/2026) — Fase 4 planejada + Fatia 4.1 (performance)
+
+**Completado:**
+- [x] **Fase 4 — Robustez e Expansão documentada e aprovada.** Roadmap do usuário (15 itens em 4
+  blocos A-D) dividido em **21 fatias** (uma = uma sessão), registrado na nova seção 8 do CLAUDE.md.
+  "Estado atual" virou seção 9 (referências da seção 7 renumeradas). Decisões de fatiamento: item 2
+  (listagem) partido em base+2telas / rollout; item 6 (dashboard) por perfil admin/porteiro/morador;
+  item 7 (financeiro) cobranças / despesas+prestação; item 11 (portaria) QR / veículos+pets+mudanças;
+  item 4 (polimento) geral (4.5) separado do drawer (4.6). Dependências marcadas: gráfico de
+  inadimplência (4.8) placeholder até financeiro (4.12); exportação (4.21) depende de 4.11-4.12.
+- [x] **Fatia 4.1 — Auditoria e correção de performance** (apps/web):
+  - **Code splitting**: todas as páginas em `router.tsx` convertidas pra `React.lazy` (export nomeado
+    remapeado pro `default`). Suspense dentro do `AppShell` em volta do `<Outlet/>` (header/sidebar
+    persistem, só o conteúdo mostra skeleton) + Suspense de topo em `AppRoutes` pras rotas fora do
+    shell (login/senha/404). Novo `RouteFallback` (skeleton de cabeçalho+lista, respeita
+    prefers-reduced-motion via `Skeleton`).
+  - **xlsx dinâmico**: `parseSpreadsheet.ts` trocou `import * as XLSX` por `await import('xlsx')` —
+    SheetJS (163 kB gzip) saiu do bundle inicial pra chunk próprio, só carrega ao importar planilha.
+  - **Cache (React Query)**: `queryClient` ganhou `staleTime: 30s` + `gcTime: 5min` — revisitar tela
+    dentro do intervalo serve do cache sem refetch; voltar a tela já vista é instantâneo.
+  - **Prefetch on hover**: novo `routes/routePrefetch.ts` (mapa rota→prefetchQuery com a mesma
+    queryKey/queryFn de cada página); `Nav` dispara `prefetchRoute` em `onMouseEnter`/`onFocus`.
+    Respeita staleTime (não refetcha se fresco).
+  - **Re-renders**: `AuthContext` memoizado — `login/logout/refreshUser` em `useCallback`, value em
+    `useMemo([state,...])`. Consumidores de `useAuth` só re-renderizam quando o estado muda.
+  - **Medição (antes/depois, `npm run build`, gzip):** bundle inicial JS **209.83 kB → 70.48 kB**
+    (~66% menor); entry chunk 663.82 kB → 222.63 kB (sumiu o aviso de >500 kB do Vite); páginas
+    agora chunks de 1-7 kB sob demanda.
+
+**Próximo passo:**
+- [ ] Fatia 4.2 — Componente de listagem padrão (busca/filtros/ordenação/paginação) + aplicar em
+  Solicitações e Encomendas.
+
+**Decisões técnicas / desvios do plano original:**
+- Lighthouse e React Profiler (medição pedida no roadmap) precisam de browser interativo — não rodam
+  neste ambiente headless. A métrica objetiva capturada foi o tamanho de bundle (build de produção,
+  gzip) antes/depois. Rodar Lighthouse/Profiler fica como verificação manual do usuário no browser.
+
+**Bugs conhecidos:**
+- Nenhum novo. Verificação de UI (browser/Playwright) das mudanças de 4.1 pendente do usuário; build
+  de produção passa (tsc + vite), preview sobe (HTTP 200) e os chunks lazy servem 200.
+
 ### Session 30 (Data: 18/07/2026) — Assembleia e votação
 
 **Completado:**
