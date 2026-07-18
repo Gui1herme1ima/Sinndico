@@ -3,6 +3,8 @@ import type {
   CreateMoradorPayload,
   CreateStaffUserPayload,
   CreateUserResponse,
+  ImportarMoradoresPayload,
+  ImportarResultado,
   MoradorResponse,
   ResetSenhaResponse,
   StaffUserResponse,
@@ -42,6 +44,13 @@ export const usersApi = {
   resetSenha(id: string): Promise<ResetSenhaResponse> {
     return apiFetch<ResetSenhaResponse>(`/api/users/${id}/senha`, {
       method: 'PATCH',
+    });
+  },
+
+  importarMoradores(payload: ImportarMoradoresPayload): Promise<ImportarResultado> {
+    return apiFetch<ImportarResultado>('/api/users/importar', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   },
 };

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 
+import { TenantContext } from '../database/tenantContext';
 import { ApiError } from '../middleware/errorHandler';
 import { findCondominioById } from '../models/Condominio';
 import {
@@ -19,6 +20,10 @@ export const createResidenciaSchema = z.object({
 });
 
 export const updateResidenciaSchema = createResidenciaSchema;
+
+export const importarResidenciasSchema = z.object({
+  residencias: z.array(createResidenciaSchema).min(1).max(500),
+});
 
 function toResidenciaResponse(residencia: Residencia) {
   return {
@@ -60,11 +65,14 @@ async function normalizarBlocoRua(
   return { bloco: null, rua: input.rua };
 }
 
-export async function create(req: Request, res: Response) {
-  const input = createResidenciaSchema.parse(req.body);
-  const condominioId = req.user!.condominioId!;
-  const ctx = tenantContextOf(req);
-
+// Compartilhada por create() e importar() — checa bloco/rua vs tipo do condomínio, duplicidade, e
+// insere. Lança ApiError igual ao caminho de criação individual; importar() captura por linha em vez
+// de deixar propagar, pra uma linha ruim não derrubar as outras.
+async function criarUmaResidencia(
+  condominioId: string,
+  ctx: TenantContext,
+  input: { bloco?: string; rua?: string; numero: string }
+): Promise<Residencia> {
   const { bloco, rua } = await normalizarBlocoRua(condominioId, input);
 
   const conflito = await findConflictingResidencia(ctx, { bloco, rua, numero: input.numero });
@@ -72,8 +80,38 @@ export async function create(req: Request, res: Response) {
     throw new ApiError(409, 'Já existe uma residência cadastrada com esse bloco/rua e número');
   }
 
-  const residencia = await createResidencia(ctx, { condominioId, bloco, rua, numero: input.numero });
+  return createResidencia(ctx, { condominioId, bloco, rua, numero: input.numero });
+}
+
+export async function create(req: Request, res: Response) {
+  const input = createResidenciaSchema.parse(req.body);
+  const condominioId = req.user!.condominioId!;
+  const ctx = tenantContextOf(req);
+
+  const residencia = await criarUmaResidencia(condominioId, ctx, input);
   res.status(201).json(toResidenciaResponse(residencia));
+}
+
+// Importação em massa (Fatia 6) — parcial de propósito: cada linha é processada independente, uma
+// linha com erro não derruba as outras (a UI mostra quantas entraram e o motivo de cada falha).
+export async function importar(req: Request, res: Response) {
+  const input = importarResidenciasSchema.parse(req.body);
+  const condominioId = req.user!.condominioId!;
+  const ctx = tenantContextOf(req);
+
+  let criadas = 0;
+  const erros: { linha: number; motivo: string }[] = [];
+
+  for (let i = 0; i < input.residencias.length; i++) {
+    try {
+      await criarUmaResidencia(condominioId, ctx, input.residencias[i]);
+      criadas++;
+    } catch (err) {
+      erros.push({ linha: i + 1, motivo: err instanceof ApiError ? err.message : 'Erro inesperado' });
+    }
+  }
+
+  res.json({ criadas, erros });
 }
 
 export async function list(req: Request, res: Response) {

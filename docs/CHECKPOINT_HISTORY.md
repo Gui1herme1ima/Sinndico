@@ -62,6 +62,68 @@
 - Nenhum confirmado — verificação de UI (Playwright) disparada mas não conferida nesta sessão (ver
   Verificação acima); a API real já confirma o enforcement de backend ponta a ponta.
 
+---
+
+## Fatia 6 (mesma Session 29, continuação — usuário pediu pra seguir sem pausa)
+
+**Completado:**
+- [x] **Fatia 6 — Importação em massa (CSV/XLSX) de Residências e Moradores**, última fatia do
+  roadmap de reformulação de acesso. Plano aprovado antes de codar (junto com a Fatia 5, ambas
+  autorizadas a rodar em sequência sem parar pra aprovação intermediária).
+  - **Parsing client-side** (`apps/web/src/lib/parseSpreadsheet.ts`, usa `xlsx`/SheetJS — lê `.csv` e
+    `.xlsx` com a mesma API, uma dependência só cobre os dois formatos do roadmap). Backend não ganhou
+    nenhuma infra de upload de arquivo — o front parseia e manda as linhas como JSON, reaproveitando
+    toda a validação por linha que já existia.
+  - **Dependência `xlsx` instalada do CDN oficial do SheetJS, não do npm registry** — a versão do npm
+    (`0.18.5`) tem 2 vulnerabilidades high (prototype pollution + ReDoS, GHSA-4r6h-8v6p-xvw6 e
+    GHSA-5pgg-2g8v-p4x9) sem fix publicado ali; o próprio SheetJS recomenda instalar via
+    `cdn.sheetjs.com` pra pegar builds corrigidas. Instalação de URL externa foi bloqueada duas vezes
+    pelo classificador de permissão do Claude Code (não aceita URL escolhida unilateralmente pelo
+    agente) até o usuário confirmar explicitamente a URL exata — comportamento correto de segurança,
+    não um bug.
+  - **Backend**: `residenciaController.ts` — lógica de uma linha (`normalizarBlocoRua` +
+    `findConflictingResidencia` + insert) extraída pra `criarUmaResidencia`, reaproveitada por
+    `create()` (individual) e `importar()` (novo, `POST /api/residencias/importar`). `userController.ts`
+    — mesmo padrão: `criarUmMorador` extraída, reaproveitada por `create()` e `importarMoradores()`
+    (novo, `POST /api/users/importar`) — resolve a residência por bloco/rua+número contra
+    `listResidencias(ctx)` buscada uma vez (não uma query por linha), já que o CSV não tem o UUID.
+    Ambos os endpoints processam linha a linha dentro de um `try/catch` — uma linha ruim vira um item
+    em `erros: [{linha, motivo}]`, não derruba as outras (resposta sempre `{criadas, erros}`).
+  - **Frontend**: `ImportarResidenciasButton.tsx`/`ImportarMoradoresButton.tsx` (novos) — input de
+    arquivo oculto, parseia, filtra linhas incompletas antes de enviar, mostra o resumo
+    (`N importados, M com erro` + lista de motivos por linha). Adicionados como botão secundário logo
+    abaixo do form de criação individual em `ResidenciasPage`/`MoradoresPage`, sem substituir o form.
+
+**Verificação feita nesta sessão:**
+- `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web) limpos.
+- API real (script descartável): importar 3 residências válidas → `criadas: 3, erros: []`; reimportar
+  as mesmas 3 → `criadas: 0`, 3 erros de conflito, a chamada não quebra; porteiro tentando importar
+  residências → 403. Importar 3 moradores (2 com bloco/número que batem em residências reais, 1 com
+  bloco/número inexistente) → `criadas: 2`, 1 erro na linha certa com o motivo certo; morador
+  importado aparece na listagem já vinculado à residência resolvida por bloco/número; confirmado que a
+  resposta de importação em massa não devolve senha por linha (só o resumo agregado — o e-mail de
+  boas-vindas, disparado por linha dentro de `criarUmMorador`, continua sendo o canal de entrega da
+  senha temporária de cada morador importado, igual ao create individual).
+- Verificação de UI (Playwright) não foi escrita/rodada nesta fatia — usuário pediu pra completar
+  tudo primeiro e testar manualmente.
+
+**Próximo passo:**
+- [ ] Nenhuma fatia pendente do roadmap de reformulação de acesso — usuário vai testar manualmente
+  Fatias 4 (recém-commitada antes desta sessão), 5 e 6.
+- [ ] Direções em aberto pra próxima sessão, nenhuma decidida: retomar a Fase 3 antiga (Assembleia/
+  votação) ou o diretório real de morador (seletor em vez de UUID cru) em Encomendas/Comida/Chat/
+  Visitantes.
+
+**Decisões técnicas / desvios do plano original:**
+- Instalação do `xlsx` via CDN do SheetJS em vez do npm registry — não estava no plano original (que
+  só dizia "dependência nova: xlsx"), decisão tomada durante a implementação ao descobrir a
+  vulnerabilidade da versão do npm; confirmada explicitamente pelo usuário antes de instalar.
+
+**Bugs conhecidos:**
+- Nenhum confirmado — verificação de UI (Playwright) não foi escrita nesta fatia (ver Verificação
+  acima); a API real confirma o comportamento de backend ponta a ponta, incluindo o caso de erro
+  parcial (algumas linhas passam, outras falham, sem derrubar a chamada inteira).
+
 ### Session 28 (Data: 18/07/2026)
 **Completado:**
 - [x] **Fatia 4 — Barra lateral**, plano apresentado e aprovado antes de codar. Fecha o roadmap item

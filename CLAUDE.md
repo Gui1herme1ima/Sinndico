@@ -95,26 +95,15 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
 
 ## 8. Estado atual
 
-> Atualizado em 18/07/2026, fim da Session 29 (em andamento). Histórico completo sessão a sessão em
+> Atualizado em 18/07/2026, fim da Session 29. Histórico completo sessão a sessão em
 > `docs/CHECKPOINT_HISTORY.md`.
 
-- **Reformulação de acesso (iniciada Session 25)**: fim do auto-registro livre, modelo hierárquico
-  (superadmin cria condomínio+primeiro admin; admin cadastra tudo o mais; morador só recebe acesso via
-  e-mail de boas-vindas). Roadmap em 6 fatias, cada uma aprovada antes de implementar.
-  - Fatia 1 (fundação de acesso) — completa (Session 25).
-  - Fatia 2 (Residências) — completa (Session 26).
-  - Fatia 3 (Moradores e Equipe) — completa (Session 27).
-  - Fatia 4 (Barra lateral) — completa (Session 28): nav virou sidebar vertical fixa à esquerda
-    (`Sidebar.tsx`, `sticky`, `md:`+), agrupada em módulos operacionais (sem rótulo) + bloco
-    "Cadastros" (Residências/Moradores/Equipe/Condomínios). `Nav.tsx` não tem mais variante
-    horizontal — sempre vertical, reaproveitado igual no `Sidebar` e no drawer mobile do `Header`.
-  - Fatia 5 (RBAC) — completa (Session 29): os 4 papéis fixos continuam intactos; o admin agora liga/
-    desliga o acesso do próprio porteiro a 4 módulos (Encomendas/Visitantes/Comida/Comunicados) por
-    condomínio, via `PATCH /api/condominios/me/permissoes` + tela `/permissoes`. Escopo deliberado —
-    não é criação livre de papéis (custaria reescrever CHECK/RLS/frontend do zero) — ver detalhe no
-    `docs/CHECKPOINT_HISTORY.md`.
-  - Fatia 6 (importação em massa) — **em andamento nesta sessão**.
-  - Fase 3 antiga (Assembleia/votação) pausada até a reformulação de acesso terminar — não abandonada.
+- **Reformulação de acesso — as 6 fatias do roadmap estão completas** (iniciada Session 25, fechada
+  nesta sessão): fim do auto-registro livre, modelo hierárquico (superadmin cria condomínio+primeiro
+  admin; admin cadastra tudo o mais; morador só recebe acesso via e-mail de boas-vindas); Residências;
+  Moradores e Equipe; barra lateral agrupada; acesso do porteiro configurável por módulo; importação
+  em massa (CSV/XLSX) de residências e moradores. Detalhe de cada fatia em
+  `docs/CHECKPOINT_HISTORY.md` (Sessions 25-29).
 - **Infra real:** Supabase conectado (Postgres + Auth) via Transaction Pooler. Multi-tenancy de verdade
   (banco único + `condominio_id` + RLS, role `app_user` restrita). Hospedagem alvo: Hostinger + Supabase.
 - **Módulos operacionais da Fase 1/2/Áreas Comuns completos** (API + tela, testados ponta a ponta):
@@ -122,9 +111,17 @@ Formato de cada entrada em `docs/CHECKPOINT_HISTORY.md`:
   Comida/Delivery, Áreas Comuns/Reservas. Brand kit integrado desde a Session 21.
 - **Firebase configurado, envio real de push ainda não confirmado ponta a ponta** — falta um device
   token de verdade.
+- **`apps/web` ganhou a dependência `xlsx` (SheetJS) instalada direto do CDN oficial deles**
+  (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), não do npm registry — a versão publicada no
+  npm (`0.18.5`) está travada com 2 vulnerabilidades high (prototype pollution + ReDoS) sem fix ali;
+  o próprio SheetJS recomenda instalar builds corrigidas via CDN deles. Decisão confirmada
+  explicitamente pelo usuário antes de instalar (URL externa, fora do npm registry).
 - **Login fixo de teste** (condomínio "Condominio Teste", slug `teste`): usuário `admin`, senha
   `Admin123!`.
-- **Próximo passo:** terminar Fatia 6 (importação em massa CSV/XLSX de Moradores e Residências) —
-  última fatia do roadmap de reformulação de acesso. Diretório real de morador (seletor em vez de
-  UUID cru) em Encomendas/Comida/Chat/Visitantes é melhoria futura fora de escopo, registrada mas não
-  agendada.
+- **Verificação pendente do usuário**: Fatias 5 e 6 foram testadas via API real (todas passaram) mas
+  a verificação de UI (Playwright) não foi conferida nesta sessão — usuário pediu pra completar as
+  duas fatias primeiro e testar manualmente no final, em vez de pausar a cada uma.
+- **Próximo passo:** nenhuma fatia pendente do roadmap de reformulação de acesso. Direções em aberto,
+  nenhuma decidida: retomar a Fase 3 antiga (Assembleia/votação, pausada desde a Session 25) ou
+  diretório real de morador (seletor em vez de UUID cru) em Encomendas/Comida/Chat/Visitantes —
+  melhoria registrada, nunca formalmente agendada.

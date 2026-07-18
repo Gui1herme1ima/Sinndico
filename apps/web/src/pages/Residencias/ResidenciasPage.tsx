@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { CreateResidenciaForm } from '@/components/Residencias/CreateResidenciaForm';
+import { ImportarResidenciasButton } from '@/components/Residencias/ImportarResidenciasButton';
 import { ResidenciaCard } from '@/components/Residencias/ResidenciaCard';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -41,6 +42,7 @@ export function ResidenciasPage() {
   return (
     <div className="flex flex-col gap-6">
       <CreateResidenciaForm tipoResidencia={tipoResidencia} />
+      <ImportarResidenciasButton />
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">Residências</h2>

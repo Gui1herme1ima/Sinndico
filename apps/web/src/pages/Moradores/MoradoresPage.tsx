@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { CreateMoradorForm } from '@/components/Moradores/CreateMoradorForm';
+import { ImportarMoradoresButton } from '@/components/Moradores/ImportarMoradoresButton';
 import { MoradorCard } from '@/components/Moradores/MoradorCard';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -41,6 +42,7 @@ export function MoradoresPage() {
   return (
     <div className="flex flex-col gap-6">
       <CreateMoradorForm residencias={residencias} />
+      <ImportarMoradoresButton />
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">Moradores</h2>

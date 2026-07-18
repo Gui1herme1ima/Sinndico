@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
-import { findResidenciaById } from '../models/Residencia';
+import { findResidenciaById, listResidencias, Residencia } from '../models/Residencia';
 import {
   findUserByIdForTenant,
   findUserByUsername,
@@ -41,6 +41,22 @@ export const updateUserSchema = z.object({
   nome: z.string().min(1).optional(),
   telefone: z.string().optional(),
   residenciaId: z.string().uuid().optional(),
+});
+
+export const importarMoradoresSchema = z.object({
+  moradores: z
+    .array(
+      z.object({
+        nome: z.string().min(1),
+        email: z.string().email(),
+        telefone: z.string().optional(),
+        bloco: z.string().optional(),
+        rua: z.string().optional(),
+        numero: z.string().min(1),
+      })
+    )
+    .min(1)
+    .max(500),
 });
 
 function tenantContextOf(req: Request) {
@@ -83,6 +99,34 @@ async function deriveUsernameFromEmail(email: string): Promise<string> {
   return candidate;
 }
 
+// Compartilhada por create() (via residenciaId já resolvido) e importarMoradores() (via bloco/rua+
+// número casado contra a lista de residências do tenant). Sempre envia e-mail de boas-vindas — e-mail
+// é obrigatório pra morador, diferente de admin/porteiro.
+async function criarUmMorador(
+  condominioId: string,
+  input: { nome: string; email: string; residenciaId: string; telefone?: string }
+) {
+  const username = await deriveUsernameFromEmail(input.email);
+
+  const { user, senhaTemporaria } = await provisionUsuario({
+    condominioId,
+    username,
+    nome: input.nome,
+    email: input.email,
+    telefone: input.telefone,
+    role: 'morador',
+    residenciaId: input.residenciaId,
+  });
+
+  await sendWelcomeEmail(input.email, {
+    nome: input.nome,
+    loginUrl: `${process.env.APP_BASE_URL ?? ''}/login`,
+    senhaTemporaria,
+  });
+
+  return { user, senhaTemporaria };
+}
+
 export async function create(req: Request, res: Response) {
   const input = createUserSchema.parse(req.body);
   const condominioId = req.user!.condominioId!;
@@ -93,26 +137,7 @@ export async function create(req: Request, res: Response) {
       throw new ApiError(404, 'Residência não encontrada');
     }
 
-    const username = await deriveUsernameFromEmail(input.email);
-
-    const { user, senhaTemporaria } = await provisionUsuario({
-      condominioId,
-      username,
-      nome: input.nome,
-      email: input.email,
-      telefone: input.telefone,
-      role: 'morador',
-      residenciaId: input.residenciaId,
-    });
-
-    // E-mail é obrigatório pra morador (regra da Fatia 1) — o envio não é condicional como no caso de
-    // admin/porteiro, sempre há um endereço real pra mandar.
-    await sendWelcomeEmail(input.email, {
-      nome: input.nome,
-      loginUrl: `${process.env.APP_BASE_URL ?? ''}/login`,
-      senhaTemporaria,
-    });
-
+    const { user, senhaTemporaria } = await criarUmMorador(condominioId, input);
     res.status(201).json({ ...toUserResponse(user), senhaTemporaria });
     return;
   }
@@ -140,6 +165,44 @@ export async function create(req: Request, res: Response) {
   }
 
   res.status(201).json({ ...toUserResponse(user), senhaTemporaria });
+}
+
+function chaveResidencia(residencia: Pick<Residencia, 'bloco' | 'rua' | 'numero'>): string {
+  return `${residencia.bloco ?? ''}|${residencia.rua ?? ''}|${residencia.numero}`.toLowerCase();
+}
+
+// Importação em massa (Fatia 6) — o CSV/XLSX não tem residenciaId (UUID), então resolve por bloco/rua+
+// número contra a lista de residências do tenant (busca uma vez, não uma query por linha). Parcial de
+// propósito, mesmo espírito de residenciaController.importar: uma linha ruim não derruba as outras.
+export async function importarMoradores(req: Request, res: Response) {
+  const input = importarMoradoresSchema.parse(req.body);
+  const condominioId = req.user!.condominioId!;
+  const ctx = tenantContextOf(req);
+
+  const residencias = await listResidencias(ctx);
+  const residenciaPorChave = new Map(residencias.map((r) => [chaveResidencia(r), r.id]));
+
+  let criadas = 0;
+  const erros: { linha: number; motivo: string }[] = [];
+
+  for (let i = 0; i < input.moradores.length; i++) {
+    const linha = input.moradores[i];
+    try {
+      const residenciaId = residenciaPorChave.get(
+        chaveResidencia({ bloco: linha.bloco ?? null, rua: linha.rua ?? null, numero: linha.numero })
+      );
+      if (!residenciaId) {
+        throw new ApiError(404, 'Residência não encontrada para o bloco/rua e número informados');
+      }
+
+      await criarUmMorador(condominioId, { ...linha, residenciaId });
+      criadas++;
+    } catch (err) {
+      erros.push({ linha: i + 1, motivo: err instanceof ApiError ? err.message : 'Erro inesperado' });
+    }
+  }
+
+  res.json({ criadas, erros });
 }
 
 export async function list(req: Request, res: Response) {

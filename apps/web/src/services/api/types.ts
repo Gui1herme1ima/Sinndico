@@ -355,3 +355,28 @@ export interface UpdateMoradorPayload {
 export interface ResetSenhaResponse {
   senhaTemporaria: string;
 }
+
+export interface ImportarErro {
+  linha: number;
+  motivo: string;
+}
+
+export interface ImportarResultado {
+  criadas: number;
+  erros: ImportarErro[];
+}
+
+export interface ImportarResidenciasPayload {
+  residencias: Array<{ bloco?: string; rua?: string; numero: string }>;
+}
+
+export interface ImportarMoradoresPayload {
+  moradores: Array<{
+    nome: string;
+    email: string;
+    telefone?: string;
+    bloco?: string;
+    rua?: string;
+    numero: string;
+  }>;
+}
