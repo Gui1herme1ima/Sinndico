@@ -177,6 +177,36 @@ export interface UpdateCondominioPayload {
   nome: string;
 }
 
+// GET /api/condominios/me — só os campos que telas de admin precisam pra decidir comportamento
+// condicional (ex.: Residências mostrar "Bloco" ou "Rua").
+export interface CondominioAtualResponse {
+  id: string;
+  nome: string;
+  slug: string;
+  tipoResidencia: TipoResidencia;
+}
+
+export interface ResidenciaResponse {
+  id: string;
+  condominioId: string;
+  bloco: string | null;
+  rua: string | null;
+  numero: string;
+  createdAt: string;
+}
+
+export interface CreateResidenciaPayload {
+  bloco?: string;
+  rua?: string;
+  numero: string;
+}
+
+export interface UpdateResidenciaPayload {
+  bloco?: string;
+  rua?: string;
+  numero: string;
+}
+
 export type VisitanteStatus = 'aprovado' | 'bloqueado' | 'ativo';
 
 export interface VisitanteResponse {

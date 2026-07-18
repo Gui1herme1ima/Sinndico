@@ -96,39 +96,122 @@ Formato do checkpoint:
 
 ## 8. Checkpoint Log
 
-> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 25; detalhes sessão a sessão abaixo):**
+> **Estado atual do projeto (resumo rápido — 17/07/2026, fim da Session 26; detalhes sessão a sessão abaixo):**
 >
 > - **Reformulação de acesso em andamento (iniciada na Session 25) — pivô de produto sobre o que já
 >   estava construído**: o usuário decidiu abandonar o auto-registro livre em favor de um modelo
 >   hierárquico e administrado (superadmin cria condomínio+primeiro admin; admin cadastra tudo o mais;
 >   morador só recebe acesso via e-mail de boas-vindas). Plano completo em 6 fatias registrado no
->   plan file da sessão; a Fase 3 antiga (Assembleia/votação) fica pausada até a fundação de acesso
->   (Fatia 1) e os cadastros administrados (Fatias 2-3) estarem prontos — não foi abandonada, só
->   reordenada por decisão explícita do usuário (ver seção 6 deste arquivo: mudança de escopo é normal).
-> - **Fatia 1 (fundação de acesso) completa nesta sessão**: `condominios` ganhou `slug`/`endereco`/
->   `contato_*`/`tipo_residencia`; `users` ganhou `username` (login por username OU e-mail) e
->   `senha_temporaria` (força troca no primeiro login); `email` virou opcional (só morador é
->   obrigatório — admin/porteiro podem ter só username, com e-mail sintético interno pro Supabase
->   Auth); `POST /api/auth/register` foi removido; superadmin cria condomínio + primeiro admin numa
->   chamada só; "ver como" via header (`X-Impersonate-Condominio-Id`), sem conta duplicada; admin
->   reseta senha de porteiro/outro admin direto no painel (nunca de morador); esqueci-minha-senha via
->   Supabase; tudo testado ponta a ponta contra o Supabase real e no navegador via Playwright. Ver
->   Session 25 pra detalhe completo.
+>   plan file da sessão; a Fase 3 antiga (Assembleia/votação) fica pausada até a fundação de acesso e
+>   os cadastros administrados estarem prontos — não foi abandonada, só reordenada por decisão
+>   explícita do usuário (ver seção 6 deste arquivo: mudança de escopo é normal).
+> - **Fatia 1 (fundação de acesso) completa desde a Session 25**: condomínio expandido (slug/endereço/
+>   contato/tipo_residencia), fim do `/register`, login por username OU e-mail (e-mail obrigatório só
+>   pra morador), "ver como" via header, admin reseta senha de porteiro/outro admin, esqueci-minha-
+>   senha, troca de senha obrigatória.
+> - **Fatia 2 (Residências) completa nesta sessão**: novo módulo `residencias`, cadastro só pelo admin,
+>   schema condicional pelo `tipo_residencia` do condomínio (bloco+número pra apartamento, rua+número
+>   pra casa) — decidido no controller, não em `CHECK` de banco, porque depende de uma linha de outra
+>   tabela. Novo `GET /api/condominios/me` (config do próprio tenant, reutilizável por módulos
+>   futuros). Pré-requisito de Moradores/Visitantes (Fatia 3).
+> - **Bug real encontrado e corrigido nesta sessão** (não durante a Fatia 1 — passou pela verificação
+>   anterior porque só checava efeitos indiretos, não o corpo de `/me`): `GET /api/auth/me` ignorava
+>   a elevação de "ver como", sempre devolvendo a identidade verdadeira do superadmin em vez da visão
+>   impersonada — quebrava `RequireAuth roles={[...]}` em qualquer navegação durante "ver como" depois
+>   de um `refreshUser()`. Corrigido usando `req.user.role`/`condominioId` (já elevados pelo
+>   middleware) em vez de re-derivar tudo do perfil no banco.
 > - **Infra real, não só planejada:** projeto Supabase real conectado (Postgres gerenciado + Auth), rodando via Transaction Pooler (a conexão direta trava por IPv6). Hospedagem alvo: Hostinger + Supabase.
 > - **Multi-tenancy é de verdade, não só filtro de query:** banco único + `condominio_id` em cada tabela + Row Level Security, com uma role Postgres restrita (`app_user`, sem `BYPASSRLS`) — mesmo um bug no backend que esquecesse um filtro não vazaria dado entre condomínios. Ver Session 4.
 > - **Módulos operacionais da Fase 1/2/Áreas Comuns seguem completos** (API + tela, todos testados
 >   ponta a ponta): Solicitações, Encomendas, Comunicados, Chat, Dashboard admin, Notificações push
->   (FCM), Visitantes, Comida/Delivery, Áreas Comuns/Reservas. Painel superadmin (CRUD de condomínio)
->   ganhou os campos novos da Fatia 1 nesta sessão.
+>   (FCM), Visitantes, Comida/Delivery, Áreas Comuns/Reservas.
 > - **Brand kit integrado ao app desde a Session 21**: favicon/ícones PWA reais, componente `Logo`,
 >   ícones de domínio, tokens do brand kit em `tokens.css`.
 > - **Firebase configurado (Session 12), envio real de push ainda não confirmado ponta a ponta** — falta
 >   um device token de verdade.
-> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** seguir o roadmap da
->   reformulação — Fatia 2 (Residências) é o próximo passo natural (pré-requisito de Moradores na
->   Fatia 3), mas confirmar com o usuário antes de começar, conforme o fluxo de aprovação combinado.
+> - **Próximo passo em aberto (nada decidido ainda, escolher ao retomar):** Fatia 3 (Moradores e
+>   Administradores administrados pelo admin) é o próximo item natural do roadmap — apresentar o plano
+>   antes de começar, conforme o fluxo de aprovação combinado.
 
 <!-- Claude Code: adicione novas entradas abaixo desta linha, sempre no topo (mais recente primeiro) -->
+
+### Session 26 (Data: 17/07/2026)
+**Completado:**
+- [x] **Bug real da Session 25 encontrado e corrigido**: revisando a Fatia 1 antes de seguir pra
+  próxima, percebi que `authController.me()` fazia `findUserById(req.user!.id)` e montava a resposta
+  inteira a partir dessa linha do banco — como `req.user!.id` durante "ver como" continua sendo o id
+  **real** do superadmin (só `role`/`condominioId` são elevados pelo middleware `authenticate`), `/me`
+  sempre devolvia o perfil verdadeiro do superadmin, descartando a elevação. Isso não tinha sido pego
+  na verificação da Session 25 porque o teste conferia só o banner de UI e efeitos em rotas que já
+  liam `req.user` direto (ex.: `/api/dashboard/summary`), nunca o corpo da resposta de `/me` em si —
+  ou seja, "ver como" parecia funcionar mas qualquer navegação subsequente que dependesse de
+  `refreshUser()` (troca de rota admin-only) na verdade bounceria de volta, porque o frontend
+  recebia `role: 'superadmin'` de novo. **Corrigido** em `me()`: monta a resposta com os dados de
+  perfil do banco (nome/e-mail/username/etc.) mas usa `req.user!.role`/`req.user!.condominioId` (a
+  visão já elevada) em vez dos campos equivalentes do banco. Sem impersonation ativa, comportamento
+  idêntico ao de antes.
+- [x] **Fatia 2 — Residências (API + tela)**, novo módulo, pré-requisito de Moradores/Visitantes
+  (Fatia 3): admin cadastra as unidades do condomínio antes de poder vincular morador/visitante a
+  elas.
+  - **Schema condicional pelo tipo do condomínio** (`condominios.tipo_residencia`, criado na Fatia
+    1): apartamento usa `bloco`+`numero`, casa usa `rua`+`numero` — as duas colunas são nullable na
+    tabela `residencias` (migration `1700000000021_create-residencias.ts`) porque a obrigatoriedade
+    de uma ou outra depende de uma linha de **outra** tabela (`condominios`), o que não dá pra
+    expressar num `CHECK` simples; a decisão fica no controller
+    (`residenciaController.ts`/`normalizarBlocoRua`), que busca `findCondominioById` e zera o campo
+    que não se aplica ao tipo (evita "lixo" de request num campo que não devia estar preenchido).
+    Dois índices únicos parciais (`WHERE bloco IS NOT NULL` / `WHERE rua IS NOT NULL`) como rede de
+    segurança; o caminho principal de UX é uma checagem explícita antes do insert
+    (`findConflictingResidencia`, mesmo espírito do `hasConflictingReserva` de Áreas Comuns e das
+    checagens de slug/username duplicados de `condominioController.ts`) — devolve 409, não deixa a
+    constraint do banco estourar como erro genérico.
+  - `models/Residencia.ts`/`controllers/residenciaController.ts`/`routes/residencias.ts` — mesmo
+    padrão de todo módulo (RLS + `withTenantContext`), mas **só `admin`** tem acesso (nem morador nem
+    porteiro, igual `Condominios` — superadmin usa "ver como" se precisar mexer). Sem `DELETE` por
+    ora, mesma decisão já tomada pra `condominios` (Session 20): ação destrutiva não pedida, e
+    excluir merece pensar em integridade referencial quando Moradores (Fatia 3) passar a referenciar
+    `residencia_id`.
+  - **`GET /api/condominios/me`** (novo, só admin) — devolve a config do próprio tenant
+    (`{id, nome, slug, tipoResidencia}`), registrado **antes** de `/:id` em `routes/condominios.ts`
+    pra não colidir. Existe pra Residências saber se mostra "Bloco" ou "Rua" no formulário, mas é
+    genérico o bastante pra qualquer módulo futuro que precise da config do condomínio.
+  - Frontend: `ResidenciasPage.tsx` roda `condominio-atual` (via `getMine`) antes de `residencias`
+    pra decidir o rótulo do campo; `CreateResidenciaForm.tsx`/`ResidenciaCard.tsx` mostram **ou**
+    "Bloco" **ou** "Rua" (nunca os dois) de acordo com o tipo, card com edição inline (mesmo padrão
+    do `CondominioCard`). Nav ganhou "Residências" (só admin, sem ícone — nenhum dos 8 ícones de
+    domínio mapeia pra isso, mesmo caso de "Dashboard"/"Condomínios"); o agrupamento visual em
+    "Cadastros" fica pra Fatia 4 (Barra lateral), não esta.
+
+**Verificação feita nesta sessão:**
+- Migration rodada contra o Supabase real sem problema (condomínios de teste já tinham
+  `tipo_residencia` preenchido desde a Fatia 1).
+- `npx tsc --noEmit` (backend) e `npx tsc -b --force` (web) limpos.
+- API real: condomínio tipo apartamento → criar residência sem `bloco` → 400 → com `bloco+numero` →
+  201 → repetir a mesma combinação → 409 → editar → 200. Condomínio tipo casa → sem `rua` → 400 →
+  com `rua+numero` → 201. Morador/porteiro chamando `/api/residencias` → 403.
+  `GET /api/condominios/me` devolve o `tipoResidencia` certo pros dois tipos.
+- **Fix do "ver como" reconfirmado via API**: `/me` sem impersonation devolve `role: superadmin`; com
+  o header `X-Impersonate-Condominio-Id`, devolve `role: admin` e o `condominioId` do tenant certo
+  (antes do fix, isso teria voltado como `superadmin`/`null`).
+- Playwright contra backend+web reais: superadmin cria condomínio → "Entrar como admin" → navega pra
+  `/residencias` **enquanto impersonando** (essa navegação é exatamente o caso que o bug quebrava) →
+  form mostra "Bloco" (condomínio é tipo apartamento) → cria residência → aparece na lista → edita →
+  persiste → "Sair do modo ver como" volta pro `/condominios` do superadmin real.
+
+**Próximo passo:**
+- [ ] Confirmar com o usuário antes de começar: Fatia 3 (Moradores e Administradores administrados
+  pelo admin) é o próximo item natural do roadmap — moradores vinculados a uma residência já
+  existente, administradores/porteiros com e-mail opcional + redefinição direta de senha (mecânica já
+  pronta desde a Fatia 1, falta só a tela de cadastro).
+- [ ] Condomínios/residências de teste acumulados (`condo-res-*`, `admin.res.*`) — limpar no painel
+  se quiser um ambiente raso.
+
+**Decisões técnicas / desvios do plano original:**
+- Nenhum desvio — o fix do "ver como" e a Fatia 2 saíram exatamente como planejado nesta sessão.
+
+**Bugs conhecidos:**
+- Nenhum em aberto — o bug do "ver como" foi encontrado e corrigido na própria sessão (ver
+  Completado/Verificação acima).
 
 ### Session 25 (Data: 17/07/2026)
 **Completado:**

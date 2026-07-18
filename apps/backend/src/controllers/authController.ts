@@ -108,12 +108,20 @@ export async function logout(req: Request, res: Response) {
 }
 
 export async function me(req: Request, res: Response) {
-  const user = await findUserById(req.user!.id);
-  if (!user) {
+  const profile = await findUserById(req.user!.id);
+  if (!profile) {
     throw new ApiError(404, 'Usuário não encontrado');
   }
 
-  res.json(toUserResponse(user));
+  // req.user!.id é sempre o id real (não muda durante "ver como") — mas role/condominioId em
+  // req.user já refletem a elevação que authenticate calculou a partir do header de impersonation.
+  // Usar os campos do profile aqui devolveria sempre a identidade verdadeira do superadmin, quebrando
+  // qualquer tela que dependa de refreshUser() refletir a visão impersonada.
+  res.json({
+    ...toUserResponse(profile),
+    role: req.user!.role,
+    condominioId: req.user!.condominioId,
+  });
 }
 
 // Sempre responde 204, exista ou não o e-mail — não revela se uma conta está cadastrada.

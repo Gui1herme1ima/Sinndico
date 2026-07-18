@@ -13,6 +13,7 @@ import { CondominiosPage } from '@/pages/Condominios/CondominiosPage';
 import { ComunicadosPage } from '@/pages/Comunicados/ComunicadosPage';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 import { EncomendasPage } from '@/pages/Encomendas/EncomendasPage';
+import { ResidenciasPage } from '@/pages/Residencias/ResidenciasPage';
 import { SolicitacoesPage } from '@/pages/Solicitacoes/SolicitacoesPage';
 import { VisitantesPage } from '@/pages/Visitantes/VisitantesPage';
 import { RequireAuth } from '@/routes/RequireAuth';
@@ -72,6 +73,14 @@ export function AppRoutes() {
           element={
             <RequireAuth roles={['admin']}>
               <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="residencias"
+          element={
+            <RequireAuth roles={['admin']}>
+              <ResidenciasPage />
             </RequireAuth>
           }
         />

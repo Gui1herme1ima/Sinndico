@@ -122,6 +122,17 @@ export async function list(_req: Request, res: Response) {
   res.json(condominios.map(toCondominioResponse));
 }
 
+// Autenticado (admin) — devolve o próprio condomínio do usuário logado. Usado por telas que precisam
+// da config do tenant (ex.: Residências, pra saber se mostra "Bloco" ou "Rua").
+export async function getMine(req: Request, res: Response) {
+  const condominio = await findCondominioById(req.user!.condominioId!);
+  if (!condominio) {
+    throw new ApiError(404, 'Condomínio não encontrado');
+  }
+
+  res.json(toCondominioResponse(condominio));
+}
+
 export async function getById(req: Request, res: Response) {
   const id = z.string().uuid().parse(req.params.id);
 

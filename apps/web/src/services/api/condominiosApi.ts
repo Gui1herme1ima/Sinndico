@@ -1,5 +1,6 @@
 import { apiFetch } from '@/services/api/client';
 import type {
+  CondominioAtualResponse,
   CondominioResponse,
   CreateCondominioPayload,
   CreateCondominioResponse,
@@ -13,6 +14,10 @@ export const condominiosApi = {
 
   getBySlug(slug: string): Promise<{ id: string; nome: string; slug: string }> {
     return apiFetch(`/api/condominios/by-slug/${slug}`, { skipAuth: true });
+  },
+
+  getMine(): Promise<CondominioAtualResponse> {
+    return apiFetch<CondominioAtualResponse>('/api/condominios/me');
   },
 
   create(payload: CreateCondominioPayload): Promise<CreateCondominioResponse> {

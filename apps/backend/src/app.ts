@@ -15,6 +15,7 @@ import dashboardRoutes from './routes/dashboard';
 import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
 import reservasRoutes from './routes/reservas';
+import residenciasRoutes from './routes/residencias';
 import solicitacoesRoutes from './routes/solicitacoes';
 import usersRoutes from './routes/users';
 import visitantesRoutes from './routes/visitantes';
@@ -48,5 +49,6 @@ app.use('/api/comida', comidaRoutes);
 app.use('/api/areas-comuns', areasComunsRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/residencias', residenciasRoutes);
 
 app.use(errorHandler);
