@@ -58,19 +58,55 @@ export async function createReserva(ctx: TenantContext, input: CreateReservaInpu
 
 export interface ListReservasFilter {
   moradorId?: string;
+  status?: ReservaStatus;
+  // Busca pelo nome da área comum (reservas não têm texto livre próprio) — exige JOIN com areas_comuns.
+  search?: string;
+  sortColumn: string; // já resolvido via allowlist no controller — nunca vem cru do cliente
+  sortOrder: 'ASC' | 'DESC';
+  limit: number;
+  offset: number;
 }
 
-export async function listReservas(ctx: TenantContext, filter: ListReservasFilter): Promise<Reserva[]> {
+export interface ListReservasResult {
+  items: Reserva[];
+  total: number;
+}
+
+export async function listReservas(ctx: TenantContext, filter: ListReservasFilter): Promise<ListReservasResult> {
   return withTenantContext(ctx, async (client) => {
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
     if (filter.moradorId) {
-      const result = await client.query<Reserva>(
-        'SELECT * FROM reservas WHERE morador_id = $1 ORDER BY hora_inicio DESC',
-        [filter.moradorId]
-      );
-      return result.rows;
+      clauses.push(`r.morador_id = $${i++}`);
+      params.push(filter.moradorId);
     }
-    const result = await client.query<Reserva>('SELECT * FROM reservas ORDER BY hora_inicio DESC');
-    return result.rows;
+    if (filter.status) {
+      clauses.push(`r.status = $${i++}`);
+      params.push(filter.status);
+    }
+    if (filter.search) {
+      clauses.push(`a.nome ILIKE $${i++}`);
+      params.push(`%${filter.search}%`);
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    params.push(filter.limit, filter.offset);
+
+    const result = await client.query<Reserva & { total_count: string }>(
+      `SELECT r.*, COUNT(*) OVER() AS total_count
+       FROM reservas r
+       JOIN areas_comuns a ON a.id = r.area_comum_id
+       ${where}
+       ORDER BY ${filter.sortColumn} ${filter.sortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      params
+    );
+
+    const total = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+    const items = result.rows.map(({ total_count, ...row }) => row);
+    return { items, total };
   });
 }
 

@@ -1,13 +1,24 @@
 import { apiFetch } from '@/services/api/client';
 import type {
   CreateVisitantePayload,
+  PaginatedResponse,
+  VisitanteListParams,
   VisitanteResponse,
   VisitanteStatus,
 } from '@/services/api/types';
 
+function toQueryString(params: VisitanteListParams): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') search.set(key, String(value));
+  }
+  const qs = search.toString();
+  return qs ? `?${qs}` : '';
+}
+
 export const visitantesApi = {
-  list(): Promise<VisitanteResponse[]> {
-    return apiFetch<VisitanteResponse[]>('/api/visitantes');
+  list(params: VisitanteListParams = {}): Promise<PaginatedResponse<VisitanteResponse>> {
+    return apiFetch<PaginatedResponse<VisitanteResponse>>(`/api/visitantes${toQueryString(params)}`);
   },
 
   create(payload: CreateVisitantePayload): Promise<VisitanteResponse> {

@@ -32,7 +32,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   busca, filtros (status/categoria/data), ordenação e paginação. Construir o componente e aplicar em
   Solicitações e Encomendas.
 - **Fatia 4.3 — Rollout da listagem padrão.** Aplicar o componente da 4.2 em Visitantes, Comida,
-  Reservas e Moradores.
+  Reservas e Moradores. ✅ Concluída.
 - **Fatia 4.4 — Seletor de moradores com busca.** Substituir todo campo de UUID cru por seletor com
   busca (nome/apto). Em Encomendas e Chat já existe (`GET /api/users/diretorio`); estender pra
   Comida e Visitantes e padronizar o componente entre as quatro telas.

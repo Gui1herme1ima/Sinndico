@@ -11,6 +11,7 @@ import {
   createVisitante,
   updateVisitanteStatus,
 } from '../models/Visitante';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createVisitanteSchema = z.object({
   nomeVisitante: z.string().min(1),
@@ -21,6 +22,20 @@ export const createVisitanteSchema = z.object({
 
 export const updateStatusSchema = z.object({
   status: z.enum(['aprovado', 'bloqueado']),
+});
+
+const VISITANTE_SORT_COLUMNS = {
+  dataVisita: 'data_visita',
+  status: 'status',
+} as const;
+
+export const listVisitantesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['dataVisita', 'status']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(['aprovado', 'bloqueado', 'ativo']).optional(),
 });
 
 function toVisitanteResponse(visitante: Visitante) {
@@ -58,9 +73,28 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
-  const visitantes = await listVisitantes(tenantContextOf(req), filter);
-  res.json(visitantes.map(toVisitanteResponse));
+  const query = listVisitantesQuerySchema.parse(req.query);
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, VISITANTE_SORT_COLUMNS, 'dataVisita');
+
+  const filter = {
+    ...(req.user!.role === 'morador' ? { moradorId: req.user!.id } : {}),
+    status: query.status,
+    search: query.search,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'desc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listVisitantes(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toVisitanteResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function getById(req: Request, res: Response) {

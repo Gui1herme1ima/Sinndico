@@ -44,7 +44,7 @@ Setup completo (env vars, Supabase, etc.): `docs/configuracao.md`.
 ## Commit obrigatório por fatia
 
 Ao concluir cada fatia do roadmap (`docs/roadmap.md`), faça um commit atômico antes de prosseguir
-para a próxima. A mensagem de commit é o registro histórico da fatia — não escreva log manual em
+para a próxima, e marque em `docs/roadmap.md` a etapa como concluída. A mensagem de commit é o registro histórico da fatia — não escreva log manual em
 nenhum `.md`. Mensagem clara (Conventional Commits), descrevendo exatamente o que foi feito; use o
 corpo do commit para detalhes técnicos relevantes (decisões, métricas, desvios do plano). Para
 retomar o contexto de uma sessão anterior (somente se necessário), use `git log`.

@@ -14,6 +14,7 @@ import {
 } from '../models/Reserva';
 import { listAdminIdsForTenant } from '../models/User';
 import { sendPushToTokens } from '../services/notificationService';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createReservaSchema = z
   .object({
@@ -28,6 +29,20 @@ export const createReservaSchema = z
 
 export const updateStatusSchema = z.object({
   status: z.enum(['aprovada', 'cancelada']),
+});
+
+const RESERVA_SORT_COLUMNS = {
+  horaInicio: 'r.hora_inicio',
+  status: 'r.status',
+} as const;
+
+export const listReservasQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['horaInicio', 'status']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(['pendente', 'aprovada', 'cancelada']).optional(),
 });
 
 function toReservaResponse(reserva: Reserva) {
@@ -80,9 +95,28 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
-  const reservas = await listReservas(tenantContextOf(req), filter);
-  res.json(reservas.map(toReservaResponse));
+  const query = listReservasQuerySchema.parse(req.query);
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, RESERVA_SORT_COLUMNS, 'horaInicio');
+
+  const filter = {
+    ...(req.user!.role === 'morador' ? { moradorId: req.user!.id } : {}),
+    status: query.status,
+    search: query.search,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'desc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listReservas(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toReservaResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function getById(req: Request, res: Response) {

@@ -154,6 +154,59 @@ export async function listUsersForTenant(ctx: TenantContext, roles?: UserRole[])
   });
 }
 
+export interface ListUsersFilter {
+  roles?: UserRole[];
+  search?: string;
+  sortColumn: string; // já resolvido via allowlist no controller — nunca vem cru do cliente
+  sortOrder: 'ASC' | 'DESC';
+  limit: number;
+  offset: number;
+}
+
+export interface ListUsersResult {
+  items: UserComResidencia[];
+  total: number;
+}
+
+// Versão paginada de listUsersForTenant, usada pela tela de Moradores (Fatia 4.3). Mantida separada
+// pra não alterar o comportamento dos outros chamadores (diretório de moradores, assembleia), que
+// esperam a lista completa sem paginação.
+export async function listUsersForTenantPaginated(ctx: TenantContext, filter: ListUsersFilter): Promise<ListUsersResult> {
+  return withTenantContext(ctx, async (client) => {
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
+    if (filter.roles && filter.roles.length > 0) {
+      clauses.push(`u.role = ANY($${i++})`);
+      params.push(filter.roles);
+    }
+    if (filter.search) {
+      clauses.push(`(u.nome ILIKE $${i} OR u.email ILIKE $${i})`);
+      params.push(`%${filter.search}%`);
+      i++;
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    params.push(filter.limit, filter.offset);
+
+    const result = await client.query<UserComResidencia & { total_count: string }>(
+      `SELECT u.*, r.bloco AS residencia_bloco, r.rua AS residencia_rua, r.numero AS residencia_numero,
+              COUNT(*) OVER() AS total_count
+       FROM users u
+       LEFT JOIN residencias r ON r.id = u.residencia_id
+       ${where}
+       ORDER BY ${filter.sortColumn} ${filter.sortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      params
+    );
+
+    const total = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+    const items = result.rows.map(({ total_count, ...row }) => row);
+    return { items, total };
+  });
+}
+
 export async function updateUser(ctx: TenantContext, id: string, input: UpdateUserInput): Promise<User | null> {
   return withTenantContext(ctx, async (client) => {
     const result = await client.query<User>(

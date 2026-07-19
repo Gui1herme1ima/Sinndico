@@ -7,6 +7,7 @@ import {
   findUserByIdForTenant,
   findUserByUsername,
   listUsersForTenant,
+  listUsersForTenantPaginated,
   setSenhaTemporaria,
   updateUser,
   User,
@@ -17,8 +18,23 @@ import { sendWelcomeEmail } from '../services/emailService';
 import { provisionUsuario } from '../services/userProvisioning';
 import { supabaseAdmin } from '../services/supabaseClient';
 import { generateTempPassword } from '../utils/generatePassword';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 const USERNAME_REGEX = /^[a-z0-9._]+$/;
+
+const USER_SORT_COLUMNS = {
+  nome: 'u.nome',
+  createdAt: 'u.created_at',
+} as const;
+
+export const listUsersQuerySchema = z.object({
+  roles: z.string().optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['nome', 'createdAt']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+});
 
 export const createUserSchema = z.discriminatedUnion('role', [
   z.object({
@@ -223,11 +239,28 @@ export async function diretorioMoradores(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const rolesParam = typeof req.query.roles === 'string' ? req.query.roles : undefined;
-  const roles = rolesParam ? (rolesParam.split(',').filter(Boolean) as UserRole[]) : undefined;
+  const query = listUsersQuerySchema.parse(req.query);
+  const roles = query.roles ? (query.roles.split(',').filter(Boolean) as UserRole[]) : undefined;
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, USER_SORT_COLUMNS, 'nome');
 
-  const users = await listUsersForTenant(tenantContextOf(req), roles);
-  res.json(users.map(toUserResponse));
+  const filter = {
+    roles,
+    search: query.search,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'asc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listUsersForTenantPaginated(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toUserResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function update(req: Request, res: Response) {

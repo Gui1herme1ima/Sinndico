@@ -12,6 +12,7 @@ import { listPorteiroIdsForTenant } from '../models/User';
 import { listTokensForUsers } from '../models/DeviceToken';
 import { ApiError } from '../middleware/errorHandler';
 import { sendPushToTokens } from '../services/notificationService';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createComidaSchema = z.object({
   restaurante: z.string().min(1),
@@ -20,6 +21,20 @@ export const createComidaSchema = z.object({
 
 export const updateStatusSchema = z.object({
   status: z.enum(['em-caminho', 'chegou', 'retirada']),
+});
+
+const COMIDA_SORT_COLUMNS = {
+  horarioChegadaEstimada: 'horario_chegada_estimada',
+  status: 'status',
+} as const;
+
+export const listComidaQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['horarioChegadaEstimada', 'status']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(['pedido-feito', 'em-caminho', 'chegou', 'retirada']).optional(),
 });
 
 function toComidaResponse(comida: Comida) {
@@ -60,9 +75,28 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
-  const pedidos = await listComida(tenantContextOf(req), filter);
-  res.json(pedidos.map(toComidaResponse));
+  const query = listComidaQuerySchema.parse(req.query);
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, COMIDA_SORT_COLUMNS, 'horarioChegadaEstimada');
+
+  const filter = {
+    ...(req.user!.role === 'morador' ? { moradorId: req.user!.id } : {}),
+    status: query.status,
+    search: query.search,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'desc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listComida(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toComidaResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function getById(req: Request, res: Response) {

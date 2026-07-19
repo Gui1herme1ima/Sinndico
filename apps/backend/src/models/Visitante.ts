@@ -51,19 +51,51 @@ export interface ListVisitantesFilter {
   // RLS já restringe ao condomínio do contexto; isso aqui é só o filtro extra dentro do tenant
   // (moradores só veem os próprios visitantes; admin/porteiro veem todos).
   moradorId?: string;
+  status?: VisitanteStatus;
+  search?: string;
+  sortColumn: string; // já resolvido via allowlist no controller — nunca vem cru do cliente
+  sortOrder: 'ASC' | 'DESC';
+  limit: number;
+  offset: number;
 }
 
-export async function listVisitantes(ctx: TenantContext, filter: ListVisitantesFilter): Promise<Visitante[]> {
+export interface ListVisitantesResult {
+  items: Visitante[];
+  total: number;
+}
+
+export async function listVisitantes(ctx: TenantContext, filter: ListVisitantesFilter): Promise<ListVisitantesResult> {
   return withTenantContext(ctx, async (client) => {
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
     if (filter.moradorId) {
-      const result = await client.query<Visitante>(
-        'SELECT * FROM visitantes WHERE morador_id = $1 ORDER BY data_visita DESC',
-        [filter.moradorId]
-      );
-      return result.rows;
+      clauses.push(`morador_id = $${i++}`);
+      params.push(filter.moradorId);
     }
-    const result = await client.query<Visitante>('SELECT * FROM visitantes ORDER BY data_visita DESC');
-    return result.rows;
+    if (filter.status) {
+      clauses.push(`status = $${i++}`);
+      params.push(filter.status);
+    }
+    if (filter.search) {
+      clauses.push(`nome_visitante ILIKE $${i++}`);
+      params.push(`%${filter.search}%`);
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    params.push(filter.limit, filter.offset);
+
+    const result = await client.query<Visitante & { total_count: string }>(
+      `SELECT *, COUNT(*) OVER() AS total_count FROM visitantes ${where}
+       ORDER BY ${filter.sortColumn} ${filter.sortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      params
+    );
+
+    const total = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+    const items = result.rows.map(({ total_count, ...row }) => row);
+    return { items, total };
   });
 }
 

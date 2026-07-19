@@ -271,6 +271,11 @@ export interface CreateVisitantePayload {
   dataVisita: string;
 }
 
+export interface VisitanteListParams extends ListParams {
+  sortBy?: 'dataVisita' | 'status';
+  status?: VisitanteStatus;
+}
+
 export type ComidaStatus = 'pedido-feito' | 'em-caminho' | 'chegou' | 'retirada';
 
 export interface ComidaResponse {
@@ -286,6 +291,11 @@ export interface ComidaResponse {
 export interface CreateComidaPayload {
   restaurante: string;
   horarioChegadaEstimada: string;
+}
+
+export interface ComidaListParams extends ListParams {
+  sortBy?: 'horarioChegadaEstimada' | 'status';
+  status?: ComidaStatus;
 }
 
 export interface AreaComumResponse {
@@ -326,6 +336,11 @@ export interface CreateReservaPayload {
   horaFim: string;
 }
 
+export interface ReservaListParams extends ListParams {
+  sortBy?: 'horaInicio' | 'status';
+  status?: ReservaStatus;
+}
+
 export interface ResidenciaResumo {
   bloco: string | null;
   rua: string | null;
@@ -352,6 +367,11 @@ export interface StaffUserResponse {
   role: 'admin' | 'porteiro';
   residencia: null;
   createdAt: string;
+}
+
+export interface UserListParams extends ListParams {
+  sortBy?: 'nome' | 'createdAt';
+  roles?: string;
 }
 
 export interface CreateMoradorPayload {
