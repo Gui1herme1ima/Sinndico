@@ -48,7 +48,7 @@ export function DataTable<T>({
               key={column.key}
               style={column.width ? { width: column.width } : undefined}
               className={cn(
-                'border-b border-border px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.04em] text-text-muted',
+                'border-b border-border px-5 py-4 text-[11.5px] font-semibold uppercase tracking-[0.04em] text-text-muted',
                 alignClass[column.align ?? 'left'],
               )}
             >
@@ -62,7 +62,7 @@ export function DataTable<T>({
           Array.from({ length: skeletonRows }, (_, rowIndex) => (
             <tr key={rowIndex} className="border-b border-border">
               {columns.map((column) => (
-                <td key={column.key} className="px-4 py-[13px]">
+                <td key={column.key} className="px-5 py-4">
                   <Skeleton className="h-4 w-full" />
                 </td>
               ))}
@@ -91,7 +91,7 @@ export function DataTable<T>({
                   <td
                     key={column.key}
                     className={cn(
-                      'px-4 py-[13px] text-[13.5px] align-middle',
+                      'px-5 py-4 text-[13.5px] align-middle',
                       alignClass[column.align ?? 'left'],
                       column.mono && 'font-mono text-xs text-text-secondary',
                     )}

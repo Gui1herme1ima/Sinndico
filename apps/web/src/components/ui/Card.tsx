@@ -15,12 +15,12 @@ export function Card({ title, action, padding = 'default', className, children }
     <div
       className={cn(
         'rounded-xl bg-surface shadow-sm dark:shadow-none dark:border dark:border-border',
-        padding === 'default' && 'p-4 md:p-6',
+        padding === 'default' && 'p-5 md:p-8',
         className,
       )}
     >
       {(title || action) && (
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-5 flex items-center justify-between">
           {title && <h2 className="font-display text-xl font-semibold text-text-primary">{title}</h2>}
           {action}
         </div>

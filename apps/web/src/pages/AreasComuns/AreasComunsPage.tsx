@@ -186,7 +186,7 @@ export function AreasComunsPage() {
         </h2>
 
         <Card padding="none">
-          <div className="p-4 md:p-6 md:pb-0">
+          <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
               searchValue={rawSearch}
               onSearchChange={setRawSearch}
