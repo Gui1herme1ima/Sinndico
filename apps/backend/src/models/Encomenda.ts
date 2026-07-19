@@ -39,19 +39,61 @@ export interface ListEncomendasFilter {
   // RLS já restringe ao condomínio do contexto; isso aqui é só o filtro extra dentro do tenant
   // (moradores só veem as próprias encomendas; porteiro/admin veem todas).
   moradorId?: string;
+  status?: EncomendaStatus;
+  search?: string;
+  dataInicio?: string;
+  dataFim?: string;
+  sortColumn: string; // já resolvido via allowlist no controller — nunca vem cru do cliente
+  sortOrder: 'ASC' | 'DESC';
+  limit: number;
+  offset: number;
 }
 
-export async function listEncomendas(ctx: TenantContext, filter: ListEncomendasFilter): Promise<Encomenda[]> {
+export interface ListEncomendasResult {
+  items: Encomenda[];
+  total: number;
+}
+
+export async function listEncomendas(ctx: TenantContext, filter: ListEncomendasFilter): Promise<ListEncomendasResult> {
   return withTenantContext(ctx, async (client) => {
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
     if (filter.moradorId) {
-      const result = await client.query<Encomenda>(
-        'SELECT * FROM encomendas WHERE morador_id = $1 ORDER BY horario_chegada DESC',
-        [filter.moradorId]
-      );
-      return result.rows;
+      clauses.push(`morador_id = $${i++}`);
+      params.push(filter.moradorId);
     }
-    const result = await client.query<Encomenda>('SELECT * FROM encomendas ORDER BY horario_chegada DESC');
-    return result.rows;
+    if (filter.status) {
+      clauses.push(`status = $${i++}`);
+      params.push(filter.status);
+    }
+    if (filter.search) {
+      clauses.push(`descricao ILIKE $${i++}`);
+      params.push(`%${filter.search}%`);
+    }
+    if (filter.dataInicio) {
+      clauses.push(`horario_chegada >= $${i++}`);
+      params.push(filter.dataInicio);
+    }
+    if (filter.dataFim) {
+      clauses.push(`horario_chegada < ($${i++}::date + interval '1 day')`);
+      params.push(filter.dataFim);
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    params.push(filter.limit, filter.offset);
+
+    const result = await client.query<Encomenda & { total_count: string }>(
+      `SELECT *, COUNT(*) OVER() AS total_count FROM encomendas ${where}
+       ORDER BY ${filter.sortColumn} ${filter.sortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      params
+    );
+
+    const total = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+    const items = result.rows.map(({ total_count, ...row }) => row);
+    return { items, total };
   });
 }
 

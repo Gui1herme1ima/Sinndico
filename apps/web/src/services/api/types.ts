@@ -1,3 +1,20 @@
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ListParams {
+  page?: number;
+  pageSize?: number;
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
+  dataInicio?: string;
+  dataFim?: string;
+}
+
 export type UserRole = 'morador' | 'admin' | 'porteiro' | 'superadmin';
 
 export interface PermissoesPorteiro {
@@ -76,6 +93,12 @@ export interface CreateSolicitacaoPayload {
   descricao: string;
 }
 
+export interface SolicitacaoListParams extends ListParams {
+  sortBy?: 'dataCriacao' | 'prioridade' | 'status';
+  status?: SolicitacaoStatus;
+  categoria?: SolicitacaoCategoria;
+}
+
 export interface UpdateSolicitacaoPayload {
   status?: SolicitacaoStatus;
   prioridade?: SolicitacaoPrioridade;
@@ -100,6 +123,11 @@ export interface CreateEncomendaPayload {
   moradorId: string;
   descricao?: string;
   fotoUrl?: string;
+}
+
+export interface EncomendaListParams extends ListParams {
+  sortBy?: 'horarioChegada' | 'status';
+  status?: EncomendaStatus;
 }
 
 export interface ComunicadoResponse {

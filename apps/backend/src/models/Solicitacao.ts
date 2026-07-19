@@ -42,19 +42,70 @@ export interface ListSolicitacoesFilter {
   // RLS já restringe ao condomínio do contexto; isso aqui é só o filtro extra dentro do tenant
   // (moradores só veem as próprias solicitações, admin vê todas).
   moradorId?: string;
+  status?: SolicitacaoStatus;
+  categoria?: SolicitacaoCategoria;
+  search?: string;
+  dataInicio?: string;
+  dataFim?: string;
+  sortColumn: string; // já resolvido via allowlist no controller — nunca vem cru do cliente
+  sortOrder: 'ASC' | 'DESC';
+  limit: number;
+  offset: number;
 }
 
-export async function listSolicitacoes(ctx: TenantContext, filter: ListSolicitacoesFilter): Promise<Solicitacao[]> {
+export interface ListSolicitacoesResult {
+  items: Solicitacao[];
+  total: number;
+}
+
+export async function listSolicitacoes(
+  ctx: TenantContext,
+  filter: ListSolicitacoesFilter
+): Promise<ListSolicitacoesResult> {
   return withTenantContext(ctx, async (client) => {
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    let i = 1;
+
     if (filter.moradorId) {
-      const result = await client.query<Solicitacao>(
-        'SELECT * FROM solicitacoes WHERE morador_id = $1 ORDER BY data_criacao DESC',
-        [filter.moradorId]
-      );
-      return result.rows;
+      clauses.push(`morador_id = $${i++}`);
+      params.push(filter.moradorId);
     }
-    const result = await client.query<Solicitacao>('SELECT * FROM solicitacoes ORDER BY data_criacao DESC');
-    return result.rows;
+    if (filter.status) {
+      clauses.push(`status = $${i++}`);
+      params.push(filter.status);
+    }
+    if (filter.categoria) {
+      clauses.push(`categoria = $${i++}`);
+      params.push(filter.categoria);
+    }
+    if (filter.search) {
+      clauses.push(`(titulo ILIKE $${i} OR descricao ILIKE $${i})`);
+      params.push(`%${filter.search}%`);
+      i++;
+    }
+    if (filter.dataInicio) {
+      clauses.push(`data_criacao >= $${i++}`);
+      params.push(filter.dataInicio);
+    }
+    if (filter.dataFim) {
+      clauses.push(`data_criacao < ($${i++}::date + interval '1 day')`);
+      params.push(filter.dataFim);
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    params.push(filter.limit, filter.offset);
+
+    const result = await client.query<Solicitacao & { total_count: string }>(
+      `SELECT *, COUNT(*) OVER() AS total_count FROM solicitacoes ${where}
+       ORDER BY ${filter.sortColumn} ${filter.sortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      params
+    );
+
+    const total = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+    const items = result.rows.map(({ total_count, ...row }) => row);
+    return { items, total };
   });
 }
 

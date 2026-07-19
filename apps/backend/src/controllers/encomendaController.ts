@@ -12,11 +12,28 @@ import {
 import { findUserByIdForTenant } from '../models/User';
 import { listTokensForUsers } from '../models/DeviceToken';
 import { sendPushToTokens } from '../services/notificationService';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createEncomendaSchema = z.object({
   moradorId: z.string().uuid(),
   descricao: z.string().min(1).optional(),
   fotoUrl: z.string().url().optional(),
+});
+
+const ENCOMENDA_SORT_COLUMNS = {
+  horarioChegada: 'horario_chegada',
+  status: 'status',
+} as const;
+
+export const listEncomendasQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['horarioChegada', 'status']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(['aguardando', 'retirada']).optional(),
+  dataInicio: z.string().date().optional(),
+  dataFim: z.string().date().optional(),
 });
 
 function toEncomendaResponse(encomenda: Encomenda) {
@@ -66,9 +83,30 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
-  const encomendas = await listEncomendas(tenantContextOf(req), filter);
-  res.json(encomendas.map(toEncomendaResponse));
+  const query = listEncomendasQuerySchema.parse(req.query);
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, ENCOMENDA_SORT_COLUMNS, 'horarioChegada');
+
+  const filter = {
+    ...(req.user!.role === 'morador' ? { moradorId: req.user!.id } : {}),
+    status: query.status,
+    search: query.search,
+    dataInicio: query.dataInicio,
+    dataFim: query.dataFim,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'desc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listEncomendas(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toEncomendaResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function getById(req: Request, res: Response) {

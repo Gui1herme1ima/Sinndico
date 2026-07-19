@@ -9,6 +9,7 @@ import {
   Solicitacao,
   updateSolicitacao,
 } from '../models/Solicitacao';
+import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createSolicitacaoSchema = z.object({
   categoria: z.enum(['manutencao', 'seguranca', 'animal', 'outra']),
@@ -20,6 +21,24 @@ export const updateSolicitacaoSchema = z.object({
   status: z.enum(['aberto', 'em-progresso', 'resolvido']).optional(),
   prioridade: z.enum(['baixa', 'media', 'alta']).optional(),
   assignedTo: z.string().uuid().nullable().optional(),
+});
+
+const SOLICITACAO_SORT_COLUMNS = {
+  dataCriacao: 'data_criacao',
+  prioridade: 'prioridade',
+  status: 'status',
+} as const;
+
+export const listSolicitacoesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  sortBy: z.enum(['dataCriacao', 'prioridade', 'status']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(['aberto', 'em-progresso', 'resolvido']).optional(),
+  categoria: z.enum(['manutencao', 'seguranca', 'animal', 'outra']).optional(),
+  dataInicio: z.string().date().optional(),
+  dataFim: z.string().date().optional(),
 });
 
 function toSolicitacaoResponse(solicitacao: Solicitacao) {
@@ -55,9 +74,31 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const filter = req.user!.role === 'morador' ? { moradorId: req.user!.id } : {};
-  const solicitacoes = await listSolicitacoes(tenantContextOf(req), filter);
-  res.json(solicitacoes.map(toSolicitacaoResponse));
+  const query = listSolicitacoesQuerySchema.parse(req.query);
+  const { page, pageSize, limit, offset } = parsePagination(query);
+  const sortColumn = resolveSortColumn(query.sortBy, SOLICITACAO_SORT_COLUMNS, 'dataCriacao');
+
+  const filter = {
+    ...(req.user!.role === 'morador' ? { moradorId: req.user!.id } : {}),
+    status: query.status,
+    categoria: query.categoria,
+    search: query.search,
+    dataInicio: query.dataInicio,
+    dataFim: query.dataFim,
+    sortColumn,
+    sortOrder: (query.sortOrder ?? 'desc').toUpperCase() as 'ASC' | 'DESC',
+    limit,
+    offset,
+  };
+
+  const { items, total } = await listSolicitacoes(tenantContextOf(req), filter);
+  res.json({
+    items: items.map(toSolicitacaoResponse),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  });
 }
 
 export async function getById(req: Request, res: Response) {
