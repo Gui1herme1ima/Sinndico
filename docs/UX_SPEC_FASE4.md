@@ -5,6 +5,7 @@
 > `docs/DESIGN_SYSTEM.md` — ele é a referência visual das fatias 4.2, 4.5, 4.6, 4.8 e 4.11.
 > Onde este spec e o DESIGN_SYSTEM.md conflitarem, o DESIGN_SYSTEM.md vence (não deve haver
 > conflito; este spec só ADICIONA padrões de layout, não muda token nenhum).
+> Se necessário, use o plugin frontend-design para criar um frontend moderno. Mas sem perder as bases já definida nesse documento. Se tiver alguma ideia para "inventar" algo novo, me pergunte antes de implementar.
 
 ## 1. Estrutura geral de página (todas as telas)
 

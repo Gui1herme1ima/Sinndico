@@ -6,6 +6,8 @@ Modo claro e escuro são obrigatórios desde a primeira tela. Nenhum componente 
 
 Os arquivos-fonte do brand kit (logo/símbolo em SVG, ícones de domínio, `tokens.json` machine-readable) vivem em `brand-assets/` na raiz do repositório — este documento é a especificação escrita, `brand-assets/` é onde estão os arquivos de verdade. Integrado ao app (`apps/web`) na Session 21: tokens, favicon/ícones PWA, logo (componente `Logo`) e os 8 ícones de domínio — ver seções 1, 2 e 4.
 
+Se necessário, use o plugin frontend-design para criar um frontend moderno. Mas sem perder as bases já definida nesse documento. Se tiver alguma ideia para "inventar" algo novo, me pergunte antes de implementar.
+
 ---
 
 ## 1. Tokens de cor

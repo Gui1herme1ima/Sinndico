@@ -52,6 +52,27 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   como padrão reutilizável nas listas do Bloco A. ✅ Concluída.
 - **Fatia 4.7 — Central de notificações in-app.** Sino no header com badge de não lidas, alimentado
   pelos mesmos eventos que já disparam push. ✅ Concluída.
+- **Fatia 4.7.1 — Protótipo de direção visual (redesign).** Usuário considera o frontend atual
+  simples demais (layout genérico, pouco acabamento, dashboard/dados pouco expressivos — feedback
+  de 2026-07-19). Antes de aplicar qualquer redesign em código, produzir 3 páginas HTML estáticas
+  (sem wiring com o app) comparando direções, cada uma aplicando Dashboard + uma tela de listagem
+  (ex.: Solicitações) com dados de exemplo:
+  - **A — Elevação em camadas + acentos decorativos** (recomendada na sessão): escala real de
+    sombra/elevação com hover, halo de cor atrás de números de destaque (reaproveita o ponto âmbar
+    da logo), gradiente sutil de fundo, animação de entrada (contagem animada nos StatTiles,
+    fade+slide), hover mais expressivo em cards/linhas de tabela. Usa só os tokens já existentes em
+    `docs/DESIGN_SYSTEM.md` — risco de implementação baixo.
+  - **B — Bento-grid + glass**: grid assimétrico tipo bento-box, superfícies com leve blur/glass.
+    Mais tendência visual do momento, mas tensiona com a diretriz do próprio design system
+    ("fugindo dos clichês de SaaS gerado por IA") e blur arrisca contraste em claro/escuro.
+  - **C — Editorial tipográfico**: menos caixas/cards, hierarquia via tipografia grande (Space
+    Grotesk) e divisores finos, dados em destaque com JetBrains Mono, sparklines inline nos
+    StatTiles. Visual distinto e sóbrio, mudança estrutural maior que A.
+
+  Usar a skill `frontend-design` na produção dos 3 protótipos. Usuário escolhe uma direção (ou
+  pede ajustes) comparando as 3 páginas lado a lado antes de qualquer fatia aplicar a direção
+  escolhida no app de verdade. Aguardando usuário ter orçamento de tokens disponível para rodar
+  esta fatia — não iniciar sem sinal explícito dele.
 
 ### Bloco B — Dashboard rico
 
