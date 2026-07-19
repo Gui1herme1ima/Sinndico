@@ -53,10 +53,21 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
    DIREÇÃO A — Elevação em camadas + acentos decorativos
    ============================================================ */
 .dir-a{background:
-  radial-gradient(1100px 480px at 12% -10%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 60%),
-  radial-gradient(700px 420px at 100% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 55%),
+  radial-gradient(1100px 520px at 10% -12%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 62%),
+  radial-gradient(760px 460px at 102% 4%, color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 58%),
+  radial-gradient(600px 420px at 30% 108%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 60%),
   var(--color-background);
-  min-height:100vh}
+  min-height:100vh;font-size:15px;line-height:1.5}
+.dir-a svg.ic{stroke-width:2.3}
+
+.dir-a .hero{display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 16%,var(--color-surface)),color-mix(in srgb,var(--color-accent) 12%,var(--color-surface)));border-radius:20px;padding:30px 34px;margin-bottom:22px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);animation:aFadeUp .5s ease both}
+.dir-a .hero-eyebrow{display:block;font-size:13px;font-weight:600;color:var(--color-primary);margin-bottom:10px}
+.dir-a .hero h1{font-family:'Space Grotesk',sans-serif;font-size:27px;font-weight:600;line-height:1.35;max-width:600px}
+.dir-a .hero h1 em{font-style:normal;color:var(--color-primary)}
+.dir-a .hero-sub{display:block;font-size:12.5px;color:var(--color-text-muted);margin-top:12px}
+.dir-a .hero-ill{width:100px;height:100px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 16%,transparent);display:grid;place-items:center;color:var(--color-primary);flex-shrink:0}
+.dir-a .hero-ill svg{width:50px;height:50px;stroke-width:1.6}
+@media (max-width:900px){.dir-a .hero-ill{display:none}}
 .dir-a .frame{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 49px)}
 .dir-a .appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:60px;padding:0 24px;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm);position:relative;z-index:2}
 .dir-a .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
@@ -71,49 +82,56 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
 .dir-a .user .av{width:30px;height:30px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 18%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:12px;font-weight:700}
 .dir-a .side{background:var(--color-surface);border-right:1px solid var(--color-border);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
 .dir-a .side .sec{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:16px 12px 6px}
-.dir-a .nitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--color-text-secondary);font-weight:500;font-size:13.5px;cursor:pointer;text-decoration:none;transition:background .15s ease,color .15s ease,transform .15s ease}
+.dir-a .nitem{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:10px;color:var(--color-text-secondary);font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;transition:background .15s ease,color .15s ease,transform .15s ease}
 .dir-a .nitem:hover{background:rgba(127,127,127,.07);transform:translateX(2px)}
 .dir-a .nitem.on{background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary);box-shadow:inset 2px 0 0 var(--color-primary)}
 .dir-a .main{padding:28px 30px 60px;min-width:0;position:relative;z-index:1}
 .dir-a .pagehead{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;animation:aFadeUp .5s ease both}
 .dir-a .pagehead h1{font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:600}
 .dir-a .pagehead .sub{font-size:12.5px;color:var(--color-text-muted)}
-.dir-a .btn{font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;height:40px;padding:0 18px;border-radius:9px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s ease,box-shadow .15s ease}
+.dir-a .btn{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;height:44px;padding:0 20px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s ease,box-shadow .15s ease}
 .dir-a .btn.primary{background:var(--color-primary);color:var(--color-primary-contrast);box-shadow:var(--shadow-sm)}
 .dir-a .btn.primary:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .dir-a .btn.primary:active{transform:translateY(0) scale(.97)}
 .dir-a .btn.ghost{background:transparent;color:var(--color-text-secondary)}
-.dir-a .btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+.dir-a .btn.sm{height:34px;padding:0 14px;font-size:13px}
 
 .dir-a .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
-.dir-a .stat{position:relative;background:var(--color-surface);border-radius:14px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);padding:20px;overflow:hidden;transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s cubic-bezier(.4,0,.2,1);animation:aFadeUp .55s cubic-bezier(.4,0,.2,1) both}
+.dir-a .stat{position:relative;border-radius:16px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);padding:22px;overflow:hidden;transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s cubic-bezier(.4,0,.2,1);animation:aFadeUp .55s cubic-bezier(.4,0,.2,1) both;display:flex;flex-direction:column}
+.dir-a .stat.tint-accent{background:color-mix(in srgb,var(--color-accent) 8%,var(--color-surface));border-color:color-mix(in srgb,var(--color-accent) 24%,var(--color-border))}
+.dir-a .stat.tint-primary{background:color-mix(in srgb,var(--color-primary) 8%,var(--color-surface));border-color:color-mix(in srgb,var(--color-primary) 24%,var(--color-border))}
+.dir-a .stat .badge-ic{position:relative;width:44px;height:44px;border-radius:9999px;display:grid;place-items:center;margin-bottom:14px;background:color-mix(in srgb,var(--color-accent) 20%,transparent);color:var(--color-accent)}
+.dir-a .stat .badge-ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.dir-a .stat.tint-primary .badge-ic{background:color-mix(in srgb,var(--color-primary) 20%,transparent);color:var(--color-primary)}
+.dir-a .stat .foot{display:block;font-size:11.5px;color:var(--color-text-muted);margin-top:4px}
 .dir-a .stat:nth-child(1){animation-delay:.02s}
 .dir-a .stat:nth-child(2){animation-delay:.08s}
 .dir-a .stat:nth-child(3){animation-delay:.14s}
 .dir-a .stat:nth-child(4){animation-delay:.2s}
 .dir-a .stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.dir-a .stat .halo{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--color-accent) 55%,transparent),transparent 70%);filter:blur(18px);top:-40px;right:-30px;opacity:.55;pointer-events:none}
-.dir-a .stat.primary-halo .halo{background:radial-gradient(circle,color-mix(in srgb,var(--color-primary) 55%,transparent),transparent 70%)}
 .dir-a .stat .lbl{font-size:12.5px;color:var(--color-text-secondary);position:relative}
 .dir-a .stat .val{display:block;font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;margin-top:4px;position:relative}
-.dir-a .card{background:var(--color-surface);border-radius:14px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);animation:aFadeUp .6s cubic-bezier(.4,0,.2,1) .22s both;transition:box-shadow .2s ease}
+.dir-a .card{background:var(--color-surface);border-radius:16px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);animation:aFadeUp .6s cubic-bezier(.4,0,.2,1) .22s both;transition:box-shadow .2s ease}
 .dir-a .card:hover{box-shadow:var(--shadow-md)}
-.dir-a .card .chead{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0}
-.dir-a .card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:600}
-.dir-a .card .chead a{font-size:12.5px;color:var(--color-primary);text-decoration:none;font-weight:500}
-.dir-a .card .cbody{padding:16px 22px 22px}
-.dir-a .clist li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--color-border)}
+.dir-a .card .chead{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.dir-a .card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
+.dir-a .card .chead a{font-size:13px;color:var(--color-primary);text-decoration:none;font-weight:500}
+.dir-a .card .cbody{padding:18px 24px 24px}
+.dir-a .clist li{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--color-border)}
 .dir-a .clist li:last-child{border:none;padding-bottom:0}
-.dir-a .clist .t{font-size:13.5px;color:var(--color-text-primary)}
-.dir-a .clist .d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted)}
+.dir-a .clist-ic{width:34px;height:34px;border-radius:9999px;background:color-mix(in srgb,var(--color-accent) 16%,transparent);color:var(--color-accent);display:grid;place-items:center;flex-shrink:0}
+.dir-a .clist-ic svg{width:16px;height:16px;stroke-width:2.1}
+.dir-a .clist .t{flex:1;font-size:14px;color:var(--color-text-primary)}
+.dir-a .clist .d{font-size:12.5px;font-weight:500;color:var(--color-text-secondary)}
 
 .dir-a .toolbarx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .dir-a .search{flex:1;min-width:180px;height:38px;border-radius:9px;border:1px solid var(--color-border);background:var(--color-background);padding:0 14px;font-size:13px;color:var(--color-text-primary)}
 .dir-a .pill{height:34px;padding:0 14px;border-radius:9999px;border:1px solid var(--color-border);background:var(--color-surface);font-size:12.5px;color:var(--color-text-secondary);cursor:pointer}
 .dir-a .pill.on{border-color:var(--color-primary);color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 8%,transparent)}
 .dir-a table{width:100%;border-collapse:collapse}
-.dir-a th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);padding:0 20px 10px;border-bottom:1px solid var(--color-border)}
-.dir-a td{padding:14px 20px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.dir-a th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);padding:0 22px 12px;border-bottom:1px solid var(--color-border)}
+.dir-a td{padding:17px 22px;border-bottom:1px solid var(--color-border);font-size:14px;vertical-align:middle}
+.dir-a .protocolo{color:var(--color-text-secondary);font-weight:500}
 .dir-a tbody tr{transition:background .15s ease,transform .15s ease}
 .dir-a tbody tr:hover{background:color-mix(in srgb,var(--color-primary) 4%,transparent);transform:scale(1.002)}
 .dir-a tbody tr:last-child td{border:none}
@@ -267,6 +285,96 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
 .dir-c .t-alta{color:var(--color-danger)}
 .dir-c .t-media{color:var(--color-accent)}
 .dir-c .t-baixa{color:var(--color-text-muted)}
+
+/* ============================================================
+   DIREÇÃO D — "A" repaginação grande: feed colorido + avatares
+   (mesmos tokens de marca, usados com mais ousadia — sem cor nova)
+   ============================================================ */
+.dir-d{background:
+  radial-gradient(1100px 520px at 10% -12%, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 62%),
+  radial-gradient(760px 460px at 102% 4%, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 58%),
+  radial-gradient(700px 460px at 40% 112%, color-mix(in srgb, var(--color-success) 12%, transparent), transparent 60%),
+  var(--color-background);
+  min-height:100vh;font-size:15px;line-height:1.5}
+.dir-d svg.ic{stroke-width:2.2}
+.dir-d .frame{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 49px)}
+.dir-d .appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:60px;padding:0 24px;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.dir-d .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
+.dir-d .logo .sym{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 60%,var(--color-accent) 40%));color:var(--color-primary-contrast);display:grid;place-items:center;font-size:15px}
+.dir-d .condo{font-size:12px;color:var(--color-text-muted);padding-left:16px;border-left:1px solid var(--color-border)}
+.dir-d .hspacer{flex:1}
+.dir-d .hbtn{position:relative;width:36px;height:36px;border-radius:9px;border:none;background:transparent;color:var(--color-text-secondary);display:grid;place-items:center;cursor:pointer}
+.dir-d .hbtn:hover{background:rgba(127,127,127,.08)}
+.dir-d .hbtn .dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:9999px;background:var(--color-accent);color:#16211D;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;display:grid;place-items:center}
+.dir-d .user{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px}
+.dir-d .user .av{width:30px;height:30px;border-radius:9999px;background:linear-gradient(135deg,var(--color-primary),var(--color-accent));color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.dir-d .side{background:var(--color-surface);border-right:1px solid var(--color-border);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.dir-d .side .sec{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:16px 12px 6px}
+.dir-d .nitem{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:10px;color:var(--color-text-secondary);font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;transition:background .15s ease}
+.dir-d .nitem:hover{background:rgba(127,127,127,.07)}
+.dir-d .nitem.on{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 16%,transparent),color-mix(in srgb,var(--color-accent) 12%,transparent));color:var(--color-primary)}
+.dir-d .main{padding:28px 30px 60px;min-width:0}
+.dir-d .btn{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;height:44px;padding:0 20px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.dir-d .btn.primary{background:linear-gradient(135deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 55%,var(--color-accent) 45%));color:var(--color-primary-contrast);box-shadow:var(--shadow-sm)}
+
+.dir-d .hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(120deg,var(--color-primary) 0%,color-mix(in srgb,var(--color-primary) 55%,var(--color-accent) 45%) 55%,var(--color-accent) 100%);border-radius:22px;padding:32px 36px;margin-bottom:22px;box-shadow:var(--shadow-md)}
+.dir-d .hero-eyebrow{display:block;font-size:13px;font-weight:600;color:color-mix(in srgb,var(--color-primary-contrast) 85%,transparent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
+.dir-d .hero h1{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:600;line-height:1.35;max-width:600px;color:var(--color-primary-contrast)}
+.dir-d .hero-sub{display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-primary-contrast) 80%,transparent);margin-top:12px}
+.dir-d .hero-ill{width:104px;height:104px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary-contrast) 18%,transparent);display:grid;place-items:center;color:var(--color-primary-contrast);flex-shrink:0}
+.dir-d .hero-ill svg{width:52px;height:52px;stroke-width:1.6}
+
+.dir-d .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.dir-d .stat{border-radius:16px;padding:22px;color:#fff;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.dir-d .stat .badge-ic{width:44px;height:44px;border-radius:9999px;display:grid;place-items:center;margin-bottom:14px;background:rgba(255,255,255,.22)}
+.dir-d .stat .badge-ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.dir-d .stat .val{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700}
+.dir-d .stat .lbl{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:2px}
+.dir-d .stat .foot{font-size:11.5px;color:rgba(255,255,255,.68);margin-top:4px}
+.dir-d .s-accent{background:linear-gradient(135deg,var(--color-accent),color-mix(in srgb,var(--color-accent) 60%,#fff 20%))}
+.dir-d .s-primary{background:linear-gradient(135deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 70%,#000 10%))}
+.dir-d .s-success{background:linear-gradient(135deg,var(--color-success),color-mix(in srgb,var(--color-success) 65%,var(--color-primary) 25%))}
+.dir-d .s-mix{background:linear-gradient(135deg,color-mix(in srgb,var(--color-primary) 55%,var(--color-accent) 45%),var(--color-accent))}
+
+.dir-d .card{background:var(--color-surface);border-radius:16px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.dir-d .card .chead{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.dir-d .card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
+.dir-d .card .chead a{font-size:13px;color:var(--color-primary);text-decoration:none;font-weight:500}
+.dir-d .card .cbody{padding:18px 24px 24px}
+.dir-d .clist li{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--color-border)}
+.dir-d .clist li:last-child{border:none;padding-bottom:0}
+.dir-d .clist-ic{width:34px;height:34px;border-radius:9999px;display:grid;place-items:center;flex-shrink:0;color:#fff}
+.dir-d .clist-ic svg{width:16px;height:16px;stroke-width:2.1}
+.dir-d .clist .t{flex:1;font-size:14px}
+.dir-d .clist .d{font-size:12.5px;font-weight:500;color:var(--color-text-secondary)}
+
+.dir-d .toolbarx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.dir-d .search{flex:1;min-width:180px;height:42px;border-radius:12px;border:1px solid var(--color-border);background:var(--color-surface);padding:0 16px;font-size:14px;color:var(--color-text-primary)}
+.dir-d .pill{height:36px;padding:0 15px;border-radius:9999px;border:1px solid var(--color-border);background:var(--color-surface);font-size:13px;color:var(--color-text-secondary);cursor:pointer}
+.dir-d .pill.on{border-color:var(--color-primary);color:var(--color-primary-contrast);background:var(--color-primary)}
+
+.dir-d .feed{display:flex;flex-direction:column;gap:12px}
+.dir-d .fcard{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:16px;background:var(--color-surface);border-radius:16px;border:1px solid var(--color-border);border-left:5px solid var(--color-border);padding:16px 20px;box-shadow:var(--shadow-sm);transition:transform .15s ease,box-shadow .15s ease}
+.dir-d .fcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.dir-d .fcard.st-aberto{border-left-color:var(--color-accent)}
+.dir-d .fcard.st-progresso{border-left-color:var(--color-primary)}
+.dir-d .fcard.st-resolvido{border-left-color:var(--color-success)}
+.dir-d .favatar{width:44px;height:44px;border-radius:9999px;display:grid;place-items:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;flex-shrink:0}
+.dir-d .fmain .ftit{font-size:15px;font-weight:500}
+.dir-d .fmeta{display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap}
+.dir-d .fchip{font-size:11px;font-weight:600;padding:2px 10px;border-radius:9999px}
+.dir-d .fmor{font-size:12.5px;color:var(--color-text-secondary);white-space:nowrap}
+.dir-d .fmor .res{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--color-text-muted)}
+.dir-d .fdt{font-size:12px;color:var(--color-text-muted);white-space:nowrap}
+.dir-d .fbadge{font-size:11.5px;font-weight:700;padding:5px 13px;border-radius:9999px;color:#fff;white-space:nowrap}
+.dir-d .cat-manutencao{background:color-mix(in srgb,var(--color-primary) 16%,transparent);color:var(--color-primary)}
+.dir-d .cat-seguranca{background:color-mix(in srgb,var(--color-danger) 16%,transparent);color:var(--color-danger)}
+.dir-d .cat-animal{background:color-mix(in srgb,var(--color-success) 16%,transparent);color:var(--color-success)}
+.dir-d .cat-outra{background:color-mix(in srgb,var(--color-accent) 18%,transparent);color:var(--color-accent)}
+.dir-d .bg-aberto{background:var(--color-accent)}
+.dir-d .bg-progresso{background:var(--color-primary)}
+.dir-d .bg-resolvido{background:var(--color-success)}
+@media (max-width:1000px){.dir-d .fcard{grid-template-columns:auto 1fr;grid-template-areas:"av main" "av meta";row-gap:8px}.dir-d .fdt,.dir-d .fmor,.dir-d .fbadge{display:none}}
 </style>
 </head>
 <body data-theme="light">
@@ -277,6 +385,7 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
     <button data-set-dir="a" class="on">A · Elevação</button>
     <button data-set-dir="b">B · Bento/glass</button>
     <button data-set-dir="c">C · Editorial</button>
+    <button data-set-dir="d">D · A (repaginação grande)</button>
   </div>
   <div class="grp">
     <span class="grp-label">Tela</span>
@@ -318,20 +427,27 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
     <main class="main">
       <!-- Dashboard -->
       <div class="screen on" data-screen="dashboard">
-        <div class="pagehead"><h1>Visão geral</h1><span class="sub">quinta-feira, 19 de julho</span></div>
+        <div class="hero">
+          <div class="hero-txt">
+            <span class="hero-eyebrow">Bom dia, Marina</span>
+            <h1>Hoje o Bosque Verde tem <em>3 encomendas</em> te esperando e <em>12 solicitações</em> em aberto.</h1>
+            <span class="hero-sub">Residencial Bosque Verde · quinta-feira, 19 de julho</span>
+          </div>
+          <div class="hero-ill"><svg class="ic" data-icon="areas"></svg></div>
+        </div>
         <div class="stats">
-          <div class="stat"><div class="halo"></div><span class="lbl">Solicitações abertas</span><span class="val" data-count="12">0</span></div>
-          <div class="stat primary-halo"><div class="halo"></div><span class="lbl">Em progresso</span><span class="val" data-count="5">0</span></div>
-          <div class="stat"><div class="halo"></div><span class="lbl">Encomendas aguardando</span><span class="val" data-count="8">0</span></div>
-          <div class="stat primary-halo"><div class="halo"></div><span class="lbl">Chegaram hoje</span><span class="val" data-count="3">0</span></div>
+          <div class="stat tint-accent"><div class="badge-ic"><svg class="ic" data-icon="solicitacao"></svg></div><span class="val" data-count="12">0</span><span class="lbl">solicitações abertas</span><span class="foot">aguardando resposta</span></div>
+          <div class="stat tint-primary"><div class="badge-ic"><svg class="ic" data-icon="clock"></svg></div><span class="val" data-count="5">0</span><span class="lbl">em progresso</span><span class="foot">já sendo resolvidas</span></div>
+          <div class="stat tint-accent"><div class="badge-ic"><svg class="ic" data-icon="encomenda"></svg></div><span class="val" data-count="8">0</span><span class="lbl">encomendas aguardando</span><span class="foot">retirada na portaria</span></div>
+          <div class="stat tint-primary"><div class="badge-ic"><svg class="ic" data-icon="check"></svg></div><span class="val" data-count="3">0</span><span class="lbl">chegaram hoje</span><span class="foot">avise seus moradores</span></div>
         </div>
         <div class="card">
           <div class="chead"><h3>Comunicados recentes</h3><a href="#">ver todos</a></div>
           <div class="cbody">
             <ul class="clist">
-              <li><span class="t">Manutenção do elevador social — 22/07</span><span class="d">19/07/2026</span></li>
-              <li><span class="t">Assembleia extraordinária convocada</span><span class="d">15/07/2026</span></li>
-              <li><span class="t">Poda de árvores na área verde</span><span class="d">10/07/2026</span></li>
+              <li><div class="clist-ic"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Manutenção do elevador social — 22/07</span><span class="d">hoje</span></li>
+              <li><div class="clist-ic"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Assembleia extraordinária convocada</span><span class="d">há 4 dias</span></li>
+              <li><div class="clist-ic"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Poda de árvores na área verde</span><span class="d">há 9 dias</span></li>
             </ul>
           </div>
         </div>
@@ -349,7 +465,7 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
             </div>
           </div>
           <table>
-            <thead><tr><th>Nº</th><th>Solicitação</th><th>Morador</th><th>Criada em</th><th>Prioridade</th><th>Status</th></tr></thead>
+            <thead><tr><th>Protocolo</th><th>Solicitação</th><th>Morador</th><th>Aberta</th><th>Prioridade</th><th>Status</th></tr></thead>
             <tbody id="a-rows"></tbody>
           </table>
         </div>
@@ -475,6 +591,72 @@ svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;strok
   </div>
 </div>
 
+<!-- ============================================================ DIREÇÃO D ============================================================ -->
+<div class="scene dir-d" data-scene="d">
+  <div class="frame">
+    <header class="appheader">
+      <div class="logo"><span class="sym">S</span>Sinndico</div>
+      <span class="condo">Residencial Bosque Verde</span>
+      <div class="hspacer"></div>
+      <button class="hbtn" aria-label="Notificações"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+      <div class="user"><span class="av">MD</span>Marina Duarte</div>
+    </header>
+    <aside class="side">
+      <a class="nitem on"><svg class="ic" data-icon="dashboard"></svg>Dashboard</a>
+      <a class="nitem"><svg class="ic" data-icon="solicitacao"></svg>Solicitações</a>
+      <a class="nitem"><svg class="ic" data-icon="encomenda"></svg>Encomendas</a>
+      <a class="nitem"><svg class="ic" data-icon="comunicado"></svg>Comunicados</a>
+      <a class="nitem"><svg class="ic" data-icon="chat"></svg>Chat</a>
+      <a class="nitem"><svg class="ic" data-icon="visitantes"></svg>Visitantes</a>
+      <a class="nitem"><svg class="ic" data-icon="comida"></svg>Comida</a>
+      <a class="nitem"><svg class="ic" data-icon="areas"></svg>Áreas comuns</a>
+      <a class="nitem"><svg class="ic" data-icon="assembleia"></svg>Assembleias</a>
+      <p class="sec">Cadastros</p>
+      <a class="nitem"><svg class="ic" data-icon="moradores"></svg>Moradores</a>
+    </aside>
+    <main class="main">
+      <!-- Dashboard -->
+      <div class="screen on" data-screen="dashboard">
+        <div class="hero">
+          <div class="hero-txt">
+            <span class="hero-eyebrow">Bom dia, Marina</span>
+            <h1>Hoje o Bosque Verde tem <strong>3 encomendas</strong> te esperando e <strong>12 solicitações</strong> em aberto.</h1>
+            <span class="hero-sub">Residencial Bosque Verde · quinta-feira, 19 de julho</span>
+          </div>
+          <div class="hero-ill"><svg class="ic" data-icon="areas"></svg></div>
+        </div>
+        <div class="stats">
+          <div class="stat s-accent"><div class="badge-ic"><svg class="ic" data-icon="solicitacao"></svg></div><span class="val" data-count="12">0</span><span class="lbl">solicitações abertas</span><span class="foot">aguardando resposta</span></div>
+          <div class="stat s-primary"><div class="badge-ic"><svg class="ic" data-icon="clock"></svg></div><span class="val" data-count="5">0</span><span class="lbl">em progresso</span><span class="foot">já sendo resolvidas</span></div>
+          <div class="stat s-success"><div class="badge-ic"><svg class="ic" data-icon="encomenda"></svg></div><span class="val" data-count="8">0</span><span class="lbl">encomendas aguardando</span><span class="foot">retirada na portaria</span></div>
+          <div class="stat s-mix"><div class="badge-ic"><svg class="ic" data-icon="check"></svg></div><span class="val" data-count="3">0</span><span class="lbl">chegaram hoje</span><span class="foot">avise seus moradores</span></div>
+        </div>
+        <div class="card">
+          <div class="chead"><h3>Comunicados recentes</h3><a href="#">ver todos</a></div>
+          <div class="cbody">
+            <ul class="clist">
+              <li><div class="clist-ic" style="background:var(--color-accent)"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Manutenção do elevador social — 22/07</span><span class="d">hoje</span></li>
+              <li><div class="clist-ic" style="background:var(--color-primary)"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Assembleia extraordinária convocada</span><span class="d">há 4 dias</span></li>
+              <li><div class="clist-ic" style="background:var(--color-success)"><svg class="ic" data-icon="comunicado"></svg></div><span class="t">Poda de árvores na área verde</span><span class="d">há 9 dias</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Solicitações -->
+      <div class="screen" data-screen="solicitacoes">
+        <div class="pagehead"><h1 style="font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:600">Solicitações do condomínio</h1></div>
+        <div class="toolbarx">
+          <input class="search" placeholder="Buscar por título ou descrição">
+          <button class="pill on">Status: Todos</button>
+          <button class="pill">Categoria: Todas</button>
+          <button class="pill">Mais recentes</button>
+        </div>
+        <div class="feed" id="d-rows"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
 <script>
 const ICONS = {
   dashboard: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
@@ -487,15 +669,18 @@ const ICONS = {
   areas: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   assembleia: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l3 3 5-6"/>',
   moradores: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  check: '<path d="M4.5 12.5l5 5L19.5 7"/>',
 };
 document.querySelectorAll('svg.ic[data-icon]').forEach((el) => {
   el.innerHTML = ICONS[el.dataset.icon] || '';
 });
 
 const BLURBS = {
-  a: 'A — Elevação em camadas + acentos decorativos. Sombra/hover reais, halo âmbar atrás dos números, gradiente sutil de fundo, entrada animada. Só tokens já existentes — risco baixo.',
+  a: 'A — reformulação moderada: dashboard como resumo do dia (frase narrativa + ilustração, não só grid de números), StatTiles com fundo colorido por tema (não mais cartão branco uniforme), comunicados com ícone, datas em texto relativo, protocolo em vez de ID cru. Solicitações mantém a DataTable já reaproveitada em 6 telas.',
   b: 'B — Bento-grid + glass. Grid assimétrico, superfícies com blur. Tendência visual do momento, mas tensiona com "fugir dos clichês de SaaS-IA"; blur arrisca contraste.',
   c: 'C — Editorial tipográfico. Menos caixas, hierarquia via Space Grotesk grande e divisores finos, dados em JetBrains Mono, sparklines inline. Mudança estrutural maior.',
+  d: 'D — repaginação grande da direção A: hero em gradiente forte, StatTiles em blocos de cor sólida (âmbar/verde-petróleo/verde-sucesso), Solicitações vira feed de cards com avatar colorido por morador e categoria com chip de cor própria em vez de tabela. Mesmos tokens de marca, usados com mais ousadia — troca a `DataTable` reaproveitada, então implica refazer isso em todas as 6 telas que a usam.',
 };
 
 const state = { dir: 'a', screen: 'dashboard', theme: 'light' };
@@ -508,7 +693,7 @@ function applyState() {
   document.querySelectorAll('[data-set-dir]').forEach((b) => b.classList.toggle('on', b.dataset.setDir === state.dir));
   document.querySelectorAll('[data-set-screen]').forEach((b) => b.classList.toggle('on', b.dataset.setScreen === state.screen));
   document.querySelectorAll('[data-set-theme]').forEach((b) => b.classList.toggle('on', b.dataset.setTheme === state.theme));
-  if (state.dir === 'a' && state.screen === 'dashboard') runCountUp();
+  if ((state.dir === 'a' || state.dir === 'd') && state.screen === 'dashboard') runCountUp();
 }
 
 document.querySelectorAll('[data-set-dir]').forEach((b) => b.addEventListener('click', () => { state.dir = b.dataset.setDir; applyState(); }));
@@ -516,7 +701,7 @@ document.querySelectorAll('[data-set-screen]').forEach((b) => b.addEventListener
 document.querySelectorAll('[data-set-theme]').forEach((b) => b.addEventListener('click', () => { state.theme = b.dataset.setTheme; applyState(); }));
 
 function runCountUp() {
-  document.querySelectorAll('.dir-a .stat .val[data-count]').forEach((el) => {
+  document.querySelectorAll('.dir-a .stat .val[data-count], .dir-d .stat .val[data-count]').forEach((el) => {
     const target = Number(el.dataset.count);
     const dur = 700;
     const start = performance.now();
@@ -531,12 +716,12 @@ function runCountUp() {
 }
 
 const SOLICITACOES = [
-  { num: '#a3f21c9', tit: 'Vazamento no teto da garagem', cat: 'Manutenção', mor: 'Carlos Menezes', res: 'Bloco A · 302', dt: '18/07/2026', pri: 'alta', priL: 'Alta', st: 'aberto', stL: 'Aberto' },
-  { num: '#7b901ef', tit: 'Barulho excessivo apto 504', cat: 'Segurança', mor: 'Fernanda Alves', res: 'Bloco B · 504', dt: '17/07/2026', pri: 'media', priL: 'Média', st: 'progresso', stL: 'Em progresso' },
-  { num: '#c44d820', tit: 'Gato preso na escada de incêndio', cat: 'Animal', mor: 'Rogério Lins', res: 'Bloco A · 108', dt: '17/07/2026', pri: 'alta', priL: 'Alta', st: 'resolvido', stL: 'Resolvido' },
-  { num: '#91ffa3b', tit: 'Portão da garagem não fecha', cat: 'Manutenção', mor: 'Juliana Prado', res: 'Bloco C · 210', dt: '16/07/2026', pri: 'alta', priL: 'Alta', st: 'progresso', stL: 'Em progresso' },
-  { num: '#2ecd77a', tit: 'Solicito troca de lâmpada no corredor', cat: 'Manutenção', mor: 'Heitor Sales', res: 'Bloco B · 401', dt: '15/07/2026', pri: 'baixa', priL: 'Baixa', st: 'aberto', stL: 'Aberto' },
-  { num: '#f501b6d', tit: 'Reclamação sobre estacionamento irregular', cat: 'Outra', mor: 'Patrícia Gomes', res: 'Bloco C · 105', dt: '14/07/2026', pri: 'media', priL: 'Média', st: 'resolvido', stL: 'Resolvido' },
+  { num: '#a3f21c9', proto: '1042', dtHuman: 'ontem', tit: 'Vazamento no teto da garagem', cat: 'Manutenção', mor: 'Carlos Menezes', res: 'Bloco A · 302', dt: '18/07/2026', pri: 'alta', priL: 'Alta', st: 'aberto', stL: 'Aberto' },
+  { num: '#7b901ef', proto: '1041', dtHuman: 'há 2 dias', tit: 'Barulho excessivo apto 504', cat: 'Segurança', mor: 'Fernanda Alves', res: 'Bloco B · 504', dt: '17/07/2026', pri: 'media', priL: 'Média', st: 'progresso', stL: 'Em progresso' },
+  { num: '#c44d820', proto: '1040', dtHuman: 'há 2 dias', tit: 'Gato preso na escada de incêndio', cat: 'Animal', mor: 'Rogério Lins', res: 'Bloco A · 108', dt: '17/07/2026', pri: 'alta', priL: 'Alta', st: 'resolvido', stL: 'Resolvido' },
+  { num: '#91ffa3b', proto: '1039', dtHuman: 'há 3 dias', tit: 'Portão da garagem não fecha', cat: 'Manutenção', mor: 'Juliana Prado', res: 'Bloco C · 210', dt: '16/07/2026', pri: 'alta', priL: 'Alta', st: 'progresso', stL: 'Em progresso' },
+  { num: '#2ecd77a', proto: '1038', dtHuman: 'há 4 dias', tit: 'Solicito troca de lâmpada no corredor', cat: 'Manutenção', mor: 'Heitor Sales', res: 'Bloco B · 401', dt: '15/07/2026', pri: 'baixa', priL: 'Baixa', st: 'aberto', stL: 'Aberto' },
+  { num: '#f501b6d', proto: '1037', dtHuman: 'há 5 dias', tit: 'Reclamação sobre estacionamento irregular', cat: 'Outra', mor: 'Patrícia Gomes', res: 'Bloco C · 105', dt: '14/07/2026', pri: 'media', priL: 'Média', st: 'resolvido', stL: 'Resolvido' },
 ];
 
 function fillTable(tbodyId) {
@@ -552,8 +737,48 @@ function fillTable(tbodyId) {
     </tr>
   `).join('');
 }
-fillTable('a-rows');
+function fillTableHuman(tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = SOLICITACOES.map((r) => `
+    <tr>
+      <td><span class="protocolo">Protocolo ${r.proto}</span></td>
+      <td><span class="mor">${r.tit}</span><br><span style="font-size:12px;color:var(--color-text-muted)">${r.cat}</span></td>
+      <td><span class="mor">${r.mor}</span><span class="res">${r.res}</span></td>
+      <td>${r.dtHuman}</td>
+      <td><span class="badge b-${r.pri}">${r.priL}</span></td>
+      <td><span class="badge b-${r.st}">${r.stL}</span></td>
+    </tr>
+  `).join('');
+}
+fillTableHuman('a-rows');
 fillTable('b-rows');
+
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 60%,#000 15%))',
+  'linear-gradient(135deg,var(--color-accent),color-mix(in srgb,var(--color-accent) 60%,#000 10%))',
+  'linear-gradient(135deg,var(--color-success),color-mix(in srgb,var(--color-success) 60%,var(--color-primary) 25%))',
+  'linear-gradient(135deg,var(--color-primary),var(--color-accent))',
+  'linear-gradient(135deg,var(--color-accent),var(--color-success))',
+];
+const CAT_CLASS = { 'Manutenção': 'cat-manutencao', 'Segurança': 'cat-seguranca', 'Animal': 'cat-animal', 'Outra': 'cat-outra' };
+function initials(name) { return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase(); }
+
+const dFeed = document.getElementById('d-rows');
+dFeed.innerHTML = SOLICITACOES.map((r, i) => `
+  <div class="fcard st-${r.st}">
+    <div class="favatar" style="background:${AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length]}">${initials(r.mor)}</div>
+    <div class="fmain">
+      <div class="ftit">${r.tit}</div>
+      <div class="fmeta">
+        <span class="fchip ${CAT_CLASS[r.cat] || 'cat-outra'}">${r.cat}</span>
+        <span class="fmor">Protocolo ${r.proto}</span>
+      </div>
+    </div>
+    <div class="fmor">${r.mor}<span class="res">${r.res}</span></div>
+    <div class="fdt">${r.dtHuman}</div>
+    <div class="fbadge bg-${r.st}">${r.stL}</div>
+  </div>
+`).join('');
 
 const cRows = document.getElementById('c-rows');
 cRows.innerHTML = `
