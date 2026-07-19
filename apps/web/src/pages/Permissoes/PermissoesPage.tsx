@@ -46,7 +46,23 @@ export function PermissoesPage() {
   }
 
   if (condominioQuery.isLoading) {
-    return <Skeleton className="h-64 w-full" />;
+    return (
+      <div className="flex flex-col gap-6">
+        <Card title="Acesso da portaria">
+          <div className="divide-y divide-border">
+            {MODULOS.map((modulo) => (
+              <div key={modulo.key} className="flex items-center justify-between py-3">
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-6 w-11 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   if (condominioQuery.isError || !permissoes) {
