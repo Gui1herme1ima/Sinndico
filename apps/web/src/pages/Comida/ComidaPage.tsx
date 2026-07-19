@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
-import { ComidaIcon } from '@/components/ui/icons';
+import { ComidaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -156,7 +156,11 @@ export function ComidaPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {(isMorador || canManage) && <CreateComidaForm isMorador={isMorador} />}
+      {(isMorador || canManage) && (
+        <div id="create-comida-form">
+          <CreateComidaForm isMorador={isMorador} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">
@@ -205,13 +209,25 @@ export function ComidaPage() {
                 loading={isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<ComidaIcon width={48} height={48} />}
+                    icon={<ComidaEmptyIllustration />}
                     title={
                       hasActiveFilters
                         ? 'Nenhum pedido encontrado para esses filtros.'
                         : 'Nenhum pedido avisado ainda.'
                     }
-                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      hasActiveFilters
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : isMorador || canManage
+                          ? {
+                              label: 'Avisar pedido',
+                              onClick: () =>
+                                document
+                                  .getElementById('create-comida-form')
+                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                            }
+                          : undefined
+                    }
                   />
                 }
               />
