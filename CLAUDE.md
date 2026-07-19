@@ -11,7 +11,6 @@ tarefa:**
 - `docs/arquitetura.md` — stack, estrutura de pastas do monorepo, schema de banco, multi-tenancy/RLS.
 - `docs/configuracao.md` — setup local, variáveis de ambiente, login de teste.
 - `docs/DESIGN_SYSTEM.md` — tokens de cor/tipografia e componentes base.
-- `docs/CHECKPOINT_HISTORY.md` — histórico de sessões (entrada mais recente no topo).
 
 ## Comandos úteis
 
@@ -48,4 +47,4 @@ Ao concluir cada fatia do roadmap (`docs/roadmap.md`), faça um commit atômico 
 para a próxima. A mensagem de commit é o registro histórico da fatia — não escreva log manual em
 nenhum `.md`. Mensagem clara (Conventional Commits), descrevendo exatamente o que foi feito; use o
 corpo do commit para detalhes técnicos relevantes (decisões, métricas, desvios do plano). Para
-retomar o contexto de uma sessão anterior, use `git log` e `docs/CHECKPOINT_HISTORY.md`.
+retomar o contexto de uma sessão anterior (somente se necessário), use `git log`.
