@@ -9,9 +9,8 @@ import {
   updateComidaStatus,
 } from '../models/Comida';
 import { findUserByIdForTenant, listPorteiroIdsForTenant } from '../models/User';
-import { listTokensForUsers } from '../models/DeviceToken';
 import { ApiError } from '../middleware/errorHandler';
-import { sendPushToTokens } from '../services/notificationService';
+import { notifyUsers } from '../services/notificationService';
 import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createComidaSchema = z.object({
@@ -79,11 +78,11 @@ export async function create(req: Request, res: Response) {
   });
 
   const porteiroIds = await listPorteiroIdsForTenant(ctx);
-  const tokens = await listTokensForUsers(ctx, porteiroIds);
-  await sendPushToTokens(tokens, {
-    title: 'Novo pedido de comida',
-    body: `Pedido de ${comida.restaurante} a caminho.`,
-    data: { tipo: 'comida', comidaId: comida.id },
+  await notifyUsers(ctx, porteiroIds, {
+    tipo: 'comida',
+    titulo: 'Novo pedido de comida',
+    corpo: `Pedido de ${comida.restaurante} a caminho.`,
+    referenciaId: comida.id,
   });
 
   res.status(201).json(toComidaResponse(comida));
@@ -151,11 +150,11 @@ export async function updateStatus(req: Request, res: Response) {
   }
 
   if (input.status === 'chegou') {
-    const tokens = await listTokensForUsers(ctx, [comida.morador_id]);
-    await sendPushToTokens(tokens, {
-      title: 'Seu pedido chegou',
-      body: `${comida.restaurante} chegou na portaria.`,
-      data: { tipo: 'comida', comidaId: comida.id },
+    await notifyUsers(ctx, [comida.morador_id], {
+      tipo: 'comida',
+      titulo: 'Seu pedido chegou',
+      corpo: `${comida.restaurante} chegou na portaria.`,
+      referenciaId: comida.id,
     });
   }
 
