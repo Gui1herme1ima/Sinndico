@@ -56,7 +56,7 @@ export function ComidaPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {isMorador && <CreateComidaForm />}
+      {(isMorador || canManage) && <CreateComidaForm isMorador={isMorador} />}
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">

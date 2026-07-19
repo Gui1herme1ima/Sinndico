@@ -4,29 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { ChatMessageForm } from '@/components/Chat/ChatMessageForm';
 import { ChatThread } from '@/components/Chat/ChatThread';
 import { Card } from '@/components/ui/Card';
-import { Select } from '@/components/ui/Select';
+import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { chatsApi } from '@/services/api/chatsApi';
-import { usersApi } from '@/services/api/usersApi';
 import { useAuth } from '@/store/useAuth';
-
-function labelMorador(morador: { nome: string; residencia: { bloco: string | null; rua: string | null; numero: string | null } | null }) {
-  if (!morador.residencia) return morador.nome;
-  const { bloco, rua, numero } = morador.residencia;
-  const local = bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
-  return `${morador.nome} — ${local}`;
-}
 
 export function ChatPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [moradorIdSelecionado, setMoradorIdSelecionado] = useState('');
-
-  const diretorioQuery = useQuery({
-    queryKey: ['moradores-diretorio'],
-    queryFn: () => usersApi.listDiretorio(),
-    enabled: isAdmin,
-  });
 
   const moradorId = isAdmin ? moradorIdSelecionado : (user?.id ?? '');
 
@@ -36,27 +22,13 @@ export function ChatPage() {
     enabled: Boolean(moradorId),
   });
 
-  const moradores = diretorioQuery.data ?? [];
-
   return (
     <div className="flex flex-col gap-6">
       <h2 className="font-display text-xl font-semibold text-text-primary">Chat</h2>
 
       {isAdmin && (
         <Card title="Conversar com morador">
-          {diretorioQuery.isError && (
-            <p className="text-sm text-danger">Não foi possível carregar a lista de moradores.</p>
-          )}
-          <Select
-            label="Morador"
-            disabled={diretorioQuery.isLoading || moradores.length === 0}
-            value={moradorIdSelecionado}
-            onChange={(e) => setMoradorIdSelecionado(e.target.value)}
-            options={[
-              { value: '', label: diretorioQuery.isLoading ? 'Carregando...' : 'Selecione o morador' },
-              ...moradores.map((m) => ({ value: m.id, label: labelMorador(m) })),
-            ]}
-          />
+          <MoradorSelect label="Morador" value={moradorIdSelecionado} onChange={setMoradorIdSelecionado} />
         </Card>
       )}
 

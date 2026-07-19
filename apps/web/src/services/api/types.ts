@@ -269,6 +269,7 @@ export interface CreateVisitantePayload {
   rg?: string;
   placaVeiculo?: string;
   dataVisita: string;
+  moradorId?: string;
 }
 
 export interface VisitanteListParams extends ListParams {
@@ -291,6 +292,7 @@ export interface ComidaResponse {
 export interface CreateComidaPayload {
   restaurante: string;
   horarioChegadaEstimada: string;
+  moradorId?: string;
 }
 
 export interface ComidaListParams extends ListParams {

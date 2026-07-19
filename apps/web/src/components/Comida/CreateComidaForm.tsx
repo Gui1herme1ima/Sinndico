@@ -5,11 +5,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { comidaApi } from '@/services/api/comidaApi';
 import { ApiError } from '@/services/api/client';
 
-export function CreateComidaForm() {
+export interface CreateComidaFormProps {
+  isMorador: boolean;
+}
+
+export function CreateComidaForm({ isMorador }: CreateComidaFormProps) {
   const queryClient = useQueryClient();
+  const [moradorId, setMoradorId] = useState('');
   const [restaurante, setRestaurante] = useState('');
   const [horarioChegadaEstimada, setHorarioChegadaEstimada] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +25,11 @@ export function CreateComidaForm() {
       comidaApi.create({
         restaurante,
         horarioChegadaEstimada: new Date(horarioChegadaEstimada).toISOString(),
+        moradorId: isMorador ? undefined : moradorId,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comida'] });
+      setMoradorId('');
       setRestaurante('');
       setHorarioChegadaEstimada('');
       setError(null);
@@ -39,6 +47,9 @@ export function CreateComidaForm() {
   return (
     <Card title="Avisar pedido">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {!isMorador && (
+          <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
+        )}
         <Input
           label="Restaurante"
           required
@@ -53,7 +64,12 @@ export function CreateComidaForm() {
           onChange={(e) => setHorarioChegadaEstimada(e.target.value)}
         />
         {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
+        <Button
+          type="submit"
+          loading={mutation.isPending}
+          disabled={!isMorador && !moradorId}
+          className="self-start"
+        >
           Avisar portaria
         </Button>
       </form>

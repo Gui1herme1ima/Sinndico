@@ -8,7 +8,7 @@ import {
   listComida,
   updateComidaStatus,
 } from '../models/Comida';
-import { listPorteiroIdsForTenant } from '../models/User';
+import { findUserByIdForTenant, listPorteiroIdsForTenant } from '../models/User';
 import { listTokensForUsers } from '../models/DeviceToken';
 import { ApiError } from '../middleware/errorHandler';
 import { sendPushToTokens } from '../services/notificationService';
@@ -17,6 +17,7 @@ import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 export const createComidaSchema = z.object({
   restaurante: z.string().min(1),
   horarioChegadaEstimada: z.string().datetime(),
+  moradorId: z.string().uuid().optional(),
 });
 
 export const updateStatusSchema = z.object({
@@ -56,11 +57,25 @@ function tenantContextOf(req: Request) {
 export async function create(req: Request, res: Response) {
   const input = createComidaSchema.parse(req.body);
   const ctx = tenantContextOf(req);
+  const isMorador = req.user!.role === 'morador';
+
+  let moradorId = req.user!.id;
+  if (!isMorador) {
+    if (!input.moradorId) {
+      throw new ApiError(400, 'Selecione o morador');
+    }
+    const morador = await findUserByIdForTenant(ctx, input.moradorId);
+    if (!morador || morador.role !== 'morador') {
+      throw new ApiError(400, 'moradorId inválido: usuário não encontrado ou não é morador deste condomínio');
+    }
+    moradorId = input.moradorId;
+  }
 
   const comida = await createComida(ctx, {
     condominioId: req.user!.condominioId!,
-    moradorId: req.user!.id,
-    ...input,
+    moradorId,
+    restaurante: input.restaurante,
+    horarioChegadaEstimada: input.horarioChegadaEstimada,
   });
 
   const porteiroIds = await listPorteiroIdsForTenant(ctx);

@@ -5,11 +5,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { ApiError } from '@/services/api/client';
 import { visitantesApi } from '@/services/api/visitantesApi';
 
-export function CreateVisitanteForm() {
+export interface CreateVisitanteFormProps {
+  isMorador: boolean;
+}
+
+export function CreateVisitanteForm({ isMorador }: CreateVisitanteFormProps) {
   const queryClient = useQueryClient();
+  const [moradorId, setMoradorId] = useState('');
   const [nomeVisitante, setNomeVisitante] = useState('');
   const [rg, setRg] = useState('');
   const [placaVeiculo, setPlacaVeiculo] = useState('');
@@ -23,9 +29,11 @@ export function CreateVisitanteForm() {
         rg: rg || undefined,
         placaVeiculo: placaVeiculo || undefined,
         dataVisita: new Date(dataVisita).toISOString(),
+        moradorId: isMorador ? undefined : moradorId,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visitantes'] });
+      setMoradorId('');
       setNomeVisitante('');
       setRg('');
       setPlacaVeiculo('');
@@ -45,6 +53,9 @@ export function CreateVisitanteForm() {
   return (
     <Card title="Novo visitante">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {!isMorador && (
+          <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
+        )}
         <Input
           label="Nome do visitante"
           required
@@ -65,7 +76,12 @@ export function CreateVisitanteForm() {
           onChange={(e) => setDataVisita(e.target.value)}
         />
         {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
+        <Button
+          type="submit"
+          loading={mutation.isPending}
+          disabled={!isMorador && !moradorId}
+          className="self-start"
+        >
           Registrar visitante
         </Button>
       </form>

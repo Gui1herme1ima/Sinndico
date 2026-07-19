@@ -35,7 +35,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   Reservas e Moradores. ✅ Concluída.
 - **Fatia 4.4 — Seletor de moradores com busca.** Substituir todo campo de UUID cru por seletor com
   busca (nome/apto). Em Encomendas e Chat já existe (`GET /api/users/diretorio`); estender pra
-  Comida e Visitantes e padronizar o componente entre as quatro telas.
+  Comida e Visitantes e padronizar o componente entre as quatro telas. ✅ Concluída.
 - **Fatia 4.5 — Polimento visual.** Ícones faltantes na nav (Comida, Dashboard, Cadastros), empty
   states ilustrados com call-to-action, skeleton loading em todas as listas, revisão de
   espaçamento/grid (hoje sobra espaço vazio). Testar nos dois modos (claro/escuro).

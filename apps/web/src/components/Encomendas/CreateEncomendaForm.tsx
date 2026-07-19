@@ -1,22 +1,14 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { Textarea } from '@/components/ui/Textarea';
 import { ApiError } from '@/services/api/client';
 import { encomendasApi } from '@/services/api/encomendasApi';
-import { usersApi } from '@/services/api/usersApi';
-
-function labelMorador(morador: { nome: string; residencia: { bloco: string | null; rua: string | null; numero: string | null } | null }) {
-  if (!morador.residencia) return morador.nome;
-  const { bloco, rua, numero } = morador.residencia;
-  const local = bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
-  return `${morador.nome} — ${local}`;
-}
 
 export function CreateEncomendaForm() {
   const queryClient = useQueryClient();
@@ -24,11 +16,6 @@ export function CreateEncomendaForm() {
   const [descricao, setDescricao] = useState('');
   const [fotoUrl, setFotoUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  const diretorioQuery = useQuery({
-    queryKey: ['moradores-diretorio'],
-    queryFn: () => usersApi.listDiretorio(),
-  });
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -54,25 +41,10 @@ export function CreateEncomendaForm() {
     mutation.mutate();
   }
 
-  const moradores = diretorioQuery.data ?? [];
-
   return (
     <Card title="Nova encomenda">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {diretorioQuery.isError && (
-          <p className="text-sm text-danger">Não foi possível carregar a lista de moradores.</p>
-        )}
-        <Select
-          label="Morador"
-          required
-          disabled={diretorioQuery.isLoading || moradores.length === 0}
-          value={moradorId}
-          onChange={(e) => setMoradorId(e.target.value)}
-          options={[
-            { value: '', label: diretorioQuery.isLoading ? 'Carregando...' : 'Selecione o morador' },
-            ...moradores.map((m) => ({ value: m.id, label: labelMorador(m) })),
-          ]}
-        />
+        <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
         <Textarea
           label="Descrição (opcional)"
           value={descricao}

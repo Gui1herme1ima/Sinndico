@@ -11,6 +11,7 @@ import {
   createVisitante,
   updateVisitanteStatus,
 } from '../models/Visitante';
+import { findUserByIdForTenant } from '../models/User';
 import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createVisitanteSchema = z.object({
@@ -18,6 +19,7 @@ export const createVisitanteSchema = z.object({
   rg: z.string().min(1).optional(),
   placaVeiculo: z.string().min(1).optional(),
   dataVisita: z.string().datetime(),
+  moradorId: z.string().uuid().optional(),
 });
 
 export const updateStatusSchema = z.object({
@@ -61,12 +63,28 @@ function tenantContextOf(req: Request) {
 export async function create(req: Request, res: Response) {
   const input = createVisitanteSchema.parse(req.body);
   const ctx = tenantContextOf(req);
+  const isMorador = req.user!.role === 'morador';
+
+  let moradorId = req.user!.id;
+  if (!isMorador) {
+    if (!input.moradorId) {
+      throw new ApiError(400, 'Selecione o morador');
+    }
+    const morador = await findUserByIdForTenant(ctx, input.moradorId);
+    if (!morador || morador.role !== 'morador') {
+      throw new ApiError(400, 'moradorId inválido: usuário não encontrado ou não é morador deste condomínio');
+    }
+    moradorId = input.moradorId;
+  }
 
   const visitante = await createVisitante(ctx, {
     condominioId: req.user!.condominioId!,
-    moradorId: req.user!.id,
+    moradorId,
     aprovadoPor: req.user!.id,
-    ...input,
+    nomeVisitante: input.nomeVisitante,
+    rg: input.rg,
+    placaVeiculo: input.placaVeiculo,
+    dataVisita: input.dataVisita,
   });
 
   res.status(201).json(toVisitanteResponse(visitante));
