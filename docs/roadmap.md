@@ -49,7 +49,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   states ilustrados com call-to-action, skeleton loading em todas as listas, revisão de
   espaçamento/grid (hoje sobra espaço vazio). Testar nos dois modos (claro/escuro). ✅ Concluída.
 - **Fatia 4.6 — Drawer de detalhe.** Detalhe de item em drawer lateral em vez de expandir inline,
-  como padrão reutilizável nas listas do Bloco A.
+  como padrão reutilizável nas listas do Bloco A. ✅ Concluída.
 - **Fatia 4.7 — Central de notificações in-app.** Sino no header com badge de não lidas, alimentado
   pelos mesmos eventos que já disparam push.
 
