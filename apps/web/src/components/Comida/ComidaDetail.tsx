@@ -28,8 +28,6 @@ export function ComidaDetail({
 }: ComidaDetailProps) {
   return (
     <div className="flex flex-col gap-4">
-      <h4 className="font-display text-lg font-semibold text-text-primary">{comida.restaurante}</h4>
-
       {morador && (
         <div className="text-sm text-text-secondary">
           <p className="font-medium text-text-primary">{morador.nome}</p>
@@ -41,8 +39,8 @@ export function ComidaDetail({
 
       <p className="text-xs text-text-muted">Chegada estimada {formatDate(comida.horarioChegadaEstimada)}</p>
 
-      {(isMorador || canManage) &&
-        (comida.status === 'pedido-feito' || comida.status === 'em-caminho' || comida.status === 'chegou') && (
+      {((isMorador && (comida.status === 'pedido-feito' || comida.status === 'chegou')) ||
+        (canManage && (comida.status === 'pedido-feito' || comida.status === 'em-caminho'))) && (
           <div className="flex flex-wrap gap-2 border-t border-border pt-4">
             {isMorador && comida.status === 'pedido-feito' && (
               <Button size="sm" loading={pending} onClick={onACaminho}>

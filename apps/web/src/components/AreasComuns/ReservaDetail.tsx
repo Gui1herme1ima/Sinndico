@@ -8,7 +8,6 @@ import type { MoradorDiretorioResponse, ReservaResponse } from '@/services/api/t
 export interface ReservaDetailProps {
   reserva: ReservaResponse;
   morador: MoradorDiretorioResponse | undefined;
-  areaNome: string;
   podeAprovar: boolean;
   podeCancelar: boolean;
   pending: boolean;
@@ -19,7 +18,6 @@ export interface ReservaDetailProps {
 export function ReservaDetail({
   reserva,
   morador,
-  areaNome,
   podeAprovar,
   podeCancelar,
   pending,
@@ -28,8 +26,6 @@ export function ReservaDetail({
 }: ReservaDetailProps) {
   return (
     <div className="flex flex-col gap-4">
-      <h4 className="font-display text-lg font-semibold text-text-primary">{areaNome}</h4>
-
       {morador && (
         <div className="text-sm text-text-secondary">
           <p className="font-medium text-text-primary">{morador.nome}</p>

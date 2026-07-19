@@ -272,7 +272,6 @@ export function AreasComunsPage() {
           <ReservaDetail
             reserva={selected}
             morador={moradorPorId.get(selected.moradorId)}
-            areaNome={areaNomePorId.get(selected.areaComumId) ?? 'Área removida'}
             podeAprovar={isAdmin && selected.status === 'pendente'}
             podeCancelar={selected.status !== 'cancelada' && (isAdmin || selected.moradorId === user?.id)}
             pending={pending}

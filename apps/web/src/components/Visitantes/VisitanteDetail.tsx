@@ -28,12 +28,9 @@ export function VisitanteDetail({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h4 className="font-display text-lg font-semibold text-text-primary">{visitante.nomeVisitante}</h4>
-        <p className="text-sm text-text-secondary">
-          {[visitante.rg && `RG ${visitante.rg}`, visitante.placaVeiculo].filter(Boolean).join(' · ')}
-        </p>
-      </div>
+      <p className="text-sm text-text-secondary">
+        {[visitante.rg && `RG ${visitante.rg}`, visitante.placaVeiculo].filter(Boolean).join(' · ')}
+      </p>
 
       {morador && (
         <div className="text-sm text-text-secondary">

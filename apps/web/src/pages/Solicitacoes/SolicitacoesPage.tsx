@@ -161,7 +161,7 @@ export function SolicitacoesPage() {
     );
 
     return cols;
-  }, [isAdmin, moradorPorId, mutation]);
+  }, [isAdmin, moradorPorId]);
 
   return (
     <div className="flex flex-col gap-6">
