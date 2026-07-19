@@ -2,20 +2,15 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useMemo, useState } from 'react';
 
 import { CreateSolicitacaoForm } from '@/components/Solicitacoes/CreateSolicitacaoForm';
-import {
-  CATEGORIA_LABELS,
-  PRIORIDADE_LABELS,
-  PRIORIDADE_OPTIONS,
-  STATUS_LABELS,
-  STATUS_OPTIONS,
-} from '@/components/Solicitacoes/solicitacaoLabels';
+import { SolicitacaoDetail } from '@/components/Solicitacoes/SolicitacaoDetail';
+import { CATEGORIA_LABELS, PRIORIDADE_LABELS, STATUS_LABELS } from '@/components/Solicitacoes/solicitacaoLabels';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
-import { Select } from '@/components/ui/Select';
 import { SolicitacaoEmptyIllustration } from '@/components/ui/illustrations';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { formatDate } from '@/lib/formatDate';
@@ -51,6 +46,8 @@ export function SolicitacoesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const params: SolicitacaoListParams = {
     page: state.page,
     pageSize: state.pageSize,
@@ -77,6 +74,8 @@ export function SolicitacoesPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
   const mutation = useMutation({
     mutationFn: (payload: { id: string; status?: SolicitacaoStatus; prioridade?: SolicitacaoPrioridade }) =>
@@ -161,34 +160,6 @@ export function SolicitacoesPage() {
       },
     );
 
-    if (isAdmin) {
-      cols.push({
-        key: 'acoes',
-        header: 'Ações',
-        width: '260px',
-        render: (row) => (
-          <div className="flex flex-col gap-2 sm:flex-row" onClick={(e) => e.stopPropagation()}>
-            <Select
-              label="Status"
-              className="sm:max-w-[160px]"
-              value={row.status}
-              disabled={mutation.isPending}
-              onChange={(e) => mutation.mutate({ id: row.id, status: e.target.value as SolicitacaoStatus })}
-              options={STATUS_OPTIONS}
-            />
-            <Select
-              label="Prioridade"
-              className="sm:max-w-[160px]"
-              value={row.prioridade}
-              disabled={mutation.isPending}
-              onChange={(e) => mutation.mutate({ id: row.id, prioridade: e.target.value as SolicitacaoPrioridade })}
-              options={PRIORIDADE_OPTIONS}
-            />
-          </div>
-        ),
-      });
-    }
-
     return cols;
   }, [isAdmin, moradorPorId, mutation]);
 
@@ -257,6 +228,8 @@ export function SolicitacoesPage() {
                 rows={data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<SolicitacaoEmptyIllustration />}
@@ -295,6 +268,23 @@ export function SolicitacoesPage() {
           )}
         </Card>
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? `Solicitação #${selected.id.slice(0, 8)}` : ''}
+      >
+        {selected && (
+          <SolicitacaoDetail
+            solicitacao={selected}
+            morador={moradorPorId.get(selected.moradorId)}
+            isAdmin={isAdmin}
+            pending={mutation.isPending}
+            onChangeStatus={(status) => mutation.mutate({ id: selected.id, status })}
+            onChangePrioridade={(prioridade) => mutation.mutate({ id: selected.id, prioridade })}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
