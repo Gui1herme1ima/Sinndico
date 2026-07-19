@@ -15,6 +15,7 @@ import condominiosRoutes from './routes/condominios';
 import dashboardRoutes from './routes/dashboard';
 import deviceTokensRoutes from './routes/deviceTokens';
 import encomendasRoutes from './routes/encomendas';
+import notificacoesRoutes from './routes/notificacoes';
 import reservasRoutes from './routes/reservas';
 import residenciasRoutes from './routes/residencias';
 import solicitacoesRoutes from './routes/solicitacoes';
@@ -52,5 +53,6 @@ app.use('/api/reservas', reservasRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/residencias', residenciasRoutes);
 app.use('/api/assembleias', assembleiasRoutes);
+app.use('/api/notificacoes', notificacoesRoutes);
 
 app.use(errorHandler);
