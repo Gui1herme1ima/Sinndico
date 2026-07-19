@@ -1,5 +1,9 @@
 import admin from 'firebase-admin';
 
+import { TenantContext } from '../database/tenantContext';
+import { listTokensForUsers } from '../models/DeviceToken';
+import { createNotificacoes, NotificacaoTipo } from '../models/Notificacao';
+
 let firebaseApp: admin.app.App | null | undefined;
 let warnedMissingConfig = false;
 
@@ -54,4 +58,32 @@ export async function sendPushToTokens(tokens: string[], notification: PushNotif
   } catch (err) {
     console.error('[notificationService] erro ao enviar push:', err);
   }
+}
+
+export interface NotifyUsersInput {
+  tipo: NotificacaoTipo;
+  titulo: string;
+  corpo: string;
+  referenciaId: string;
+}
+
+// Ponto único chamado pelos controllers pra qualquer evento que precise avisar usuários: grava a
+// notificação in-app (uma linha por destinatário) e dispara o push pros mesmos usuários. Nunca
+// lança — mesma postura best-effort do sendPushToTokens; grava a notificação antes de tentar o
+// push porque é a parte mais importante (o push pode falhar silenciosamente sem prejuízo).
+export async function notifyUsers(ctx: TenantContext, userIds: string[], input: NotifyUsersInput): Promise<void> {
+  if (userIds.length === 0) return;
+
+  try {
+    await createNotificacoes(ctx, userIds, input);
+  } catch (err) {
+    console.error('[notificationService] erro ao gravar notificação in-app:', err);
+  }
+
+  const tokens = await listTokensForUsers(ctx, userIds);
+  await sendPushToTokens(tokens, {
+    title: input.titulo,
+    body: input.corpo,
+    data: { tipo: input.tipo, referenciaId: input.referenciaId },
+  });
 }
