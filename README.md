@@ -1,433 +1,48 @@
 # Sinndico — Plataforma de Gestão Condominial
 
-## 1. Visão Geral
+SaaS de gestão condominial que centraliza a comunicação entre moradores e diretoria/portaria,
+substituindo WhatsApp, caderno de portaria e planilhas soltas.
 
-Sistema completo de gestão condominial que centraliza comunicação entre moradores e diretoria/portaria através de:
-- **Solicitações de manutenção** (categorias: manutenção, segurança, invasão de animais, etc)
-- **Recebimento de encomendas** (foto, horário, assinatura digital, notificação)
-- **Rastreamento de entrega de comida** (morador avisa plataforma, portaria recebe pré-aviso)
-- **Gestão de visitantes** (registro, aprovação, acesso futuro, placa, RG, documentação)
-- **Mural de comunicados** (admin posta, moradores recebem notificação)
-- **Reserva de áreas comuns** (salão, churrasqueira, piscina, academia)
-- **Convocação e votação de assembleia** (digital com rastreabilidade)
-- **Chat morador-admin** (suporte direto)
+**Público:** síndicos profissionais, administradoras condominiais, condomínios com 20+ unidades.
+**Modelo:** assinatura mensal por condomínio, escalada por número de unidades.
 
-**Público:** Síndicos profissionais, administradoras condominiais, condomínios com 20+ unidades.
-**Modelo:** SaaS por condomínio (assinatura mensal escalada por número de unidades).
+## Módulos
 
----
+Solicitações · Encomendas · Comida/Delivery · Visitantes · Comunicados · Áreas comuns ·
+Assembleia/votação · Chat morador-admin
 
-## 2. Stack Técnica
+Detalhe de cada módulo e identidade visual: `docs/escopo.md`.
 
-### Backend
-- **Runtime:** Node.js (v18+)
-- **Framework:** Express.js ou Fastify
-- **Banco:** PostgreSQL gerenciado via **Supabase** (principal) + Redis (cache)
-- **Auth:** **Supabase Auth (GoTrue)** — access token JWT verificado no backend via JWKS (lib `jose`), refresh de sessão gerenciado pela plataforma. Perfil de negócio (role, condomínio, apto etc.) fica numa tabela própria (`users`) referenciando `auth.users` do Supabase.
-- **File Storage:** AWS S3, Cloudinary ou Supabase Storage (fotos encomenda/vistoria)
-- **Notificações:** Firebase Cloud Messaging (FCM) + email (Nodemailer/SendGrid)
+## Stack
 
-### Frontend Web (Admin/Diretoria)
-- **Framework:** React 18+ com TypeScript
-- **State:** Zustand ou Context API
-- **UI:** Tailwind CSS + shadcn/ui ou Material-UI
-- **Forms:** React Hook Form + Zod validation
-- **Charts:** Recharts (dashboard de solicitações, ocupação áreas)
+Node.js/Express + TypeScript, PostgreSQL via Supabase + Redis, React + TypeScript + Tailwind,
+Supabase Auth, Firebase Cloud Messaging. Detalhe completo: `docs/arquitetura.md`.
 
-### Mobile (Moradores)
-- **Opção 1 (Recomendado início):** PWA (Progressive Web App) — React + Workbox
-- **Opção 2 (Escala):** React Native (Expo ou bare) para iOS + Android nativos
-- **Push Notifications:** Firebase Cloud Messaging
-
-### DevOps
-- **Hosting Backend:** **Hostinger** (integração oficial com Supabase)
-- **Hosting Web:** Vercel, Netlify (ou a própria Hostinger)
-- **CI/CD:** GitHub Actions
-- **Database:** **Supabase** (Postgres gerenciado + Auth) — decidido por causa da integração oficial com a Hostinger e por ser Postgres (encaixa no modelo relacional do schema, ao contrário de um banco de documentos tipo MongoDB Atlas, também oferecido pela Hostinger)
-- **Monitoramento:** Sentry (errors), LogRocket (frontend)
-
-> **Nota de hardening futuro:** hoje o backend Express é o único cliente do Postgres (conecta direto via `DATABASE_URL`), então a autorização é toda feita no middleware (`authorize(...roles)`). Se algum dia o Postgres for exposto direto pro frontend (PostgREST/Supabase client), ativar Row Level Security (RLS) nas tabelas antes disso.
-
----
-
-## 3. Identidade Visual
-
-A identidade visual é um pilar do produto, não um detalhe — o sistema precisa parecer moderno, robusto e confiável à primeira vista, tanto pro síndico (web) quanto pro morador (mobile). Suporte completo a modo claro e escuro é obrigatório desde o início, não um "extra" adicionado depois.
-
-### Direção de design
-Evitar os clichês visuais mais comuns de produtos gerados por IA (fundo creme com sotaque terracota; fundo quase-preto com verde ácido; layout estilo jornal com hairlines). A direção do Sinndico é **verde-petróleo profundo** — remete a segurança, zelo e confiança, sem soar como "mais um SaaS azul corporativo".
-
-### Paleta de cores (tokens)
-
-| Token | Hex | Uso |
-|---|---|---|
-| `primary` | `#146C5B` | Verde-petróleo profundo — cor de marca, botões primários, links, ícones ativos |
-| `primary-dark-mode` | `#2ED9A8` | Verde-menta vibrante — versão da primary otimizada pra contraste em fundo escuro |
-| `accent` | `#F0A94E` | Âmbar quente — alertas, notificações, badges de "novo", CTAs secundários |
-| `background-light` | `#F7F8F7` | Fundo modo claro — branco levemente esverdeado, não branco puro |
-| `background-dark` | `#0E1512` | Fundo modo escuro — verde-carvão profundo, não preto puro |
-| `surface-light` / `surface-dark` | `#FFFFFF` / `#161E1A` | Cards, painéis, modais |
-| `text-primary-light` / `text-primary-dark` | `#16211D` / `#EAF2EE` | Texto principal |
-| `danger` | `#E5484D` | Erros, solicitações urgentes, bloqueios |
-| `success` | `#3DBE7A` | Confirmações, status resolvido |
-
-### Tipografia
-- **Display (títulos, headers de dashboard):** fonte geométrica com personalidade — ex: **Space Grotesk** ou **Sora** — usada com peso pra transmitir robustez sem ser fria.
-- **Corpo (texto geral, formulários):** fonte de alta legibilidade em telas pequenas — ex: **Inter** ou **Manrope**.
-- **Dados/utilitário (números, timestamps, badges):** fonte monoespaçada leve — ex: **JetBrains Mono** — pra horários de encomenda, placas, códigos.
-
-### Modo claro/escuro
-- Implementar via CSS variables / design tokens desde o design system inicial (não como tema "por cima" depois).
-- Persistir preferência do usuário (localStorage no PWA/web) + respeitar `prefers-color-scheme` como padrão inicial.
-- Toggle acessível no header (web) e no perfil (mobile).
-- Todo componente novo deve ser testado nos dois modos antes de considerado "pronto".
-
-### Animações e microinterações
-- Motion fluida e proposital, não decorativa: transições de página, reveal de cards no dashboard, feedback tátil em botões (scale/opacity sutil ao toque), skeleton loading em vez de spinners genéricos.
-- Priorizar uma "assinatura" de movimento — ex: elementos de status (solicitação resolvida, encomenda retirada) têm uma transição de check/confirmação particular do produto, reconhecível e reutilizada em todo o sistema.
-- Respeitar `prefers-reduced-motion` sempre.
-- Bibliotecas sugeridas: Framer Motion (web/React), Reanimated (se migrar pra React Native no futuro).
-
-### Onde aplicar primeiro
-Antes de qualquer módulo funcional da Fase 1, criar um **design system básico** (cores, tipografia, componentes base: botão, card, input, badge, toggle de tema) documentado em `docs/DESIGN_SYSTEM.md`, pra todos os módulos seguintes herdarem consistência automaticamente.
-
----
-
-## 4. Estrutura de Pastas (Monorepo)
-
-```
-sinndico/
-├── apps/
-│   ├── backend/
-│   │   ├── src/
-│   │   │   ├── controllers/
-│   │   │   │   ├── authController.ts
-│   │   │   │   ├── solicitacaoController.ts
-│   │   │   │   ├── encomendaController.ts
-│   │   │   │   ├── visitanteController.ts
-│   │   │   │   ├── comidaController.ts
-│   │   │   │   ├── comunicadoController.ts
-│   │   │   │   ├── areaComumController.ts
-│   │   │   │   ├── assembleiaController.ts
-│   │   │   │   └── chatController.ts
-│   │   │   ├── models/
-│   │   │   │   ├── User.ts
-│   │   │   │   ├── Solicitacao.ts
-│   │   │   │   ├── Encomenda.ts
-│   │   │   │   ├── Visitante.ts
-│   │   │   │   ├── Comida.ts
-│   │   │   │   ├── Comunicado.ts
-│   │   │   │   ├── AreaComum.ts
-│   │   │   │   ├── Assembleia.ts
-│   │   │   │   └── Chat.ts
-│   │   │   ├── routes/
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── solicitacoes.ts
-│   │   │   │   ├── encomendas.ts
-│   │   │   │   ├── visitantes.ts
-│   │   │   │   ├── comida.ts
-│   │   │   │   ├── comunicados.ts
-│   │   │   │   ├── areasComuns.ts
-│   │   │   │   ├── assembleias.ts
-│   │   │   │   └── chat.ts
-│   │   │   ├── middleware/
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── errorHandler.ts
-│   │   │   │   └── validation.ts
-│   │   │   ├── services/
-│   │   │   │   ├── notificationService.ts
-│   │   │   │   ├── fileUploadService.ts
-│   │   │   │   ├── emailService.ts
-│   │   │   │   └── jwtService.ts
-│   │   │   ├── database/
-│   │   │   │   ├── migrations/
-│   │   │   │   ├── seeds/
-│   │   │   │   └── connection.ts
-│   │   │   └── app.ts
-│   │   ├── .env.example
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── web/
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   │   ├── Layout/
-│   │   │   │   ├── Dashboard/
-│   │   │   │   ├── Solicitacoes/
-│   │   │   │   ├── Encomendas/
-│   │   │   │   ├── Visitantes/
-│   │   │   │   ├── Comunicados/
-│   │   │   │   ├── AreasComuns/
-│   │   │   │   ├── Assembleias/
-│   │   │   │   └── Chat/
-│   │   │   ├── pages/
-│   │   │   ├── services/
-│   │   │   ├── store/ (Zustand)
-│   │   │   ├── styles/
-│   │   │   └── App.tsx
-│   │   ├── public/
-│   │   ├── .env.example
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   └── mobile/ (PWA ou React Native)
-│       ├── src/
-│       │   ├── screens/
-│       │   │   ├── HomeScreen.tsx
-│       │   │   ├── SolicitacoesScreen.tsx
-│       │   │   ├── EncomendaScreen.tsx
-│       │   │   ├── VisitantesScreen.tsx
-│       │   │   ├── ComidaScreen.tsx
-│       │   │   ├── ComunicadosScreen.tsx
-│       │   │   ├── ProfileScreen.tsx
-│       │   │   └── ChatScreen.tsx
-│       │   ├── components/
-│       │   ├── services/
-│       │   ├── store/
-│       │   └── App.tsx
-│       ├── public/ (PWA manifest, icons)
-│       ├── service-worker.ts (PWA)
-│       ├── .env.example
-│       └── package.json
-│
-├── docs/
-│   ├── API.md (endpoints)
-│   ├── DATABASE.md (schema)
-│   ├── DEPLOYMENT.md (instruções)
-│   └── FEATURES.md (detalhe de cada módulo)
-│
-├── .gitignore
-└── README.md (este arquivo)
-```
-
----
-
-## 5. Modelo de Dados (Schema PostgreSQL)
-
-### Entidades Principais
-
-**users** (moradores + admin + porteiro + superadmin) — perfil de negócio; identidade e senha ficam no Supabase Auth
-- id (mesmo id do `auth.users` do Supabase, sem senha própria armazenada aqui), email, nome, apto, telefone, role (morador/admin/porteiro/superadmin), condominio_id (NULL só pra superadmin — não pertence a um condomínio específico, gerencia a plataforma inteira), created_at
-
-**solicitacoes** (chamado de manutenção/segurança/animal — nome anterior: "chamados")
-- id, morador_id, categoria (manutenção/segurança/animal/outra), titulo, descricao, status (aberto/em-progresso/resolvido), prioridade, data_criacao, data_resolvimento, assigned_to (admin)
-
-**encomendas**
-- id, morador_id, porteiro_id, descricao, horario_chegada, foto_url, assinado (boolean), data_assinatura, status (aguardando/retirada)
-
-**comida**
-- id, morador_id, restaurante, horario_chegada_estimada, status (pedido-feito/em-caminho/chegou/retirada), notificacao_portaria_enviada
-
-**visitantes** (implementado na Fase 2, Session 22 — ver docs/CHECKPOINT_HISTORY.md)
-- id, condominio_id, morador_id, nome_visitante, rg, placa_veiculo, data_visita, hora_entrada, hora_saida, aprovado_por, status (aprovado/bloqueado/ativo)
-- `aprovado_por`: sempre o próprio morador na criação (auto-aprovação — é o convidado dele; não há
-  gate de admin separado, resolvendo uma ambiguidade que existia entre este README e o CLAUDE.md).
-  `status` não tem um valor "concluído" — depois da saída o status continua `ativo`, só `hora_saida`
-  é preenchida; a UI distingue "na portaria" de "visita concluída" combinando os dois campos.
-
-**comunicados**
-- id, admin_id, titulo, conteudo, data_criacao, lido_por (array de user_ids ou relação separada)
-
-**areasComuns**
-- id, condominio_id, nome (salão/churrasqueira/piscina), horario_funcionamento, descricao
-
-**reservas**
-- id, area_comum_id, morador_id, data_reserva, hora_inicio, hora_fim, status (aprovada/pendente/cancelada)
-
-**assembleias**
-- id, condominio_id, titulo, data, descricao, pauta, status (planejada/em-votacao/encerrada)
-
-**votos**
-- id, assembleia_id, morador_id, voto (sim/nao/abstencao), timestamp
-
-**chats**
-- id, condominio_id, morador_id (dono da thread), autor_id (quem escreveu — morador ou o admin que respondeu), mensagem, created_at, lido (se o outro lado já leu)
-
-### Multi-tenancy e isolamento de dados
-
-Sinndico é vendido por condomínio (um cliente = um condomínio), então isolamento entre tenants é
-requisito desde o início, não um "depois eu penso nisso".
-
-**Estratégia escolhida: banco único (um projeto Supabase) + `condominio_id` em cada tabela + Row
-Level Security no Postgres** — não um banco/projeto separado por cliente. Motivo: o custo de um
-projeto Supabase por cliente escala linearmente com o número de condomínios (cada projeto acima do
-free tier tem custo próprio), e cada mudança de schema precisaria rodar em N bancos em vez de um só.
-Pro público-alvo (condomínios de porte pequeno/médio, dezenas a poucas centenas de clientes), banco
-único é o padrão de mercado — Slack, Linear, Notion e a maioria dos SaaS B2B desse porte funcionam
-assim. Banco por cliente só se justificaria com poucos clientes muito grandes ou exigência
-contratual/regulatória de separação física.
-
-**Como o isolamento é garantido de verdade (não só "por convenção" no código):**
-- Toda tabela com dado de um condomínio específico tem `condominio_id`.
-- **Row Level Security ativado** nas tabelas (`condominios`, `users`, `solicitacoes`, `encomendas`,
-  `comunicados`, `comunicado_leituras`) — o Postgres bloqueia a leitura/escrita de linhas fora do
-  tenant atual mesmo que o código do backend esqueça um filtro `WHERE condominio_id = ...`.
-- A API **não** se conecta ao Postgres com a role `postgres` (superuser do Supabase, que ignora RLS
-  por padrão) pra servir requests normais — existe uma role dedicada, restrita (`app_user`, sem
-  `BYPASSRLS`), e cada request roda dentro de uma transação que seta o tenant atual via
-  `SET LOCAL`/`set_config` antes de qualquer query. `DATABASE_URL` (privilegiada) fica só pra rodar
-  migrations e pra operações de superadmin; `APP_DATABASE_URL` (restrita) é o que a API usa em
-  runtime pra tudo que é tenant-scoped.
-
-**Superadmin:** role própria (`role = 'superadmin'`), sem `condominio_id` (gerencia todos os
-condomínios, não pertence a nenhum). Sem tela própria ainda — a fundação (schema + regra de acesso)
-já existe; o painel visual pra criar/gerenciar condomínios fica pra quando entrarmos na Fase 1 do
-frontend admin. Enquanto isso, a primeira conta de superadmin é criada via
-`npm run seed:superadmin` (ver seção 8).
-
----
-
-## 6. Fases de Desenvolvimento
-
-### **FASE 1: MVP (Semanas 1-4)**
-Funcionalidades core que entregam valor imediato:
-
-- [ ] **Auth:** Cadastro/login morador + admin, JWT
-- [ ] **Solicitações:** Morador cria, admin vê/resolve (web e mobile)
-- [ ] **Encomendas:** Porteiro cadastra (foto + hora), morador assina digital, notificação
-- [ ] **Comunicados:** Admin posta, morador vê + notificação
-- [ ] **Chat básico:** Morador escreve, admin responde
-- [ ] **Dashboard admin:** Resumo (solicitações abertas, encomendas hoje, comunicados recentes)
-- [ ] **Notificações:** Push FCM (encomenda chegou, comunicado novo, resposta admin)
-
-**Saídas MVP:**
-- Backend API rodando
-- Web admin funcional
-- PWA mobile funcional (versão 1)
-
----
-
-### **FASE 2: Visitantes + Comida (Semanas 5-6)**
-- [ ] **Visitantes:** Registro morador, aprovação admin, lista de acesso portaria
-- [ ] **Comida:** Morador avisa plataforma, pre-aviso pra portaria, status de entrega
-- [ ] **Visitantes - Integração portaria:** Porteiro vê lista de visitantes aprovados ao abrir perfil do morador
-
----
-
-### **FASE 3: Áreas Comuns + Assembleia (Semanas 7-8)**
-- [ ] **Reserva de áreas:** Morador reserva, admin aprova, calendário visual
-- [ ] **Assembleia:** Admin convoca, morador vota, ata automática
-
----
-
-### **FASE 4: Polish + Deployment (Semana 9)**
-- [ ] Testes automatizados (unit + integration)
-- [ ] Otimização de performance
-- [ ] Deployment produção (Railway/AWS + Vercel)
-- [ ] Documentação completa
-
----
-
-### **FASE 5+: Melhorias Contínuas**
-- Integração com fechadura inteligente (Loqu8, Intelbras)
-- Leitura de hidrômetro (OCR)
-- App nativo iOS/Android (se PWA não for suficiente)
-- Relatórios/BI pro admin
-- SMS como fallback pra notificações
-
----
-
-## 7. Checkpoint de Progresso
-
-O estado atual do projeto (fatia/fase em andamento, próximo passo) fica no CLAUDE.md (seção 8 —
-Estado atual). O histórico detalhado sessão a sessão fica em `docs/CHECKPOINT_HISTORY.md`.
-
----
-
-## 8. Como Rodar Local (Setup)
-
-O banco (Postgres) e o Auth rodam no **Supabase** — inclusive em desenvolvimento, não só em produção. Não precisa instalar Postgres localmente.
+## Setup rápido
 
 ```bash
-# 0. Criar um projeto gratuito em supabase.com
-#    Copiar em Project Settings > API: Project URL, anon key (publishable), service_role key (secret)
-#    Copiar em Project Settings > Database > Connect: a connection string do "Transaction pooler" (porta 6543)
-#    -> NÃO usar a connection string "direta" (db.<projeto>.supabase.co:5432): ela só resolve em IPv6,
-#       o que trava com ETIMEDOUT em redes/ambientes sem saída IPv6. O pooler tem host IPv4.
-#    -> Se a senha do Postgres tiver caracteres especiais (@, +, etc.), fazer URL-encode antes de colar
-#       na DATABASE_URL (@ -> %40, + -> %2B), senão a connection string quebra.
-
-# Clone
 git clone <repo-url>
 cd sinndico
 
-# Redis (opcional, cache futuro)
-docker compose up -d
-
 # Backend
-cd apps/backend
-npm install
-cp .env.example .env
-# preencher DATABASE_URL / SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY no .env
-# gerar uma senha forte pra APP_DB_PASSWORD e montar a APP_DATABASE_URL (ver comentários no .env.example)
-npm run migrate
-npm run seed
-SUPERADMIN_EMAIL=voce@seudominio.com SUPERADMIN_PASSWORD=senha-forte npm run seed:superadmin
-npm run dev
+cd apps/backend && npm install && cp .env.example .env
+npm run migrate && npm run seed && npm run dev
 
-# Em outro terminal: Web
-cd apps/web
-npm install
-cp .env.example .env
-npm run dev
+# Web (outro terminal)
+cd apps/web && npm install && cp .env.example .env && npm run dev
 
-# Em outro terminal: Mobile (PWA)
-cd apps/mobile
-npm install
-npm run dev
+# Mobile (outro terminal)
+cd apps/mobile && npm install && npm run dev
 ```
 
----
+Guia completo (Supabase, variáveis de ambiente, seed de superadmin, login de teste):
+`docs/configuracao.md`.
 
-## 9. Variáveis de Ambiente (.env)
+## Documentação
 
-```
-# Backend
-# Privilegiada (role "postgres", ignora RLS) — só migrations, nunca runtime da API
-DATABASE_URL=postgresql://postgres.seu-projeto:sua_senha@aws-0-sua-regiao.pooler.supabase.com:6543/postgres
-# Restrita (role "app_user", sem BYPASSRLS) — usada em runtime pela API, RLS aplica de verdade
-APP_DATABASE_URL=postgresql://app_user.seu-projeto:sua_senha@aws-0-sua-regiao.pooler.supabase.com:6543/postgres
-APP_DB_PASSWORD=...
-SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-REDIS_URL=redis://localhost:6379
-FIREBASE_PROJECT_ID=...
-FIREBASE_CLIENT_EMAIL=...
-FIREBASE_PRIVATE_KEY=...
-AWS_S3_BUCKET=sinndico-app
-NODE_ENV=development
-
-# Frontend
-VITE_API_URL=http://localhost:5000
-VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-VITE_SUPABASE_ANON_KEY=...
-```
-
----
-
-## 10. Observações Importantes
-
-1. **Sistema sujeito a evoluções:** Este README reflete a implantação inicial. Alterações de escopo, melhorias e correções de bugs serão contínuas conforme direcionado.
-
-2. **Checkpoints de progresso:** Cada sessão de desenvolvimento registra checkpoints no CLAUDE.md. Isso permite retomar de onde parou.
-
-3. **Prioridade:** MVP funcional em 4 semanas, depois expandir com visitantes e comida, depois áreas comuns.
-
-4. **Comunicação:** Qualquer mudança de direção será documentada aqui e discutida antes de implementação.
-
----
-
-## 11. Links Úteis
-
-- PostgreSQL: https://www.postgresql.org/
-- Express.js: https://expressjs.com/
-- React: https://react.dev/
-- Firebase FCM: https://firebase.google.com/
-- PWA Docs: https://web.dev/progressive-web-apps/
-
----
-
-**Criado:** 16/07/2026
-**Última atualização:** 16/07/2026
-**Responsável:** Guilherme + Claude Code
+- `docs/escopo.md` — visão do produto, módulos, identidade visual
+- `docs/roadmap.md` — fases e fatias de desenvolvimento
+- `docs/arquitetura.md` — stack, estrutura de pastas, schema de banco, multi-tenancy
+- `docs/configuracao.md` — setup local e variáveis de ambiente
+- `docs/DESIGN_SYSTEM.md` — design system (cores, tipografia, componentes)
+- `docs/CHECKPOINT_HISTORY.md` — histórico de sessões de desenvolvimento
