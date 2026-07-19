@@ -1,12 +1,12 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 import { CreateMoradorForm } from '@/components/Moradores/CreateMoradorForm';
-import { EditarMoradorModal } from '@/components/Moradores/EditarMoradorModal';
 import { ImportarMoradoresButton } from '@/components/Moradores/ImportarMoradoresButton';
-import { Button } from '@/components/ui/Button';
+import { MoradorDetail } from '@/components/Moradores/MoradorDetail';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
@@ -31,6 +31,8 @@ export function MoradoresPage() {
     queryFn: () => residenciasApi.list(),
   });
 
+  const queryClient = useQueryClient();
+
   const { state, setPage, setSearch, setSort, clearFilters } = useListQueryParams({
     sortBy: 'nome',
     sortOrder: 'asc',
@@ -38,7 +40,7 @@ export function MoradoresPage() {
 
   const [rawSearch, setRawSearch] = useState(state.search);
   const debouncedSearch = useDebouncedValue(rawSearch, 300);
-  const [editingMorador, setEditingMorador] = useState<MoradorResponse | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (debouncedSearch !== state.search) setSearch(debouncedSearch);
@@ -58,6 +60,21 @@ export function MoradoresPage() {
     queryFn: () => usersApi.listMoradores(params),
     enabled: Boolean(residenciasQuery.data),
     placeholderData: keepPreviousData,
+  });
+
+  const selected = moradoresQuery.data?.items.find((item) => item.id === selectedId) ?? null;
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: { id: string; nome: string; telefone?: string; residenciaId: string }) =>
+      usersApi.updateMorador(payload.id, {
+        nome: payload.nome,
+        telefone: payload.telefone,
+        residenciaId: payload.residenciaId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['moradores'] });
+      setSelectedId(null);
+    },
   });
 
   const columns = useMemo<DataTableColumn<MoradorResponse>[]>(
@@ -84,16 +101,6 @@ export function MoradoresPage() {
         mono: true,
         width: '150px',
         render: (row) => formatResidencia(row.residencia),
-      },
-      {
-        key: 'acoes',
-        header: 'Ações',
-        width: '120px',
-        render: (row) => (
-          <Button size="sm" variant="ghost" onClick={() => setEditingMorador(row)}>
-            Editar
-          </Button>
-        ),
       },
     ],
     [],
@@ -153,6 +160,8 @@ export function MoradoresPage() {
                 rows={moradoresQuery.data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={moradoresQuery.isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<MoradorEmptyIllustration />}
@@ -186,13 +195,22 @@ export function MoradoresPage() {
         </Card>
       </div>
 
-      {editingMorador && (
-        <EditarMoradorModal
-          morador={editingMorador}
-          residencias={residencias}
-          onClose={() => setEditingMorador(null)}
-        />
-      )}
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? selected.nome : ''}
+      >
+        {selected && (
+          <MoradorDetail
+            key={selected.id}
+            morador={selected}
+            residencias={residencias}
+            pending={updateMutation.isPending}
+            hasError={updateMutation.isError}
+            onSave={(payload) => updateMutation.mutate({ id: selected.id, ...payload })}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
