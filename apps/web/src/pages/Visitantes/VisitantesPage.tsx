@@ -2,11 +2,12 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useMemo, useState } from 'react';
 
 import { CreateVisitanteForm } from '@/components/Visitantes/CreateVisitanteForm';
+import { VisitanteDetail } from '@/components/Visitantes/VisitanteDetail';
 import { displayStatus } from '@/components/Visitantes/visitanteLabels';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
@@ -45,6 +46,8 @@ export function VisitantesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const params: VisitanteListParams = {
     page: state.page,
     pageSize: state.pageSize,
@@ -70,6 +73,8 @@ export function VisitantesPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['visitantes'] });
   const entradaMutation = useMutation({ mutationFn: (id: string) => visitantesApi.registrarEntrada(id), onSuccess: invalidate });
@@ -149,35 +154,10 @@ export function VisitantesPage() {
           return <Badge status={status}>{label}</Badge>;
         },
       },
-      {
-        key: 'acoes',
-        header: 'Ações',
-        width: '260px',
-        render: (row) =>
-          !canManage ? null : (
-            <div className="flex flex-wrap gap-2">
-              {row.status === 'aprovado' && (
-                <>
-                  <Button size="sm" loading={pending} onClick={() => entradaMutation.mutate(row.id)}>
-                    Registrar entrada
-                  </Button>
-                  <Button size="sm" variant="danger" loading={pending} onClick={() => bloquearMutation.mutate(row.id)}>
-                    Bloquear
-                  </Button>
-                </>
-              )}
-              {row.status === 'ativo' && !row.horaSaida && (
-                <Button size="sm" loading={pending} onClick={() => saidaMutation.mutate(row.id)}>
-                  Registrar saída
-                </Button>
-              )}
-            </div>
-          ),
-      },
     );
 
     return cols;
-  }, [isMorador, canManage, moradorPorId, pending, entradaMutation, saidaMutation, bloquearMutation]);
+  }, [isMorador, moradorPorId]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -231,6 +211,8 @@ export function VisitantesPage() {
                 rows={data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<VisitanteEmptyIllustration />}
@@ -269,6 +251,24 @@ export function VisitantesPage() {
           )}
         </Card>
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? selected.nomeVisitante : ''}
+      >
+        {selected && (
+          <VisitanteDetail
+            visitante={selected}
+            morador={moradorPorId.get(selected.moradorId)}
+            canManage={canManage}
+            pending={pending}
+            onEntrada={() => entradaMutation.mutate(selected.id)}
+            onSaida={() => saidaMutation.mutate(selected.id)}
+            onBloquear={() => bloquearMutation.mutate(selected.id)}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
