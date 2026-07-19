@@ -3,11 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { AreaComumCard } from '@/components/AreasComuns/AreaComumCard';
 import { CreateAreaComumForm } from '@/components/AreasComuns/CreateAreaComumForm';
+import { ReservaDetail } from '@/components/AreasComuns/ReservaDetail';
 import { STATUS_LABELS } from '@/components/AreasComuns/reservaLabels';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
@@ -53,6 +54,8 @@ export function AreasComunsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const reservaParams: ReservaListParams = {
     page: state.page,
     pageSize: state.pageSize,
@@ -78,6 +81,8 @@ export function AreasComunsPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const selected = reservasQuery.data?.items.find((item) => item.id === selectedId) ?? null;
 
   const hasActiveFilters = Boolean(state.search || state.filters.status);
 
@@ -139,33 +144,10 @@ export function AreasComunsPage() {
         width: '130px',
         render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
       },
-      {
-        key: 'acoes',
-        header: 'Ações',
-        width: '200px',
-        render: (row) => {
-          const isOwner = row.moradorId === user?.id;
-          const podeCancelar = row.status !== 'cancelada' && (isAdmin || isOwner);
-          return (
-            <div className="flex flex-wrap gap-2">
-              {isAdmin && row.status === 'pendente' && (
-                <Button size="sm" loading={pending} onClick={() => aprovarMutation.mutate(row.id)}>
-                  Aprovar
-                </Button>
-              )}
-              {podeCancelar && (
-                <Button size="sm" variant="danger" loading={pending} onClick={() => cancelarMutation.mutate(row.id)}>
-                  Cancelar
-                </Button>
-              )}
-            </div>
-          );
-        },
-      },
     );
 
     return cols;
-  }, [isMorador, isAdmin, moradorPorId, areaNomePorId, pending, aprovarMutation, cancelarMutation, user?.id]);
+  }, [isMorador, moradorPorId, areaNomePorId]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -242,6 +224,8 @@ export function AreasComunsPage() {
                 rows={reservasQuery.data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={reservasQuery.isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<ReservaEmptyIllustration />}
@@ -278,6 +262,25 @@ export function AreasComunsPage() {
           )}
         </Card>
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? areaNomePorId.get(selected.areaComumId) ?? 'Área removida' : ''}
+      >
+        {selected && (
+          <ReservaDetail
+            reserva={selected}
+            morador={moradorPorId.get(selected.moradorId)}
+            areaNome={areaNomePorId.get(selected.areaComumId) ?? 'Área removida'}
+            podeAprovar={isAdmin && selected.status === 'pendente'}
+            podeCancelar={selected.status !== 'cancelada' && (isAdmin || selected.moradorId === user?.id)}
+            pending={pending}
+            onAprovar={() => aprovarMutation.mutate(selected.id)}
+            onCancelar={() => cancelarMutation.mutate(selected.id)}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
