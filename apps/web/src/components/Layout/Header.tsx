@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Nav } from '@/components/Layout/Nav';
+import { NotificationBell } from '@/components/Layout/NotificationBell';
 import { LogOutIcon, MenuIcon, UserIcon, XIcon } from '@/components/ui/icons';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -21,6 +22,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <NotificationBell />
 
           <div className="hidden items-center gap-3 md:flex">
             <span className="flex items-center gap-1.5 text-sm text-text-secondary">
