@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { Pagination } from '@/components/ui/Pagination';
 import { Select } from '@/components/ui/Select';
-import { SolicitacaoManutencaoIcon } from '@/components/ui/icons';
+import { SolicitacaoEmptyIllustration } from '@/components/ui/illustrations';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { formatDate } from '@/lib/formatDate';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -188,7 +188,11 @@ export function SolicitacoesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {!isAdmin && <CreateSolicitacaoForm />}
+      {!isAdmin && (
+        <div id="create-solicitacao-form">
+          <CreateSolicitacaoForm />
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">
@@ -249,13 +253,25 @@ export function SolicitacoesPage() {
                 loading={isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<SolicitacaoManutencaoIcon width={48} height={48} />}
+                    icon={<SolicitacaoEmptyIllustration />}
                     title={
                       hasActiveFilters
                         ? 'Nenhuma solicitação encontrada para esses filtros.'
                         : 'Nenhuma solicitação por aqui ainda.'
                     }
-                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      hasActiveFilters
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : !isAdmin
+                          ? {
+                              label: 'Nova solicitação',
+                              onClick: () =>
+                                document
+                                  .getElementById('create-solicitacao-form')
+                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                            }
+                          : undefined
+                    }
                   />
                 }
               />
