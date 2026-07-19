@@ -73,8 +73,70 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   pede ajustes) comparando as 3 páginas lado a lado antes de qualquer fatia aplicar a direção
   escolhida no app de verdade. ✅ Concluída — protótipos em
   `docs/prototipos/fatia-4.7.1-direcoes.html`, direção **A (elevação em camadas + acentos
-  decorativos)** escolhida em 2026-07-19. Aplicação no app de verdade fica pra uma próxima fatia
-  (numeração a definir).
+  decorativos)** escolhida em 2026-07-19.
+
+  Depois da escolha, usuário achou o resultado ainda "muito tech" (mono/dados crus, ícones/paleta
+  frias, falta de calor humano, densidade de informação) e pediu variações mantendo a direção A.
+  Duas rodadas de refinamento no mesmo protótipo:
+  - **Ajuste** (tentativa 1, descartada por sutil demais): mono só em dado técnico, ícone com traço
+    mais grosso, mais respiro.
+  - **Reformulação moderada** (tentativa 2, **✅ aprovada** em 2026-07-19 — é a versão atual do
+    protótipo): dashboard vira resumo narrativo do dia em vez de grid frio de números; StatTile com
+    fundo tintado por tema em vez de card branco uniforme.
+  - **D — repaginação grande** (só comparação, pedida pelo usuário "pra ver como ficaria"):
+    Solicitações vira feed de cards com avatar colorido por morador em vez de tabela. **Descartada**
+    — trocaria a `DataTable`/`ListToolbar`/`Pagination` já reaproveitada em 6 telas (fatia
+    4.2-4.4.1), custo alto sem ganho proporcional. Fica no protótipo só como referência histórica.
+
+- **Fatia 4.7.2 — Aplicar a direção A reformulada no app de verdade.** Levar pro código React o que
+  está validado em `docs/prototipos/fatia-4.7.1-direcoes.html` (cena "A", versão atual — abrir e
+  clicar em "A · Elevação" no toolbar do protótipo pra ver exatamente o resultado esperado).
+  Escopo obrigatório:
+  - **Dashboard (`DashboardPage.tsx`):**
+    - Faixa "hero" no topo substituindo o cabeçalho atual: saudação (“Bom dia, {nome}”) + frase
+      narrativa resumindo o dia a partir dos dados já retornados por `dashboardApi.getSummary()`
+      (ex.: "Hoje você tem X encomendas te esperando e Y solicitações em aberto") + ícone/ilustração
+      grande em círculo à direita. Fundo em gradiente diagonal sutil usando `color-mix()` sobre
+      `--color-primary`/`--color-accent` (nada de hex novo).
+    - `StatTile`: fundo tintado por tema (`color-mix(--color-accent/--color-primary, ~8%, surface)`,
+      borda tintada ~24%), ícone de domínio existente (`icons.tsx`) em badge circular 44px (tint
+      ~20%), número, label em minúsculo, nova linha de contexto ("foot": ex. "aguardando resposta",
+      "já sendo resolvidas"). Alternar tint accent/primary por tile como no protótipo.
+    - Comunicados recentes: ícone circular tintado (`ComunicadoIcon`) antes do texto de cada item;
+      trocar a data absoluta por `formatRelativeTime` (já existe, `apps/web/src/lib/formatRelativeTime.ts`,
+      construído na fatia 4.7) em vez de `formatDate` puro — pode manter a data absoluta em `title`
+      pra quem passar o mouse.
+  - **Telas de listagem que usam `DataTable`/`ListToolbar`/`Pagination`** (Solicitações, Encomendas,
+    Visitantes, Comida, Reservas, Moradores — o padrão da fatia 4.2-4.4.1): manter a estrutura de
+    tabela como está (não virar feed/cards — isso foi avaliado e descartado, ver acima). Aplicar só:
+    - Coluna de identificador vira "Protocolo" com número simples (sem `#`, sem fonte mono) no lugar
+      do UUID truncado cru.
+    - Coluna de data usa `formatRelativeTime` em vez de `formatDate` mono.
+    - Ajuste de tipografia/espaçamento geral: `font-size` base um pouco maior nessas telas, mais
+      padding em card/linha de tabela, botões `md` com 44px de altura, ícones com `stroke-width`
+      mais grosso (era 2, protótipo usa 2.3) — decidir se isso vira o novo padrão global do design
+      system ou fica só nessas telas (ver sugestão opcional 3 abaixo).
+  - **Modo claro e escuro obrigatórios** — os tints usam `color-mix()` sobre tokens que já trocam
+    por tema, então testar os dois antes de considerar a fatia concluída (regra do `CLAUDE.md`).
+  - Não mexer no Bloco B/C nem em nenhum outro módulo — escopo é só a camada visual (Bloco A) que
+    já estava em andamento.
+
+  **Sugestões opcionais pra essa fatia (fora do escopo obrigatório acima — só entram com aprovação
+  explícita do usuário antes de codar cada uma):**
+  - [ ] Contagem animada nos números do `StatTile` (o protótipo já tem isso via
+    `requestAnimationFrame`, `docs/DESIGN_SYSTEM.md` seção 8 já prevê motion assim) — dá vida ao
+    dashboard sem custo de acessibilidade se respeitar `prefers-reduced-motion`.
+  - [ ] Promover `stroke-width` mais grosso (2.3) e ícone de domínio maior a padrão **global** do
+    design system, não só nas telas do Bloco A — implica atualizar `docs/DESIGN_SYSTEM.md` seção 4
+    e revisar todo lugar que já usa `icons.tsx` (nav, headers, badges) pra manter consistência.
+  - [ ] Aplicar o hero narrativo também nos dashboards do porteiro e do morador quando forem
+    construídos (fatias 4.9/4.10) — deixar como padrão do template de dashboard, não só do admin.
+  - [ ] Renomear "Nº"/ID pra "Protocolo" de forma consistente em Encomendas/Visitantes/Comida
+    também (não só Solicitações), já que a ideia de humanizar o identificador vale pro produto
+    inteiro, não só pra uma tela.
+  - [ ] Passar um pente fino de microcopy nos empty states/loading states das outras telas pra bater
+    com o tom mais caloroso da frase narrativa do hero (hoje cada tela tem o texto que foi escrito
+    na fatia em que nasceu, sem revisão de tom unificada).
 
 ### Bloco B — Dashboard rico
 
