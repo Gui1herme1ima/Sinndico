@@ -2,11 +2,12 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useMemo, useState } from 'react';
 
 import { CreateEncomendaForm } from '@/components/Encomendas/CreateEncomendaForm';
+import { EncomendaDetail } from '@/components/Encomendas/EncomendaDetail';
 import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
@@ -45,6 +46,8 @@ export function EncomendasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const params: EncomendaListParams = {
     page: state.page,
     pageSize: state.pageSize,
@@ -70,6 +73,8 @@ export function EncomendasPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
   const signMutation = useMutation({
     mutationFn: (id: string) => encomendasApi.sign(id),
@@ -152,25 +157,10 @@ export function EncomendasPage() {
           </div>
         ),
       },
-      {
-        key: 'acoes',
-        header: 'Ações',
-        width: '180px',
-        render: (row) =>
-          isMorador && !row.assinado ? (
-            <Button
-              size="sm"
-              loading={signMutation.isPending}
-              onClick={() => signMutation.mutate(row.id)}
-            >
-              Confirmar retirada
-            </Button>
-          ) : null,
-      },
     );
 
     return cols;
-  }, [isMorador, moradorPorId, signMutation]);
+  }, [isMorador, moradorPorId]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -223,6 +213,8 @@ export function EncomendasPage() {
                 rows={data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<EncomendaEmptyIllustration />}
@@ -261,6 +253,22 @@ export function EncomendasPage() {
           )}
         </Card>
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? `Encomenda #${selected.id.slice(0, 8)}` : ''}
+      >
+        {selected && (
+          <EncomendaDetail
+            encomenda={selected}
+            morador={moradorPorId.get(selected.moradorId)}
+            isMorador={isMorador}
+            pending={signMutation.isPending}
+            onSign={() => signMutation.mutate(selected.id)}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
