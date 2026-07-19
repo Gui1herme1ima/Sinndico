@@ -6,9 +6,15 @@ import {
   AssembleiaIcon,
   ChatIcon,
   ComunicadoIcon,
+  CondominioIcon,
+  DashboardIcon,
   EncomendaIcon,
+  EquipeIcon,
   IconProps,
+  PermissaoIcon,
+  ResidenciaIcon,
   SolicitacaoManutencaoIcon,
+  UserIcon,
   VisitanteIcon,
 } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
@@ -28,7 +34,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard', roles: ['admin'] },
+  { to: '/dashboard', label: 'Dashboard', roles: ['admin'], icon: DashboardIcon },
   { to: '/solicitacoes', label: 'Solicitações', roles: ['morador', 'admin'], icon: SolicitacaoManutencaoIcon },
   {
     to: '/encomendas',
@@ -65,11 +71,11 @@ const NAV_ITEMS: NavItem[] = [
     roles: ['morador', 'admin'],
     icon: AssembleiaIcon,
   },
-  { to: '/residencias', label: 'Residências', roles: ['admin'], group: 'cadastros' },
-  { to: '/moradores', label: 'Moradores', roles: ['admin'], group: 'cadastros' },
-  { to: '/equipe', label: 'Equipe', roles: ['admin'], group: 'cadastros' },
-  { to: '/permissoes', label: 'Permissões', roles: ['admin'], group: 'cadastros' },
-  { to: '/condominios', label: 'Condomínios', roles: ['superadmin'], group: 'cadastros' },
+  { to: '/residencias', label: 'Residências', roles: ['admin'], group: 'cadastros', icon: ResidenciaIcon },
+  { to: '/moradores', label: 'Moradores', roles: ['admin'], group: 'cadastros', icon: UserIcon },
+  { to: '/equipe', label: 'Equipe', roles: ['admin'], group: 'cadastros', icon: EquipeIcon },
+  { to: '/permissoes', label: 'Permissões', roles: ['admin'], group: 'cadastros', icon: PermissaoIcon },
+  { to: '/condominios', label: 'Condomínios', roles: ['superadmin'], group: 'cadastros', icon: CondominioIcon },
 ];
 
 function linkClassName({ isActive }: { isActive: boolean }) {

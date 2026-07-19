@@ -173,3 +173,56 @@ export function NotificacaoIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function DashboardIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+export function ResidenciaIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 21V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v16" />
+      <path d="M14 21v-9a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v9" />
+      <path d="M2 21h20" />
+      <path d="M7 8h1M11 8h1M7 12h1M11 12h1M7 16h1M11 16h1" />
+    </svg>
+  );
+}
+
+export function EquipeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5" />
+      <circle cx="18" cy="9" r="2.2" />
+      <path d="M15 20c.3-2.5 1.8-4 4-4.5" />
+    </svg>
+  );
+}
+
+export function PermissaoIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+export function CondominioIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 21V9l6-4v16" />
+      <path d="M13 21V5l8 4v12" />
+      <path d="M2 21h20" />
+      <path d="M6 12h1M6 16h1M16 10h1M16 14h1M16 18h1" />
+    </svg>
+  );
+}
