@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
 import { findAreaComumById } from '../models/AreaComum';
-import { listTokensForUsers } from '../models/DeviceToken';
 import {
   createReserva,
   findReservaById,
@@ -13,7 +12,7 @@ import {
   updateReservaStatus,
 } from '../models/Reserva';
 import { listAdminIdsForTenant } from '../models/User';
-import { sendPushToTokens } from '../services/notificationService';
+import { notifyUsers } from '../services/notificationService';
 import { parsePagination, resolveSortColumn } from '../utils/listQuery';
 
 export const createReservaSchema = z
@@ -84,11 +83,11 @@ export async function create(req: Request, res: Response) {
   });
 
   const adminIds = await listAdminIdsForTenant(ctx);
-  const tokens = await listTokensForUsers(ctx, adminIds);
-  await sendPushToTokens(tokens, {
-    title: 'Nova reserva pendente',
-    body: `${area.nome} — aguardando aprovação.`,
-    data: { tipo: 'reserva', reservaId: reserva.id },
+  await notifyUsers(ctx, adminIds, {
+    tipo: 'reserva',
+    titulo: 'Nova reserva pendente',
+    corpo: `${area.nome} — aguardando aprovação.`,
+    referenciaId: reserva.id,
   });
 
   res.status(201).json(toReservaResponse(reserva));
@@ -147,12 +146,12 @@ export async function updateStatus(req: Request, res: Response) {
   }
 
   if (!isMorador) {
-    const tokens = await listTokensForUsers(ctx, [reserva.morador_id]);
-    const title = input.status === 'aprovada' ? 'Reserva aprovada' : 'Reserva cancelada';
-    await sendPushToTokens(tokens, {
-      title,
-      body: `Sua reserva foi ${input.status === 'aprovada' ? 'aprovada' : 'cancelada'} pelo síndico.`,
-      data: { tipo: 'reserva', reservaId: reserva.id },
+    const titulo = input.status === 'aprovada' ? 'Reserva aprovada' : 'Reserva cancelada';
+    await notifyUsers(ctx, [reserva.morador_id], {
+      tipo: 'reserva',
+      titulo,
+      corpo: `Sua reserva foi ${input.status === 'aprovada' ? 'aprovada' : 'cancelada'} pelo síndico.`,
+      referenciaId: reserva.id,
     });
   }
 
