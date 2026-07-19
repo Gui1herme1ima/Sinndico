@@ -474,3 +474,15 @@ export interface ImportarMoradoresPayload {
     numero: string;
   }>;
 }
+
+export type NotificacaoTipo = 'chat' | 'comida' | 'comunicado' | 'reserva' | 'assembleia' | 'encomenda';
+
+export interface NotificacaoResponse {
+  id: string;
+  tipo: NotificacaoTipo;
+  titulo: string;
+  corpo: string;
+  referenciaId: string;
+  lida: boolean;
+  createdAt: string;
+}
