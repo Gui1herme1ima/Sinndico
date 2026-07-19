@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
-import { VisitanteIcon } from '@/components/ui/icons';
+import { VisitanteEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -176,7 +176,11 @@ export function VisitantesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {(isMorador || canManage) && <CreateVisitanteForm isMorador={isMorador} />}
+      {(isMorador || canManage) && (
+        <div id="create-visitante-form">
+          <CreateVisitanteForm isMorador={isMorador} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">
@@ -224,13 +228,25 @@ export function VisitantesPage() {
                 loading={isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<VisitanteIcon width={48} height={48} />}
+                    icon={<VisitanteEmptyIllustration />}
                     title={
                       hasActiveFilters
                         ? 'Nenhum visitante encontrado para esses filtros.'
                         : 'Nenhum visitante registrado ainda.'
                     }
-                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      hasActiveFilters
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : isMorador || canManage
+                          ? {
+                              label: 'Registrar visitante',
+                              onClick: () =>
+                                document
+                                  .getElementById('create-visitante-form')
+                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                            }
+                          : undefined
+                    }
                   />
                 }
               />
