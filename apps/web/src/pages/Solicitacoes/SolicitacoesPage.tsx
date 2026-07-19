@@ -94,6 +94,7 @@ export function SolicitacoesPage() {
         key: 'id',
         header: 'Nº',
         mono: true,
+        width: '90px',
         render: (row) => `#${row.id.slice(0, 8)}`,
       },
       {
@@ -112,6 +113,7 @@ export function SolicitacoesPage() {
       cols.push({
         key: 'morador',
         header: 'Morador',
+        width: '200px',
         render: (row) => {
           const morador = moradorPorId.get(row.moradorId);
           return (
@@ -133,6 +135,7 @@ export function SolicitacoesPage() {
         key: 'dataCriacao',
         header: 'Criada em',
         mono: true,
+        width: '150px',
         render: (row) => (
           <>
             {formatDate(row.dataCriacao)}
@@ -147,11 +150,13 @@ export function SolicitacoesPage() {
       {
         key: 'prioridade',
         header: 'Prioridade',
+        width: '130px',
         render: (row) => <Badge status={row.prioridade}>{PRIORIDADE_LABELS[row.prioridade]}</Badge>,
       },
       {
         key: 'status',
         header: 'Status',
+        width: '130px',
         render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
       },
     );
@@ -160,6 +165,7 @@ export function SolicitacoesPage() {
       cols.push({
         key: 'acoes',
         header: 'Ações',
+        width: '260px',
         render: (row) => (
           <div className="flex flex-col gap-2 sm:flex-row" onClick={(e) => e.stopPropagation()}>
             <Select

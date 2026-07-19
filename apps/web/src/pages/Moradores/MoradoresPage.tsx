@@ -70,6 +70,7 @@ export function MoradoresPage() {
       {
         key: 'contato',
         header: 'Contato',
+        width: '240px',
         render: (row) => (
           <div className="text-text-secondary">
             <p>{row.email}</p>
@@ -81,11 +82,13 @@ export function MoradoresPage() {
         key: 'residencia',
         header: 'Residência',
         mono: true,
+        width: '150px',
         render: (row) => formatResidencia(row.residencia),
       },
       {
         key: 'acoes',
         header: 'Ações',
+        width: '120px',
         render: (row) => (
           <Button size="sm" variant="ghost" onClick={() => setEditingMorador(row)}>
             Editar

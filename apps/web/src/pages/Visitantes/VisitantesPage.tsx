@@ -88,6 +88,7 @@ export function VisitantesPage() {
         key: 'id',
         header: 'Nº',
         mono: true,
+        width: '90px',
         render: (row) => `#${row.id.slice(0, 8)}`,
       },
       {
@@ -108,6 +109,7 @@ export function VisitantesPage() {
       cols.push({
         key: 'morador',
         header: 'Morador',
+        width: '200px',
         render: (row) => {
           const morador = moradorPorId.get(row.moradorId);
           return (
@@ -129,6 +131,7 @@ export function VisitantesPage() {
         key: 'dataVisita',
         header: 'Visita',
         mono: true,
+        width: '170px',
         render: (row) => (
           <>
             {formatDate(row.dataVisita)}
@@ -140,6 +143,7 @@ export function VisitantesPage() {
       {
         key: 'status',
         header: 'Status',
+        width: '130px',
         render: (row) => {
           const { status, label } = displayStatus(row);
           return <Badge status={status}>{label}</Badge>;
@@ -148,6 +152,7 @@ export function VisitantesPage() {
       {
         key: 'acoes',
         header: 'Ações',
+        width: '260px',
         render: (row) =>
           !canManage ? null : (
             <div className="flex flex-wrap gap-2">

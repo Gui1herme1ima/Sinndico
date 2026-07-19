@@ -86,6 +86,7 @@ export function EncomendasPage() {
         key: 'id',
         header: 'Nº',
         mono: true,
+        width: '90px',
         render: (row) => `#${row.id.slice(0, 8)}`,
       },
       {
@@ -113,6 +114,7 @@ export function EncomendasPage() {
       cols.push({
         key: 'morador',
         header: 'Morador',
+        width: '200px',
         render: (row) => {
           const morador = moradorPorId.get(row.moradorId);
           return (
@@ -134,11 +136,13 @@ export function EncomendasPage() {
         key: 'horarioChegada',
         header: 'Chegou em',
         mono: true,
+        width: '150px',
         render: (row) => formatDate(row.horarioChegada),
       },
       {
         key: 'status',
         header: 'Status',
+        width: '160px',
         render: (row) => (
           <div>
             <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>
@@ -151,6 +155,7 @@ export function EncomendasPage() {
       {
         key: 'acoes',
         header: 'Ações',
+        width: '180px',
         render: (row) =>
           isMorador && !row.assinado ? (
             <Button

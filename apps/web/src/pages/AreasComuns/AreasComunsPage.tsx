@@ -103,6 +103,7 @@ export function AreasComunsPage() {
       cols.push({
         key: 'morador',
         header: 'Morador',
+        width: '200px',
         render: (row) => {
           const morador = moradorPorId.get(row.moradorId);
           return (
@@ -124,6 +125,7 @@ export function AreasComunsPage() {
         key: 'periodo',
         header: 'Período',
         mono: true,
+        width: '170px',
         render: (row) => (
           <>
             {formatDate(row.horaInicio)}
@@ -134,11 +136,13 @@ export function AreasComunsPage() {
       {
         key: 'status',
         header: 'Status',
+        width: '130px',
         render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
       },
       {
         key: 'acoes',
         header: 'Ações',
+        width: '200px',
         render: (row) => {
           const isOwner = row.moradorId === user?.id;
           const podeCancelar = row.status !== 'cancelada' && (isAdmin || isOwner);

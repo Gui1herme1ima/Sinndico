@@ -85,6 +85,7 @@ export function ComidaPage() {
         key: 'id',
         header: 'Nº',
         mono: true,
+        width: '90px',
         render: (row) => `#${row.id.slice(0, 8)}`,
       },
       {
@@ -98,6 +99,7 @@ export function ComidaPage() {
       cols.push({
         key: 'morador',
         header: 'Morador',
+        width: '200px',
         render: (row) => {
           const morador = moradorPorId.get(row.moradorId);
           return (
@@ -119,16 +121,19 @@ export function ComidaPage() {
         key: 'horarioChegadaEstimada',
         header: 'Chegada estimada',
         mono: true,
+        width: '160px',
         render: (row) => formatDate(row.horarioChegadaEstimada),
       },
       {
         key: 'status',
         header: 'Status',
+        width: '150px',
         render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
       },
       {
         key: 'acoes',
         header: 'Ações',
+        width: '200px',
         render: (row) => (
           <div className="flex flex-wrap gap-2">
             {isMorador && row.status === 'pedido-feito' && (
