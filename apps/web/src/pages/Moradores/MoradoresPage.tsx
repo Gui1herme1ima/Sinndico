@@ -12,7 +12,7 @@ import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { UserIcon } from '@/components/ui/icons';
+import { MoradorEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { residenciasApi } from '@/services/api/residenciasApi';
@@ -117,7 +117,9 @@ export function MoradoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <CreateMoradorForm residencias={residencias} />
+      <div id="create-morador-form">
+        <CreateMoradorForm residencias={residencias} />
+      </div>
       <ImportarMoradoresButton />
 
       <div className="flex flex-col gap-4">
@@ -150,9 +152,19 @@ export function MoradoresPage() {
                 loading={moradoresQuery.isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<UserIcon width={48} height={48} />}
+                    icon={<MoradorEmptyIllustration />}
                     title={state.search ? 'Nenhum morador encontrado para essa busca.' : 'Nenhum morador cadastrado ainda.'}
-                    action={state.search ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      state.search
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : {
+                            label: 'Cadastrar morador',
+                            onClick: () =>
+                              document
+                                .getElementById('create-morador-form')
+                                ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                          }
+                    }
                   />
                 }
               />
