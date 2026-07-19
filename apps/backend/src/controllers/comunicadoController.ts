@@ -9,8 +9,8 @@ import {
   listComunicados,
   markComunicadoAsRead,
 } from '../models/Comunicado';
-import { listTokensForCondominio } from '../models/DeviceToken';
-import { sendPushToTokens } from '../services/notificationService';
+import { listUsersForTenant } from '../models/User';
+import { notifyUsers } from '../services/notificationService';
 
 export const createComunicadoSchema = z.object({
   titulo: z.string().min(1),
@@ -43,11 +43,12 @@ export async function create(req: Request, res: Response) {
     ...input,
   });
 
-  const tokens = await listTokensForCondominio(ctx);
-  await sendPushToTokens(tokens, {
-    title: 'Novo comunicado',
-    body: input.titulo,
-    data: { tipo: 'comunicado', comunicadoId: comunicado.id },
+  const destinatarios = (await listUsersForTenant(ctx)).map((u) => u.id);
+  await notifyUsers(ctx, destinatarios, {
+    tipo: 'comunicado',
+    titulo: 'Novo comunicado',
+    corpo: input.titulo,
+    referenciaId: comunicado.id,
   });
 
   res.status(201).json(toComunicadoResponse(comunicado));

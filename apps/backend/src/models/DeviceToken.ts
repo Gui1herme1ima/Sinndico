@@ -51,11 +51,3 @@ export async function listTokensForUsers(ctx: TenantContext, userIds: string[]):
     return result.rows.map((r) => r.token);
   });
 }
-
-// Usado pelo gatilho de "novo comunicado" - todo mundo do condomínio (RLS já restringe ao tenant).
-export async function listTokensForCondominio(ctx: TenantContext): Promise<string[]> {
-  return withTenantContext(ctx, async (client) => {
-    const result = await client.query<{ token: string }>('SELECT token FROM device_tokens');
-    return result.rows.map((r) => r.token);
-  });
-}
