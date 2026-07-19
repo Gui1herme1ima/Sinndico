@@ -1,12 +1,13 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
+import { ComidaDetail } from '@/components/Comida/ComidaDetail';
 import { STATUS_LABELS } from '@/components/Comida/comidaLabels';
 import { CreateComidaForm } from '@/components/Comida/CreateComidaForm';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
@@ -45,6 +46,8 @@ export function ComidaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const params: ComidaListParams = {
     page: state.page,
     pageSize: state.pageSize,
@@ -70,6 +73,8 @@ export function ComidaPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['comida'] });
   const aCaminhoMutation = useMutation({ mutationFn: (id: string) => comidaApi.updateStatus(id, 'em-caminho'), onSuccess: invalidate });
@@ -130,34 +135,10 @@ export function ComidaPage() {
         width: '150px',
         render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
       },
-      {
-        key: 'acoes',
-        header: 'Ações',
-        width: '200px',
-        render: (row) => (
-          <div className="flex flex-wrap gap-2">
-            {isMorador && row.status === 'pedido-feito' && (
-              <Button size="sm" loading={pending} onClick={() => aCaminhoMutation.mutate(row.id)}>
-                Pedido a caminho
-              </Button>
-            )}
-            {isMorador && row.status === 'chegou' && (
-              <Button size="sm" loading={pending} onClick={() => retiradaMutation.mutate(row.id)}>
-                Confirmar retirada
-              </Button>
-            )}
-            {canManage && (row.status === 'pedido-feito' || row.status === 'em-caminho') && (
-              <Button size="sm" loading={pending} onClick={() => chegouMutation.mutate(row.id)}>
-                Confirmar chegada
-              </Button>
-            )}
-          </div>
-        ),
-      },
     );
 
     return cols;
-  }, [isMorador, canManage, moradorPorId, pending, aCaminhoMutation, chegouMutation, retiradaMutation]);
+  }, [isMorador, moradorPorId]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -212,6 +193,8 @@ export function ComidaPage() {
                 rows={data?.items ?? []}
                 rowKey={(row) => row.id}
                 loading={isLoading}
+                onRowClick={(row) => setSelectedId(row.id)}
+                selectedRowKey={selectedId ?? undefined}
                 emptyState={
                   <EmptyState
                     icon={<ComidaEmptyIllustration />}
@@ -250,6 +233,25 @@ export function ComidaPage() {
           )}
         </Card>
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelectedId(null)}
+        title={selected ? selected.restaurante : ''}
+      >
+        {selected && (
+          <ComidaDetail
+            comida={selected}
+            morador={moradorPorId.get(selected.moradorId)}
+            isMorador={isMorador}
+            canManage={canManage}
+            pending={pending}
+            onACaminho={() => aCaminhoMutation.mutate(selected.id)}
+            onChegou={() => chegouMutation.mutate(selected.id)}
+            onRetirada={() => retiradaMutation.mutate(selected.id)}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
