@@ -5,6 +5,7 @@ import {
   AreaComumIcon,
   AssembleiaIcon,
   ChatIcon,
+  ComidaIcon,
   ComunicadoIcon,
   CondominioIcon,
   DashboardIcon,
@@ -58,7 +59,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: VisitanteIcon,
     moduleKey: 'visitantes',
   },
-  { to: '/comida', label: 'Comida', roles: ['morador', 'admin', 'porteiro'], moduleKey: 'comida' },
+  {
+    to: '/comida',
+    label: 'Comida',
+    roles: ['morador', 'admin', 'porteiro'],
+    icon: ComidaIcon,
+    moduleKey: 'comida',
+  },
   {
     to: '/areas-comuns',
     label: 'Áreas comuns',
