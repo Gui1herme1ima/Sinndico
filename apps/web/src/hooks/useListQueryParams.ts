@@ -89,5 +89,17 @@ export function useListQueryParams(defaults: ListQueryDefaults) {
     [setSearchParams]
   );
 
-  return { state, setPage, setSearch, setFilter, setSort };
+  const clearFilters = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('search');
+      for (const key of [...next.keys()]) {
+        if (!RESERVED_KEYS.has(key)) next.delete(key);
+      }
+      next.set('page', '1');
+      return next;
+    });
+  }, [setSearchParams]);
+
+  return { state, setPage, setSearch, setFilter, setSort, clearFilters };
 }

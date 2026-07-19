@@ -1,16 +1,23 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
 
 import { CreateEncomendaForm } from '@/components/Encomendas/CreateEncomendaForm';
-import { EncomendaCard } from '@/components/Encomendas/EncomendaCard';
+import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
+import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { EncomendaIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
+import { formatDate } from '@/lib/formatDate';
 import { encomendasApi } from '@/services/api/encomendasApi';
-import type { EncomendaListParams } from '@/services/api/types';
+import type { EncomendaListParams, EncomendaResponse } from '@/services/api/types';
+import { usersApi } from '@/services/api/usersApi';
 import { useAuth } from '@/store/useAuth';
 
 const SORT_OPTIONS = [
@@ -23,8 +30,9 @@ export function EncomendasPage() {
   const { user } = useAuth();
   const isPorteiro = user?.role === 'porteiro';
   const isMorador = user?.role === 'morador';
+  const queryClient = useQueryClient();
 
-  const { state, setPage, setSearch, setFilter, setSort } = useListQueryParams({
+  const { state, setPage, setSearch, setFilter, setSort, clearFilters } = useListQueryParams({
     sortBy: 'horarioChegada',
     sortOrder: 'desc',
   });
@@ -52,7 +60,112 @@ export function EncomendasPage() {
     placeholderData: keepPreviousData,
   });
 
+  const diretorioQuery = useQuery({
+    queryKey: ['moradores-diretorio'],
+    queryFn: () => usersApi.listDiretorio(),
+    enabled: !isMorador,
+  });
+
+  const moradorPorId = useMemo(
+    () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
+    [diretorioQuery.data],
+  );
+
+  const signMutation = useMutation({
+    mutationFn: (id: string) => encomendasApi.sign(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['encomendas'] });
+    },
+  });
+
   const hasActiveFilters = Boolean(state.search || state.filters.status);
+
+  const columns = useMemo<DataTableColumn<EncomendaResponse>[]>(() => {
+    const cols: DataTableColumn<EncomendaResponse>[] = [
+      {
+        key: 'id',
+        header: 'Nº',
+        mono: true,
+        render: (row) => `#${row.id.slice(0, 8)}`,
+      },
+      {
+        key: 'descricao',
+        header: 'Encomenda',
+        render: (row) => (
+          <div>
+            <p className="font-medium text-text-primary">{row.descricao || 'Encomenda sem descrição'}</p>
+            {row.fotoUrl && (
+              <a
+                href={row.fotoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Ver foto
+              </a>
+            )}
+          </div>
+        ),
+      },
+    ];
+
+    if (!isMorador) {
+      cols.push({
+        key: 'morador',
+        header: 'Morador',
+        render: (row) => {
+          const morador = moradorPorId.get(row.moradorId);
+          return (
+            <div className="text-text-secondary">
+              <p>{morador?.nome ?? 'Morador removido'}</p>
+              {morador && (
+                <small className="block font-mono text-[11px] text-text-muted">
+                  {formatResidencia(morador.residencia)}
+                </small>
+              )}
+            </div>
+          );
+        },
+      });
+    }
+
+    cols.push(
+      {
+        key: 'horarioChegada',
+        header: 'Chegou em',
+        mono: true,
+        render: (row) => formatDate(row.horarioChegada),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        render: (row) => (
+          <div>
+            <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>
+            {row.assinado && row.dataAssinatura && (
+              <p className="mt-1 text-[11px] text-text-muted">assinada {formatDate(row.dataAssinatura)}</p>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'acoes',
+        header: 'Ações',
+        render: (row) =>
+          isMorador && !row.assinado ? (
+            <Button
+              size="sm"
+              loading={signMutation.isPending}
+              onClick={() => signMutation.mutate(row.id)}
+            >
+              Confirmar retirada
+            </Button>
+          ) : null,
+      },
+    );
+
+    return cols;
+  }, [isMorador, moradorPorId, signMutation]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,71 +176,69 @@ export function EncomendasPage() {
           {isMorador ? 'Minhas encomendas' : 'Encomendas do condomínio'}
         </h2>
 
-        <Card>
-          <ListToolbar
-            searchValue={rawSearch}
-            onSearchChange={setRawSearch}
-            searchLabel="Buscar"
-            searchPlaceholder="Descrição"
-            filters={[
-              {
-                key: 'status',
-                label: 'Status',
-                value: state.filters.status ?? '',
-                onChange: (value) => setFilter('status', value),
-                options: [
-                  { value: '', label: 'Todos' },
-                  { value: 'aguardando', label: 'Aguardando' },
-                  { value: 'retirada', label: 'Retirada' },
-                ],
-              },
-            ]}
-            sortOptions={SORT_OPTIONS}
-            sortValue={`${state.sortBy}-${state.sortOrder}`}
-            onSortChange={(value) => {
-              const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
-              setSort(sortBy, sortOrder);
-            }}
-          />
-        </Card>
-
-        {isLoading && (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
+        <Card padding="none">
+          <div className="p-4 md:p-6 md:pb-0">
+            <ListToolbar
+              searchValue={rawSearch}
+              onSearchChange={setRawSearch}
+              searchLabel="Buscar"
+              searchPlaceholder="Descrição"
+              filters={[
+                {
+                  key: 'status',
+                  label: 'Status',
+                  value: state.filters.status ?? '',
+                  onChange: (value) => setFilter('status', value),
+                  options: [
+                    { value: '', label: 'Todos' },
+                    { value: 'aguardando', label: 'Aguardando' },
+                    { value: 'retirada', label: 'Retirada' },
+                  ],
+                },
+              ]}
+              sortOptions={SORT_OPTIONS}
+              sortValue={`${state.sortBy}-${state.sortOrder}`}
+              onSortChange={(value) => {
+                const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
+                setSort(sortBy, sortOrder);
+              }}
+            />
           </div>
-        )}
 
-        {isError && (
-          <Card>
-            <p className="text-danger">
-              Não foi possível carregar as encomendas. Tente recarregar a página.
-            </p>
-          </Card>
-        )}
+          <div className="mt-4 overflow-x-auto">
+            {isError ? (
+              <p className="p-6 text-danger">Não foi possível carregar as encomendas. Tente recarregar a página.</p>
+            ) : (
+              <DataTable
+                columns={columns}
+                rows={data?.items ?? []}
+                rowKey={(row) => row.id}
+                loading={isLoading}
+                emptyState={
+                  <EmptyState
+                    icon={<EncomendaIcon width={48} height={48} />}
+                    title={
+                      hasActiveFilters
+                        ? 'Nenhuma encomenda encontrada para esses filtros.'
+                        : 'Nenhuma encomenda por aqui ainda.'
+                    }
+                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                  />
+                }
+              />
+            )}
+          </div>
 
-        {!isLoading && !isError && data && data.items.length === 0 && (
-          <Card>
-            <p className="text-text-secondary">
-              {hasActiveFilters
-                ? 'Nenhuma encomenda encontrada para esses filtros.'
-                : 'Nenhuma encomenda por aqui ainda.'}
-            </p>
-          </Card>
-        )}
-
-        {data?.items.map((encomenda) => (
-          <EncomendaCard key={encomenda.id} encomenda={encomenda} canSign={isMorador} />
-        ))}
-
-        {data && data.totalPages > 1 && (
-          <Pagination
-            page={data.page}
-            totalPages={data.totalPages}
-            total={data.total}
-            onPageChange={setPage}
-          />
-        )}
+          {data && (
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              total={data.total}
+              pageSize={data.pageSize}
+              onPageChange={setPage}
+            />
+          )}
+        </Card>
       </div>
     </div>
   );

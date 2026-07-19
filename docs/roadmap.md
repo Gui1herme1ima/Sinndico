@@ -36,6 +36,15 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
 - **Fatia 4.4 — Seletor de moradores com busca.** Substituir todo campo de UUID cru por seletor com
   busca (nome/apto). Em Encomendas e Chat já existe (`GET /api/users/diretorio`); estender pra
   Comida e Visitantes e padronizar o componente entre as quatro telas. ✅ Concluída.
+- **Fatia 4.4.1 — Alinhar listagem existente ao spec visual.** `docs/UX_SPEC_FASE4.md` §2 (referência:
+  `docs/mockup-fase4.html`) chegou depois das fatias 4.2/4.3 — reconstruído `ListToolbar` (pill de
+  filtro via `FilterPill` em vez de `Select` nativo), trocado card-list empilhado por `DataTable`
+  densa dentro de um card único (coluna Morador com residência em mono resolvida client-side via
+  diretório, coluna Ações compacta reproduzindo as mutations que antes viviam nos cards — linha
+  clicável/selecionada fica pronta no componente mas não é ativada nesta fatia, sem drawer ainda),
+  `Pagination` em pills numeradas "Mostrando X–Y de Z", `EmptyState` com ícone do módulo + CTA
+  "Limpar filtros". Aplicado nas 6 telas: Solicitações, Encomendas, Visitantes, Comida, Reservas,
+  Moradores (com `EditarMoradorModal` extraído do antigo card de edição inline). ✅ Concluída.
 - **Fatia 4.5 — Polimento visual.** Ícones faltantes na nav (Comida, Dashboard, Cadastros), empty
   states ilustrados com call-to-action, skeleton loading em todas as listas, revisão de
   espaçamento/grid (hoje sobra espaço vazio). Testar nos dois modos (claro/escuro).

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinndico — Mockups Fase 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS — cópia fiel de apps/web/src/styles/tokens.css ============ */
+:root{
+  --color-primary:#146C5B; --color-primary-contrast:#FFFFFF; --color-accent:#F0A94E;
+  --color-background:#F7F8F7; --color-surface:#FFFFFF;
+  --color-text-primary:#16211D; --color-text-secondary:#4B5A54; --color-text-muted:#7A857F;
+  --color-border:#E1E6E3; --color-danger:#E5484D; --color-success:#3DBE7A;
+  --shadow-sm:0 1px 2px rgba(14,21,18,.06); --shadow-md:0 4px 12px rgba(14,21,18,.08);
+}
+[data-theme='dark']{
+  --color-primary:#2ED9A8; --color-primary-contrast:#0E1512; --color-accent:#F0A94E;
+  --color-background:#0E1512; --color-surface:#161E1A;
+  --color-text-primary:#EAF2EE; --color-text-secondary:#9FD3C7; --color-text-muted:#5C7168;
+  --color-border:#1E2A25; --color-danger:#E5484D; --color-success:#3DBE7A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--color-background);color:var(--color-text-primary);font-size:14px;-webkit-font-smoothing:antialiased}
+.display{font-family:'Space Grotesk',sans-serif}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ============ Controles do mockup (não fazem parte do app) ============ */
+.mockbar{position:sticky;top:0;z-index:50;display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.mockbar .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted);margin-right:8px}
+.mockbar button{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:6px 14px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.mockbar button.on{background:var(--color-primary);color:var(--color-primary-contrast);border-color:var(--color-primary)}
+.mockbar .spacer{flex:1}
+
+/* ============ App frame ============ */
+.screen{display:none}
+.screen.on{display:block}
+.frame{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 49px)}
+
+/* Header */
+.appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:60px;padding:0 24px;background:var(--color-surface);border-bottom:1px solid var(--color-border)}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px}
+.logo .sym{width:30px;height:30px;border-radius:8px;background:var(--color-primary);color:var(--color-primary-contrast);display:grid;place-items:center;font-size:16px}
+.condo{font-size:12px;color:var(--color-text-muted);padding-left:16px;border-left:1px solid var(--color-border)}
+.hspacer{flex:1}
+.hbtn{position:relative;width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--color-text-secondary);display:grid;place-items:center;cursor:pointer}
+.hbtn:hover{background:rgba(127,127,127,.08)}
+.hbtn .dot{position:absolute;top:5px;right:5px;min-width:16px;height:16px;padding:0 4px;border-radius:9999px;background:var(--color-accent);color:#16211D;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;display:grid;place-items:center}
+.user{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px}
+.user .av{width:30px;height:30px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 18%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:12px;font-weight:600}
+
+/* Sidebar */
+.side{background:var(--color-surface);border-right:1px solid var(--color-border);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.side .sec{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:16px 12px 6px}
+.nitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--color-text-secondary);font-weight:500;font-size:13.5px;cursor:pointer;text-decoration:none}
+.nitem svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nitem:hover{background:rgba(127,127,127,.07)}
+.nitem.on{background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary)}
+.nitem .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.nitem.on .count{color:var(--color-primary)}
+
+/* Conteúdo */
+.main{padding:24px 28px;min-width:0}
+.pagehead{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.pagehead h1{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600}
+.pagehead .sub{font-size:12.5px;color:var(--color-text-muted)}
+.btn{font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;height:40px;padding:0 18px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--color-primary);color:var(--color-primary-contrast)}
+.btn.ghost{background:transparent;color:var(--color-text-secondary)}
+.btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+
+/* Cards */
+.card{background:var(--color-surface);border-radius:12px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.card .chead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0}
+.card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600}
+.card .chead a{font-size:12.5px;color:var(--color-primary);text-decoration:none;font-weight:500}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;border-radius:9999px;padding:3px 11px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.b-open{background:color-mix(in srgb,var(--color-accent) 14%,transparent);color:var(--color-accent)}
+.b-prog{background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary)}
+.b-done{background:color-mix(in srgb,var(--color-success) 13%,transparent);color:var(--color-success)}
+.b-urg{background:color-mix(in srgb,var(--color-danger) 13%,transparent);color:var(--color-danger)}
+.b-mut{background:rgba(127,127,127,.12);color:var(--color-text-muted)}
+
+/* ====== DASHBOARD ====== */
+.grid12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.stat{grid-column:span 3;padding:18px 20px}
+.stat .lbl{font-size:12.5px;color:var(--color-text-secondary);margin-bottom:6px}
+.stat .val{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:600;line-height:1}
+.stat .delta{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:8px;color:var(--color-text-muted)}
+.delta.up{color:var(--color-success)}.delta.warn{color:var(--color-accent)}.delta.down{color:var(--color-danger)}
+.chartcard{grid-column:span 8;padding-bottom:16px}
+.donutcard{grid-column:span 4;padding-bottom:16px}
+.feedcard{grid-column:span 5}
+.shortcard{grid-column:span 3}
+.occup{grid-column:span 4}
+.chartwrap{padding:12px 20px 0}
+.legend{display:flex;gap:16px;padding:10px 20px 0;font-size:12px;color:var(--color-text-secondary)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.feed{list-style:none;padding:8px 8px 12px}
+.feed li{display:flex;gap:12px;padding:10px 12px;border-radius:8px}
+.feed li:hover{background:rgba(127,127,127,.06)}
+.feed .fic{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:grid;place-items:center}
+.feed .fic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feed .ft{font-size:13px;line-height:1.4}
+.feed .ft b{font-weight:600}
+.feed .fw{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted);margin-top:2px}
+.shortlist{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px}
+.short{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:8px;border:1px solid var(--color-border);font-weight:500;font-size:13px;cursor:pointer;background:transparent;color:var(--color-text-primary);text-align:left}
+.short:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.short svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.occrow{display:flex;align-items:center;gap:12px;padding:9px 20px;font-size:13px}
+.occrow .bar{flex:1;height:6px;border-radius:9999px;background:rgba(127,127,127,.15);overflow:hidden}
+.occrow .bar i{display:block;height:100%;border-radius:9999px;background:var(--color-primary)}
+.occrow .pct{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-secondary);width:34px;text-align:right}
+
+/* ====== LISTAGEM ====== */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);min-width:260px;flex:1;max-width:360px}
+.search input{border:none;outline:none;background:transparent;color:var(--color-text-primary);font-family:'Inter',sans-serif;font-size:13px;width:100%}
+.search svg{width:15px;height:15px;stroke:var(--color-text-muted);fill:none;stroke-width:2;stroke-linecap:round}
+.filter{height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-secondary);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px}
+.filter b{color:var(--color-text-primary);font-weight:600}
+.filter svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--color-border)}
+.tbl td{padding:13px 16px;border-bottom:1px solid var(--color-border);font-size:13.5px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:rgba(127,127,127,.05)}
+.tbl tbody tr.sel{background:color-mix(in srgb,var(--color-primary) 7%,transparent);box-shadow:inset 3px 0 0 var(--color-primary)}
+.tbl .id{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-text-muted)}
+.tbl .ttl{font-weight:500}
+.tbl .who{color:var(--color-text-secondary)}
+.tbl .who small{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.tbl .dt{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-text-secondary)}
+.pager{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:12.5px;color:var(--color-text-muted)}
+.pager .pspacer{flex:1}
+.pager button{width:30px;height:30px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px}
+.pager button.cur{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-primary-contrast)}
+.split{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
+
+/* Drawer */
+.drawer{position:sticky;top:73px;display:flex;flex-direction:column;max-height:calc(100vh - 100px);overflow:auto}
+.drawer .dhead{padding:20px 20px 0}
+.drawer .dttl{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;margin:8px 0 4px}
+.drawer .dmeta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.drawer .dsec{padding:16px 20px 0}
+.drawer .dsec h4{font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:8px}
+.drawer .desc{font-size:13.5px;line-height:1.55;color:var(--color-text-secondary)}
+.drawer select{width:100%;height:38px;padding:0 10px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);font-family:'Inter',sans-serif;font-size:13px}
+.fields2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tline{list-style:none;position:relative;padding-left:20px}
+.tline::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--color-border)}
+.tline li{position:relative;padding:0 0 14px}
+.tline li::before{content:'';position:absolute;left:-19px;top:4px;width:10px;height:10px;border-radius:9999px;background:var(--color-surface);border:2px solid var(--color-text-muted)}
+.tline li.done::before{border-color:var(--color-success);background:var(--color-success)}
+.tline li.cur::before{border-color:var(--color-primary);background:var(--color-primary)}
+.tline .tt{font-size:13px;font-weight:500}
+.tline .tw{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.comment{display:flex;gap:10px;padding-bottom:12px}
+.comment .av{width:28px;height:28px;border-radius:9999px;flex-shrink:0;background:color-mix(in srgb,var(--color-primary) 18%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:11px;font-weight:600}
+.comment .cb{background:rgba(127,127,127,.07);border-radius:8px;padding:8px 12px;font-size:13px;line-height:1.45}
+.comment .cb b{font-size:12px}
+.drawer .dfoot{padding:16px 20px 20px;margin-top:auto}
+.cinput{display:flex;gap:8px}
+.cinput input{flex:1;height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);font-family:'Inter',sans-serif;font-size:13px;outline:none}
+
+/* ====== FINANCEIRO ====== */
+.finsplit{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.inad{padding-bottom:8px}
+.inadrow{display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--color-border);font-size:13px}
+.inadrow:last-child{border-bottom:none}
+.inadrow .res{font-weight:500}
+.inadrow .res small{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted);font-weight:400}
+.inadrow .amt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--color-danger);font-weight:500}
+.money{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+
+@media (max-width:1100px){.split,.finsplit{grid-template-columns:1fr}.drawer{position:static;max-height:none}.stat{grid-column:span 6}.chartcard,.donutcard,.feedcard,.shortcard,.occup{grid-column:span 12}}
+</style>
+</head>
+<body>
+
+<!-- Controles do mockup -->
+<div class="mockbar">
+  <span class="tag">MOCKUP FASE 4</span>
+  <button class="on" data-s="dash">Dashboard (4.8)</button>
+  <button data-s="sol">Solicitações (4.2 + 4.6)</button>
+  <button data-s="fin">Financeiro (4.11)</button>
+  <div class="spacer"></div>
+  <button id="themeBtn">☀ Modo claro</button>
+</div>
+
+<!-- ================= TELA 1: DASHBOARD ADMIN ================= -->
+<div class="screen on" id="s-dash">
+<div class="frame">
+  <header class="appheader">
+    <div class="logo"><span class="sym">S</span>Sinndico</div>
+    <span class="condo">Residencial Jardim das Acácias · Bloco A2</span>
+    <div class="hspacer"></div>
+    <button class="hbtn" title="Notificações"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+    <button class="hbtn" title="Tema"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></button>
+    <div class="user"><span class="av">AT</span>Admin Teste</div>
+  </header>
+
+  <nav class="side">
+    <a class="nitem on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Solicitações<span class="count">12</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>Encomendas<span class="count">5</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>Comunicados</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat<span class="count">2</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Visitantes</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11h18l-2 9H5l-2-9z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Comida</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Áreas comuns</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>Assembleias</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro<span class="count b-urg" style="padding:1px 7px;border-radius:9999px">7</span></a>
+    <div class="sec">Cadastros</div>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Residências</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Moradores</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Equipe</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Permissões</a>
+  </nav>
+
+  <main class="main">
+    <div class="pagehead">
+      <div><h1 class="display">Visão geral</h1><div class="sub">Sábado, 18 de julho — atualizado há 2 min</div></div>
+      <div class="hspacer"></div>
+      <button class="btn ghost sm">Últimos 30 dias ▾</button>
+    </div>
+
+    <div class="grid12">
+      <div class="card stat"><div class="lbl">Solicitações abertas</div><div class="val display">12</div><div class="delta warn mono">▲ 3 esta semana</div></div>
+      <div class="card stat"><div class="lbl">Encomendas aguardando</div><div class="val display">5</div><div class="delta mono">2 chegaram hoje</div></div>
+      <div class="card stat"><div class="lbl">Reservas este mês</div><div class="val display">18</div><div class="delta up mono">▲ 12% vs junho</div></div>
+      <div class="card stat"><div class="lbl">Inadimplência</div><div class="val display">8,4%</div><div class="delta down mono">7 unidades · R$ 6.230</div></div>
+
+      <div class="card chartcard">
+        <div class="chead"><h3 class="display">Solicitações por semana</h3><a href="#">Ver todas</a></div>
+        <div class="legend"><span><i style="background:var(--color-primary)"></i>Abertas</span><span><i style="background:var(--color-success)"></i>Resolvidas</span></div>
+        <div class="chartwrap">
+          <svg viewBox="0 0 640 190" width="100%" height="190">
+            <g stroke="var(--color-border)" stroke-width="1"><line x1="40" y1="20" x2="620" y2="20"/><line x1="40" y1="60" x2="620" y2="60"/><line x1="40" y1="100" x2="620" y2="100"/><line x1="40" y1="140" x2="620" y2="140"/></g>
+            <g font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--color-text-muted)"><text x="10" y="24">15</text><text x="10" y="64">10</text><text x="16" y="104">5</text><text x="16" y="144">0</text></g>
+            <path d="M60,120 L150,95 L240,110 L330,70 L420,85 L510,45 L600,60" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M60,130 L150,120 L240,100 L330,105 L420,80 L510,90 L600,72" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 0"/>
+            <g fill="var(--color-primary)"><circle cx="60" cy="120" r="3.5"/><circle cx="150" cy="95" r="3.5"/><circle cx="240" cy="110" r="3.5"/><circle cx="330" cy="70" r="3.5"/><circle cx="420" cy="85" r="3.5"/><circle cx="510" cy="45" r="3.5"/><circle cx="600" cy="60" r="3.5"/></g>
+            <g font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--color-text-muted)" text-anchor="middle"><text x="60" y="165">01/06</text><text x="150" y="165">08/06</text><text x="240" y="165">15/06</text><text x="330" y="165">22/06</text><text x="420" y="165">29/06</text><text x="510" y="165">06/07</text><text x="600" y="165">13/07</text></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="card donutcard">
+        <div class="chead"><h3 class="display">Por categoria</h3></div>
+        <div class="chartwrap" style="display:flex;align-items:center;gap:18px">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(127,127,127,.15)" stroke-width="16"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="var(--color-primary)" stroke-width="16" stroke-dasharray="130 289" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="var(--color-accent)" stroke-width="16" stroke-dasharray="87 289" stroke-dashoffset="-130" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="var(--color-danger)" stroke-width="16" stroke-dasharray="43 289" stroke-dashoffset="-217" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="var(--color-success)" stroke-width="16" stroke-dasharray="29 289" stroke-dashoffset="-260" transform="rotate(-90 60 60)"/>
+            <text x="60" y="57" text-anchor="middle" font-family="'Space Grotesk',sans-serif" font-size="22" font-weight="600" fill="var(--color-text-primary)">34</text>
+            <text x="60" y="73" text-anchor="middle" font-family="'Inter',sans-serif" font-size="9" fill="var(--color-text-muted)">no período</text>
+          </svg>
+          <div style="font-size:12.5px;display:flex;flex-direction:column;gap:7px">
+            <span><i class="dotl" style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--color-primary);margin-right:7px"></i>Manutenção <b class="mono" style="font-size:11px">15</b></span>
+            <span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--color-accent);margin-right:7px"></i>Segurança <b class="mono" style="font-size:11px">10</b></span>
+            <span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--color-danger);margin-right:7px"></i>Animal invasor <b class="mono" style="font-size:11px">5</b></span>
+            <span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--color-success);margin-right:7px"></i>Outros <b class="mono" style="font-size:11px">4</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card feedcard">
+        <div class="chead"><h3 class="display">Atividade recente</h3><a href="#">Ver tudo</a></div>
+        <ul class="feed">
+          <li><span class="fic" style="background:color-mix(in srgb,var(--color-accent) 14%,transparent);color:var(--color-accent)"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/></svg></span><div><div class="ft"><b>Encomenda</b> registrada para <b>Ap. 302 · Bloco A2</b></div><div class="fw">porteiro Carlos · há 8 min</div></div></li>
+          <li><span class="fic" style="background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary)"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><div><div class="ft">Solicitação <b>#0341</b> movida para <b>Em progresso</b></div><div class="fw">Admin Teste · há 25 min</div></div></li>
+          <li><span class="fic" style="background:color-mix(in srgb,var(--color-success) 13%,transparent);color:var(--color-success)"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></span><div><div class="ft">Reserva do <b>Salão de festas</b> confirmada — 26/07</div><div class="fw">Guilherme Lima · há 1 h</div></div></li>
+          <li><span class="fic" style="background:color-mix(in srgb,var(--color-danger) 13%,transparent);color:var(--color-danger)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><div><div class="ft">Cobrança de julho do <b>Ap. 108</b> venceu sem pagamento</div><div class="fw">sistema · há 3 h</div></div></li>
+        </ul>
+      </div>
+
+      <div class="card shortcard">
+        <div class="chead"><h3 class="display">Atalhos</h3></div>
+        <div class="shortlist">
+          <button class="short"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>Novo comunicado</button>
+          <button class="short"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Cadastrar morador</button>
+          <button class="short"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Gerar cobranças</button>
+          <button class="short"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>Convocar assembleia</button>
+        </div>
+      </div>
+
+      <div class="card occup">
+        <div class="chead"><h3 class="display">Ocupação — áreas comuns</h3></div>
+        <div style="padding-top:10px;padding-bottom:14px">
+          <div class="occrow"><span style="width:110px">Salão de festas</span><span class="bar"><i style="width:85%"></i></span><span class="pct mono">85%</span></div>
+          <div class="occrow"><span style="width:110px">Churrasqueira</span><span class="bar"><i style="width:62%"></i></span><span class="pct mono">62%</span></div>
+          <div class="occrow"><span style="width:110px">Quadra</span><span class="bar"><i style="width:38%"></i></span><span class="pct mono">38%</span></div>
+          <div class="occrow"><span style="width:110px">Coworking</span><span class="bar"><i style="width:21%"></i></span><span class="pct mono">21%</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- ================= TELA 2: SOLICITAÇÕES (listagem + drawer) ================= -->
+<div class="screen" id="s-sol">
+<div class="frame">
+  <header class="appheader">
+    <div class="logo"><span class="sym">S</span>Sinndico</div>
+    <span class="condo">Residencial Jardim das Acácias · Bloco A2</span>
+    <div class="hspacer"></div>
+    <button class="hbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+    <div class="user"><span class="av">AT</span>Admin Teste</div>
+  </header>
+
+  <nav class="side">
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+    <a class="nitem on"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Solicitações<span class="count">12</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>Encomendas<span class="count">5</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>Comunicados</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat<span class="count">2</span></a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Visitantes</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11h18l-2 9H5l-2-9z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Comida</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Áreas comuns</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>Assembleias</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro</a>
+    <div class="sec">Cadastros</div>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Residências</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Moradores</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Equipe</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Permissões</a>
+  </nav>
+
+  <main class="main">
+    <div class="pagehead">
+      <div><h1 class="display">Solicitações</h1><div class="sub">34 no total · 12 abertas</div></div>
+      <div class="hspacer"></div>
+      <button class="btn primary">+ Nova solicitação</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input placeholder="Buscar por título, morador ou nº…"></div>
+      <button class="filter">Status: <b>Abertas +2</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="filter">Categoria: <b>Todas</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="filter">Período: <b>30 dias</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="filter">Ordenar: <b>Mais recentes</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
+
+    <div class="split">
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Nº</th><th>Solicitação</th><th>Morador</th><th>Criada em</th><th>Prioridade</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr class="sel"><td class="id">#0342</td><td class="ttl">Vazamento na garagem G1</td><td class="who">Guilherme Lima<small>Ap. 302 · Bloco A2</small></td><td class="dt">18/07 09:12</td><td><span class="badge b-urg">Alta</span></td><td><span class="badge b-open">Aberta</span></td></tr>
+            <tr><td class="id">#0341</td><td class="ttl">Lâmpada queimada — hall 3º andar</td><td class="who">Marina Souza<small>Ap. 305 · Bloco A2</small></td><td class="dt">17/07 20:44</td><td><span class="badge b-mut">Baixa</span></td><td><span class="badge b-prog">Em progresso</span></td></tr>
+            <tr><td class="id">#0340</td><td class="ttl">Portão da garagem travando</td><td class="who">Carlos Andrade<small>Ap. 101 · Bloco A1</small></td><td class="dt">17/07 14:02</td><td><span class="badge b-open">Média</span></td><td><span class="badge b-prog">Em progresso</span></td></tr>
+            <tr><td class="id">#0339</td><td class="ttl">Barulho após 22h — Ap. vizinho</td><td class="who">Fernanda Dias<small>Ap. 204 · Bloco A2</small></td><td class="dt">16/07 23:31</td><td><span class="badge b-urg">Alta</span></td><td><span class="badge b-open">Aberta</span></td></tr>
+            <tr><td class="id">#0338</td><td class="ttl">Interfone sem áudio</td><td class="who">Rafael Prado<small>Ap. 402 · Bloco A1</small></td><td class="dt">16/07 10:15</td><td><span class="badge b-mut">Baixa</span></td><td><span class="badge b-done">Resolvida</span></td></tr>
+            <tr><td class="id">#0337</td><td class="ttl">Gato preso no telhado do salão</td><td class="who">Julia Ramos<small>Ap. 203 · Bloco A2</small></td><td class="dt">15/07 17:50</td><td><span class="badge b-open">Média</span></td><td><span class="badge b-done">Resolvida</span></td></tr>
+          </tbody>
+        </table>
+        <div class="pager"><span>Mostrando 1–6 de 34</span><div class="pspacer"></div><button>‹</button><button class="cur">1</button><button>2</button><button>3</button><span class="mono" style="font-size:11px">…</span><button>6</button><button>›</button></div>
+      </div>
+
+      <aside class="card drawer">
+        <div class="dhead">
+          <div style="display:flex;gap:8px;align-items:center"><span class="badge b-open">Aberta</span><span class="badge b-urg">Alta</span><div class="hspacer"></div><button class="hbtn" style="width:28px;height:28px">✕</button></div>
+          <div class="dttl display">Vazamento na garagem G1</div>
+          <div class="dmeta mono">#0342 · Manutenção · criada 18/07/2026 09:12</div>
+        </div>
+        <div class="dsec"><h4>Descrição</h4><p class="desc">Há um vazamento constante vindo da tubulação do teto, próximo à vaga 12. A água está se acumulando e já alcança as vagas vizinhas.</p></div>
+        <div class="dsec"><h4>Morador</h4><div style="display:flex;align-items:center;gap:10px"><span class="av" style="width:32px;height:32px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 18%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:12px;font-weight:600">GL</span><div style="font-size:13px"><b>Guilherme Lima</b><div class="mono" style="font-size:11px;color:var(--color-text-muted)">Ap. 302 · Bloco A2</div></div></div></div>
+        <div class="dsec"><div class="fields2"><div><h4>Status</h4><select><option>Aberta</option><option>Em progresso</option><option>Resolvida</option></select></div><div><h4>Prioridade</h4><select><option>Alta</option><option>Média</option><option>Baixa</option></select></div></div></div>
+        <div class="dsec"><h4>Histórico</h4>
+          <ul class="tline">
+            <li class="done"><div class="tt">Solicitação criada</div><div class="tw mono">18/07 09:12 · Guilherme Lima</div></li>
+            <li class="cur"><div class="tt">Prioridade alterada para Alta</div><div class="tw mono">18/07 09:40 · Admin Teste</div></li>
+            <li><div class="tt" style="color:var(--color-text-muted)">Resolução</div><div class="tw mono">pendente</div></li>
+          </ul>
+        </div>
+        <div class="dsec"><h4>Comentários</h4>
+          <div class="comment"><span class="av">AT</span><div class="cb"><b>Admin Teste</b> · Zelador acionado, verifica hoje à tarde.</div></div>
+        </div>
+        <div class="dfoot"><div class="cinput"><input placeholder="Escrever comentário…"><button class="btn primary sm" style="height:38px">Enviar</button></div></div>
+      </aside>
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- ================= TELA 3: FINANCEIRO ================= -->
+<div class="screen" id="s-fin">
+<div class="frame">
+  <header class="appheader">
+    <div class="logo"><span class="sym">S</span>Sinndico</div>
+    <span class="condo">Residencial Jardim das Acácias · Bloco A2</span>
+    <div class="hspacer"></div>
+    <button class="hbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+    <div class="user"><span class="av">AT</span>Admin Teste</div>
+  </header>
+
+  <nav class="side">
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Solicitações</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>Encomendas</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>Comunicados</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Visitantes</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 11h18l-2 9H5l-2-9z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Comida</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Áreas comuns</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>Assembleias</a>
+    <a class="nitem on"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro</a>
+    <div class="sec">Cadastros</div>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Residências</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Moradores</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Equipe</a>
+    <a class="nitem"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Permissões</a>
+  </nav>
+
+  <main class="main">
+    <div class="pagehead">
+      <div><h1 class="display">Financeiro</h1><div class="sub">Competência julho/2026</div></div>
+      <div class="hspacer"></div>
+      <button class="btn ghost sm">Exportar ▾</button>
+      <button class="btn primary">Gerar cobranças de agosto</button>
+    </div>
+
+    <div class="grid12" style="margin-bottom:16px">
+      <div class="card stat" style="grid-column:span 4"><div class="lbl">A receber (julho)</div><div class="val display">R$ 74.100</div><div class="delta mono">78 unidades · R$ 950/un</div></div>
+      <div class="card stat" style="grid-column:span 4"><div class="lbl">Recebido</div><div class="val display" style="color:var(--color-success)">R$ 67.870</div><div class="delta up mono">91,6% da competência</div></div>
+      <div class="card stat" style="grid-column:span 4"><div class="lbl">Em atraso</div><div class="val display" style="color:var(--color-danger)">R$ 6.230</div><div class="delta down mono">7 unidades inadimplentes</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input placeholder="Buscar residência ou morador…"></div>
+      <button class="filter">Status: <b>Todas</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="filter">Competência: <b>Jul/2026</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
+
+    <div class="finsplit">
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Residência</th><th>Morador</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="ttl">Ap. 302 · Bloco A2</td><td class="who">Guilherme Lima</td><td class="dt">10/07/2026</td><td class="money">R$ 950,00</td><td><span class="badge b-done">Paga</span></td><td></td></tr>
+            <tr><td class="ttl">Ap. 108 · Bloco A1</td><td class="who">Pedro Nunes</td><td class="dt">10/07/2026</td><td class="money">R$ 950,00</td><td><span class="badge b-urg">Atrasada · 8d</span></td><td><button class="btn ghost sm" style="color:var(--color-primary)">Registrar pagamento</button></td></tr>
+            <tr><td class="ttl">Ap. 204 · Bloco A2</td><td class="who">Fernanda Dias</td><td class="dt">10/07/2026</td><td class="money">R$ 950,00</td><td><span class="badge b-done">Paga</span></td><td></td></tr>
+            <tr><td class="ttl">Ap. 401 · Bloco A1</td><td class="who">Beatriz Melo</td><td class="dt">10/07/2026</td><td class="money">R$ 950,00</td><td><span class="badge b-open">Em aberto</span></td><td><button class="btn ghost sm" style="color:var(--color-primary)">Registrar pagamento</button></td></tr>
+            <tr><td class="ttl">Ap. 305 · Bloco A2</td><td class="who">Marina Souza</td><td class="dt">10/07/2026</td><td class="money">R$ 950,00</td><td><span class="badge b-done">Paga</span></td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="pager"><span>Mostrando 1–5 de 78</span><div class="pspacer"></div><button>‹</button><button class="cur">1</button><button>2</button><button>3</button><span class="mono" style="font-size:11px">…</span><button>16</button><button>›</button></div>
+      </div>
+
+      <aside class="card inad">
+        <div class="chead"><h3 class="display">Inadimplência</h3><a href="#">Relatório</a></div>
+        <div style="padding:14px 20px 6px;font-size:12.5px;color:var(--color-text-secondary)">7 unidades com cobranças vencidas — total <b class="mono" style="color:var(--color-danger)">R$ 6.230</b></div>
+        <div class="inadrow"><div class="res">Ap. 108 · Bloco A1<small>3 competências · desde mai/26</small></div><span class="amt">R$ 2.850</span></div>
+        <div class="inadrow"><div class="res">Casa 14 · Rua B<small>2 competências · desde jun/26</small></div><span class="amt">R$ 1.900</span></div>
+        <div class="inadrow"><div class="res">Ap. 507 · Bloco A2<small>1 competência · jul/26</small></div><span class="amt">R$ 950</span></div>
+        <div class="inadrow"><div class="res">Ap. 213 · Bloco A1<small>1 competência · jul/26</small></div><span class="amt">R$ 530</span></div>
+      </aside>
+    </div>
+  </main>
+</div>
+</div>
+
+<script>
+document.querySelectorAll('.mockbar [data-s]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.mockbar [data-s]').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.getElementById('s-'+b.dataset.s).classList.add('on');
+  });
+});
+const tb=document.getElementById('themeBtn');
+tb.addEventListener('click',()=>{
+  const h=document.documentElement;
+  const dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  tb.textContent=dark?'☾ Modo escuro':'☀ Modo claro';
+});
+</script>
+</body>
+</html>

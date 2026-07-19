@@ -5,13 +5,17 @@ import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/cn';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { usersApi } from '@/services/api/usersApi';
-import type { MoradorDiretorioResponse } from '@/services/api/types';
+import type { MoradorDiretorioResponse, ResidenciaResumo } from '@/services/api/types';
+
+export function formatResidencia(residencia: ResidenciaResumo | null): string {
+  if (!residencia) return '';
+  const { bloco, rua, numero } = residencia;
+  return bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
+}
 
 export function labelMorador(morador: MoradorDiretorioResponse): string {
   if (!morador.residencia) return morador.nome;
-  const { bloco, rua, numero } = morador.residencia;
-  const local = bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
-  return `${morador.nome} — ${local}`;
+  return `${morador.nome} — ${formatResidencia(morador.residencia)}`;
 }
 
 export interface MoradorSelectProps {

@@ -1,11 +1,11 @@
+import { FilterPill, type FilterPillOption } from '@/components/ui/FilterPill';
 import { Input } from '@/components/ui/Input';
-import { Select, type SelectOption } from '@/components/ui/Select';
 
 export interface ListToolbarFilter {
   key: string;
   label: string;
   value: string;
-  options: SelectOption[];
+  options: FilterPillOption[];
   onChange: (value: string) => void;
 }
 
@@ -15,7 +15,7 @@ export interface ListToolbarProps {
   searchLabel?: string;
   searchPlaceholder?: string;
   filters?: ListToolbarFilter[];
-  sortOptions: SelectOption[];
+  sortOptions: FilterPillOption[];
   sortValue: string;
   onSortChange: (value: string) => void;
 }
@@ -31,8 +31,8 @@ export function ListToolbar({
   onSortChange,
 }: ListToolbarProps) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <div className="min-w-[220px] flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="min-w-[220px] max-w-[360px] flex-1">
         <Input
           label={searchLabel}
           placeholder={searchPlaceholder}
@@ -42,24 +42,16 @@ export function ListToolbar({
       </div>
 
       {filters.map((filter) => (
-        <div key={filter.key} className="min-w-[160px]">
-          <Select
-            label={filter.label}
-            value={filter.value}
-            onChange={(e) => filter.onChange(e.target.value)}
-            options={filter.options}
-          />
-        </div>
+        <FilterPill
+          key={filter.key}
+          label={filter.label}
+          value={filter.value}
+          onChange={filter.onChange}
+          options={filter.options}
+        />
       ))}
 
-      <div className="min-w-[180px]">
-        <Select
-          label="Ordenar por"
-          value={sortValue}
-          onChange={(e) => onSortChange(e.target.value)}
-          options={sortOptions}
-        />
-      </div>
+      <FilterPill label="Ordenar" value={sortValue} onChange={onSortChange} options={sortOptions} />
     </div>
   );
 }

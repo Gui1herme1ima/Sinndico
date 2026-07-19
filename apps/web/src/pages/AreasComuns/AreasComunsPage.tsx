@@ -1,18 +1,26 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
 
 import { AreaComumCard } from '@/components/AreasComuns/AreaComumCard';
 import { CreateAreaComumForm } from '@/components/AreasComuns/CreateAreaComumForm';
-import { ReservaCard } from '@/components/AreasComuns/ReservaCard';
+import { STATUS_LABELS } from '@/components/AreasComuns/reservaLabels';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
+import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { AreaComumIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
+import { formatDate } from '@/lib/formatDate';
 import { areasComunsApi } from '@/services/api/areasComunsApi';
 import { reservasApi } from '@/services/api/reservasApi';
-import type { ReservaListParams } from '@/services/api/types';
+import type { ReservaListParams, ReservaResponse } from '@/services/api/types';
+import { usersApi } from '@/services/api/usersApi';
 import { useAuth } from '@/store/useAuth';
 
 const SORT_OPTIONS = [
@@ -25,13 +33,14 @@ export function AreasComunsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const isMorador = user?.role === 'morador';
+  const queryClient = useQueryClient();
 
   const areasQuery = useQuery({
     queryKey: ['areas-comuns'],
     queryFn: () => areasComunsApi.list(),
   });
 
-  const { state, setPage, setSearch, setFilter, setSort } = useListQueryParams({
+  const { state, setPage, setSearch, setFilter, setSort, clearFilters } = useListQueryParams({
     sortBy: 'horaInicio',
     sortOrder: 'desc',
   });
@@ -59,9 +68,100 @@ export function AreasComunsPage() {
     placeholderData: keepPreviousData,
   });
 
+  const diretorioQuery = useQuery({
+    queryKey: ['moradores-diretorio'],
+    queryFn: () => usersApi.listDiretorio(),
+    enabled: !isMorador,
+  });
+
+  const moradorPorId = useMemo(
+    () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
+    [diretorioQuery.data],
+  );
+
   const hasActiveFilters = Boolean(state.search || state.filters.status);
 
   const areaNomePorId = new Map((areasQuery.data ?? []).map((area) => [area.id, area.nome]));
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['reservas'] });
+  const aprovarMutation = useMutation({ mutationFn: (id: string) => reservasApi.updateStatus(id, 'aprovada'), onSuccess: invalidate });
+  const cancelarMutation = useMutation({ mutationFn: (id: string) => reservasApi.updateStatus(id, 'cancelada'), onSuccess: invalidate });
+  const pending = aprovarMutation.isPending || cancelarMutation.isPending;
+
+  const columns = useMemo<DataTableColumn<ReservaResponse>[]>(() => {
+    const cols: DataTableColumn<ReservaResponse>[] = [
+      {
+        key: 'area',
+        header: 'Área',
+        render: (row) => (
+          <p className="font-medium text-text-primary">{areaNomePorId.get(row.areaComumId) ?? 'Área removida'}</p>
+        ),
+      },
+    ];
+
+    if (!isMorador) {
+      cols.push({
+        key: 'morador',
+        header: 'Morador',
+        render: (row) => {
+          const morador = moradorPorId.get(row.moradorId);
+          return (
+            <div className="text-text-secondary">
+              <p>{morador?.nome ?? 'Morador removido'}</p>
+              {morador && (
+                <small className="block font-mono text-[11px] text-text-muted">
+                  {formatResidencia(morador.residencia)}
+                </small>
+              )}
+            </div>
+          );
+        },
+      });
+    }
+
+    cols.push(
+      {
+        key: 'periodo',
+        header: 'Período',
+        mono: true,
+        render: (row) => (
+          <>
+            {formatDate(row.horaInicio)}
+            <span className="block text-[11px] text-text-muted">até {formatDate(row.horaFim)}</span>
+          </>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
+      },
+      {
+        key: 'acoes',
+        header: 'Ações',
+        render: (row) => {
+          const isOwner = row.moradorId === user?.id;
+          const podeCancelar = row.status !== 'cancelada' && (isAdmin || isOwner);
+          return (
+            <div className="flex flex-wrap gap-2">
+              {isAdmin && row.status === 'pendente' && (
+                <Button size="sm" loading={pending} onClick={() => aprovarMutation.mutate(row.id)}>
+                  Aprovar
+                </Button>
+              )}
+              {podeCancelar && (
+                <Button size="sm" variant="danger" loading={pending} onClick={() => cancelarMutation.mutate(row.id)}>
+                  Cancelar
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    );
+
+    return cols;
+  }, [isMorador, isAdmin, moradorPorId, areaNomePorId, pending, aprovarMutation, cancelarMutation, user?.id]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,73 +199,68 @@ export function AreasComunsPage() {
           {isMorador ? 'Minhas reservas' : 'Reservas'}
         </h2>
 
-        <Card>
-          <ListToolbar
-            searchValue={rawSearch}
-            onSearchChange={setRawSearch}
-            searchLabel="Buscar"
-            searchPlaceholder="Área comum"
-            filters={[
-              {
-                key: 'status',
-                label: 'Status',
-                value: state.filters.status ?? '',
-                onChange: (value) => setFilter('status', value),
-                options: [
-                  { value: '', label: 'Todos' },
-                  { value: 'pendente', label: 'Pendente' },
-                  { value: 'aprovada', label: 'Aprovada' },
-                  { value: 'cancelada', label: 'Cancelada' },
-                ],
-              },
-            ]}
-            sortOptions={SORT_OPTIONS}
-            sortValue={`${state.sortBy}-${state.sortOrder}`}
-            onSortChange={(value) => {
-              const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
-              setSort(sortBy, sortOrder);
-            }}
-          />
-        </Card>
-
-        {reservasQuery.isLoading && (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-24 w-full" />
+        <Card padding="none">
+          <div className="p-4 md:p-6 md:pb-0">
+            <ListToolbar
+              searchValue={rawSearch}
+              onSearchChange={setRawSearch}
+              searchLabel="Buscar"
+              searchPlaceholder="Área comum"
+              filters={[
+                {
+                  key: 'status',
+                  label: 'Status',
+                  value: state.filters.status ?? '',
+                  onChange: (value) => setFilter('status', value),
+                  options: [
+                    { value: '', label: 'Todos' },
+                    { value: 'pendente', label: 'Pendente' },
+                    { value: 'aprovada', label: 'Aprovada' },
+                    { value: 'cancelada', label: 'Cancelada' },
+                  ],
+                },
+              ]}
+              sortOptions={SORT_OPTIONS}
+              sortValue={`${state.sortBy}-${state.sortOrder}`}
+              onSortChange={(value) => {
+                const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
+                setSort(sortBy, sortOrder);
+              }}
+            />
           </div>
-        )}
 
-        {reservasQuery.isError && (
-          <Card>
-            <p className="text-danger">Não foi possível carregar as reservas.</p>
-          </Card>
-        )}
+          <div className="mt-4 overflow-x-auto">
+            {reservasQuery.isError ? (
+              <p className="p-6 text-danger">Não foi possível carregar as reservas. Tente recarregar a página.</p>
+            ) : (
+              <DataTable
+                columns={columns}
+                rows={reservasQuery.data?.items ?? []}
+                rowKey={(row) => row.id}
+                loading={reservasQuery.isLoading}
+                emptyState={
+                  <EmptyState
+                    icon={<AreaComumIcon width={48} height={48} />}
+                    title={
+                      hasActiveFilters ? 'Nenhuma reserva encontrada para esses filtros.' : 'Nenhuma reserva por aqui ainda.'
+                    }
+                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                  />
+                }
+              />
+            )}
+          </div>
 
-        {!reservasQuery.isLoading && !reservasQuery.isError && reservasQuery.data?.items.length === 0 && (
-          <Card>
-            <p className="text-text-secondary">
-              {hasActiveFilters ? 'Nenhuma reserva encontrada para esses filtros.' : 'Nenhuma reserva por aqui ainda.'}
-            </p>
-          </Card>
-        )}
-
-        {reservasQuery.data?.items.map((reserva) => (
-          <ReservaCard
-            key={reserva.id}
-            reserva={reserva}
-            areaNome={areaNomePorId.get(reserva.areaComumId) ?? 'Área removida'}
-            isOwner={reserva.moradorId === user?.id}
-            isAdmin={isAdmin}
-          />
-        ))}
-
-        {reservasQuery.data && reservasQuery.data.totalPages > 1 && (
-          <Pagination
-            page={reservasQuery.data.page}
-            totalPages={reservasQuery.data.totalPages}
-            total={reservasQuery.data.total}
-            onPageChange={setPage}
-          />
-        )}
+          {reservasQuery.data && (
+            <Pagination
+              page={reservasQuery.data.page}
+              totalPages={reservasQuery.data.totalPages}
+              total={reservasQuery.data.total}
+              pageSize={reservasQuery.data.pageSize}
+              onPageChange={setPage}
+            />
+          )}
+        </Card>
       </div>
     </div>
   );

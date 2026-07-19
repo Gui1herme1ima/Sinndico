@@ -126,6 +126,15 @@ export function ComunicadoIcon(props: IconProps) {
   );
 }
 
+export function ComidaIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 11h18l-2 9H5l-2-9z" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
 export function AreaComumIcon(props: IconProps) {
   return (
     <svg {...base(props)}>
