@@ -13,7 +13,7 @@ import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { AreaComumIcon } from '@/components/ui/icons';
+import { ReservaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -167,7 +167,7 @@ export function AreasComunsPage() {
     <div className="flex flex-col gap-6">
       {isAdmin && <CreateAreaComumForm />}
 
-      <div className="flex flex-col gap-4">
+      <div id="areas-comuns-list" className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">Áreas comuns</h2>
 
         {areasQuery.isLoading && (
@@ -240,11 +240,23 @@ export function AreasComunsPage() {
                 loading={reservasQuery.isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<AreaComumIcon width={48} height={48} />}
+                    icon={<ReservaEmptyIllustration />}
                     title={
                       hasActiveFilters ? 'Nenhuma reserva encontrada para esses filtros.' : 'Nenhuma reserva por aqui ainda.'
                     }
-                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      hasActiveFilters
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : isMorador
+                          ? {
+                              label: 'Ver áreas disponíveis',
+                              onClick: () =>
+                                document
+                                  .getElementById('areas-comuns-list')
+                                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+                            }
+                          : undefined
+                    }
                   />
                 }
               />
