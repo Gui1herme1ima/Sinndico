@@ -71,8 +71,10 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
 
   Usar a skill `frontend-design` na produção dos 3 protótipos. Usuário escolhe uma direção (ou
   pede ajustes) comparando as 3 páginas lado a lado antes de qualquer fatia aplicar a direção
-  escolhida no app de verdade. Aguardando usuário ter orçamento de tokens disponível para rodar
-  esta fatia — não iniciar sem sinal explícito dele.
+  escolhida no app de verdade. ✅ Concluída — protótipos em
+  `docs/prototipos/fatia-4.7.1-direcoes.html`, direção **A (elevação em camadas + acentos
+  decorativos)** escolhida em 2026-07-19. Aplicação no app de verdade fica pra uma próxima fatia
+  (numeração a definir).
 
 ### Bloco B — Dashboard rico
 

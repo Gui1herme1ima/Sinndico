@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinndico — Fatia 4.7.1: Protótipos de Direção Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ Tokens — fonte: docs/DESIGN_SYSTEM.md ============ */
+:root{
+  --color-primary:#146C5B; --color-primary-contrast:#FFFFFF; --color-accent:#F0A94E;
+  --color-background:#F7F8F7; --color-surface:#FFFFFF;
+  --color-text-primary:#16211D; --color-text-secondary:#4B5A54; --color-text-muted:#7A857F;
+  --color-border:#E1E6E3; --color-danger:#E5484D; --color-success:#3DBE7A;
+  --shadow-sm:0 1px 2px rgba(14,21,18,.06); --shadow-md:0 4px 12px rgba(14,21,18,.08);
+  --shadow-lg:0 12px 32px rgba(14,21,18,.14); --shadow-xl:0 24px 56px rgba(14,21,18,.2);
+}
+[data-theme='dark']{
+  --color-primary:#2ED9A8; --color-primary-contrast:#0E1512; --color-accent:#F0A94E;
+  --color-background:#0E1512; --color-surface:#161E1A;
+  --color-text-primary:#EAF2EE; --color-text-secondary:#9FD3C7; --color-text-muted:#5C7168;
+  --color-border:#1E2A25; --color-danger:#E5484D; --color-success:#3DBE7A;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3); --shadow-md:0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.45); --shadow-xl:0 24px 56px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--color-background);color:var(--color-text-primary);font-size:14px;-webkit-font-smoothing:antialiased;transition:background .3s ease,color .3s ease}
+.display{font-family:'Space Grotesk',sans-serif}
+.mono{font-family:'JetBrains Mono',monospace}
+svg.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* ============ Barra de controle do protótipo (não faz parte do app) ============ */
+.toolbar{position:sticky;top:0;z-index:100;display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:12px 20px;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.toolbar .grp{display:flex;align-items:center;gap:6px}
+.toolbar .grp-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+.toolbar button{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:7px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s ease}
+.toolbar button:hover{border-color:var(--color-primary)}
+.toolbar button.on{background:var(--color-primary);color:var(--color-primary-contrast);border-color:var(--color-primary)}
+.toolbar .spacer{flex:1}
+.toolbar .blurb{font-size:12px;color:var(--color-text-secondary);max-width:520px;line-height:1.5}
+.toolbar .blurb b{color:var(--color-text-primary)}
+
+/* ============ Troca de cena/tela ============ */
+.scene{display:none}
+.scene.on{display:block}
+.screen{display:none}
+.screen.on{display:block}
+
+/* ============================================================
+   DIREÇÃO A — Elevação em camadas + acentos decorativos
+   ============================================================ */
+.dir-a{background:
+  radial-gradient(1100px 480px at 12% -10%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 60%),
+  radial-gradient(700px 420px at 100% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 55%),
+  var(--color-background);
+  min-height:100vh}
+.dir-a .frame{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 49px)}
+.dir-a .appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:60px;padding:0 24px;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm);position:relative;z-index:2}
+.dir-a .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
+.dir-a .logo .sym{position:relative;width:30px;height:30px;border-radius:8px;background:var(--color-primary);color:var(--color-primary-contrast);display:grid;place-items:center;font-size:15px;box-shadow:var(--shadow-md)}
+.dir-a .logo .sym::after{content:'';position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--color-accent);box-shadow:0 0 0 2px var(--color-surface)}
+.dir-a .condo{font-size:12px;color:var(--color-text-muted);padding-left:16px;border-left:1px solid var(--color-border)}
+.dir-a .hspacer{flex:1}
+.dir-a .hbtn{position:relative;width:36px;height:36px;border-radius:9px;border:none;background:transparent;color:var(--color-text-secondary);display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .15s ease}
+.dir-a .hbtn:hover{background:rgba(127,127,127,.08);transform:translateY(-1px)}
+.dir-a .hbtn .dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:9999px;background:var(--color-accent);color:#16211D;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;display:grid;place-items:center;box-shadow:0 0 0 2px var(--color-surface)}
+.dir-a .user{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px}
+.dir-a .user .av{width:30px;height:30px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 18%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:12px;font-weight:700}
+.dir-a .side{background:var(--color-surface);border-right:1px solid var(--color-border);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.dir-a .side .sec{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:16px 12px 6px}
+.dir-a .nitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--color-text-secondary);font-weight:500;font-size:13.5px;cursor:pointer;text-decoration:none;transition:background .15s ease,color .15s ease,transform .15s ease}
+.dir-a .nitem:hover{background:rgba(127,127,127,.07);transform:translateX(2px)}
+.dir-a .nitem.on{background:color-mix(in srgb,var(--color-primary) 12%,transparent);color:var(--color-primary);box-shadow:inset 2px 0 0 var(--color-primary)}
+.dir-a .main{padding:28px 30px 60px;min-width:0;position:relative;z-index:1}
+.dir-a .pagehead{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;animation:aFadeUp .5s ease both}
+.dir-a .pagehead h1{font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:600}
+.dir-a .pagehead .sub{font-size:12.5px;color:var(--color-text-muted)}
+.dir-a .btn{font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;height:40px;padding:0 18px;border-radius:9px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s ease,box-shadow .15s ease}
+.dir-a .btn.primary{background:var(--color-primary);color:var(--color-primary-contrast);box-shadow:var(--shadow-sm)}
+.dir-a .btn.primary:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.dir-a .btn.primary:active{transform:translateY(0) scale(.97)}
+.dir-a .btn.ghost{background:transparent;color:var(--color-text-secondary)}
+.dir-a .btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+
+.dir-a .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.dir-a .stat{position:relative;background:var(--color-surface);border-radius:14px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);padding:20px;overflow:hidden;transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s cubic-bezier(.4,0,.2,1);animation:aFadeUp .55s cubic-bezier(.4,0,.2,1) both}
+.dir-a .stat:nth-child(1){animation-delay:.02s}
+.dir-a .stat:nth-child(2){animation-delay:.08s}
+.dir-a .stat:nth-child(3){animation-delay:.14s}
+.dir-a .stat:nth-child(4){animation-delay:.2s}
+.dir-a .stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.dir-a .stat .halo{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--color-accent) 55%,transparent),transparent 70%);filter:blur(18px);top:-40px;right:-30px;opacity:.55;pointer-events:none}
+.dir-a .stat.primary-halo .halo{background:radial-gradient(circle,color-mix(in srgb,var(--color-primary) 55%,transparent),transparent 70%)}
+.dir-a .stat .lbl{font-size:12.5px;color:var(--color-text-secondary);position:relative}
+.dir-a .stat .val{display:block;font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;margin-top:4px;position:relative}
+.dir-a .card{background:var(--color-surface);border-radius:14px;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);animation:aFadeUp .6s cubic-bezier(.4,0,.2,1) .22s both;transition:box-shadow .2s ease}
+.dir-a .card:hover{box-shadow:var(--shadow-md)}
+.dir-a .card .chead{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0}
+.dir-a .card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:600}
+.dir-a .card .chead a{font-size:12.5px;color:var(--color-primary);text-decoration:none;font-weight:500}
+.dir-a .card .cbody{padding:16px 22px 22px}
+.dir-a .clist li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--color-border)}
+.dir-a .clist li:last-child{border:none;padding-bottom:0}
+.dir-a .clist .t{font-size:13.5px;color:var(--color-text-primary)}
+.dir-a .clist .d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted)}
+
+.dir-a .toolbarx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.dir-a .search{flex:1;min-width:180px;height:38px;border-radius:9px;border:1px solid var(--color-border);background:var(--color-background);padding:0 14px;font-size:13px;color:var(--color-text-primary)}
+.dir-a .pill{height:34px;padding:0 14px;border-radius:9999px;border:1px solid var(--color-border);background:var(--color-surface);font-size:12.5px;color:var(--color-text-secondary);cursor:pointer}
+.dir-a .pill.on{border-color:var(--color-primary);color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 8%,transparent)}
+.dir-a table{width:100%;border-collapse:collapse}
+.dir-a th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);padding:0 20px 10px;border-bottom:1px solid var(--color-border)}
+.dir-a td{padding:14px 20px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.dir-a tbody tr{transition:background .15s ease,transform .15s ease}
+.dir-a tbody tr:hover{background:color-mix(in srgb,var(--color-primary) 4%,transparent);transform:scale(1.002)}
+.dir-a tbody tr:last-child td{border:none}
+.dir-a .mor{font-weight:500}
+.dir-a .res{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.dir-a .badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:9999px;font-size:11.5px;font-weight:600}
+.dir-a .b-aberto{background:color-mix(in srgb,var(--color-accent) 14%,transparent);color:var(--color-accent)}
+.dir-a .b-progresso{background:color-mix(in srgb,var(--color-primary) 14%,transparent);color:var(--color-primary)}
+.dir-a .b-resolvido{background:color-mix(in srgb,var(--color-success) 14%,transparent);color:var(--color-success)}
+.dir-a .b-alta{background:color-mix(in srgb,var(--color-danger) 14%,transparent);color:var(--color-danger)}
+.dir-a .b-media{background:color-mix(in srgb,var(--color-accent) 14%,transparent);color:var(--color-accent)}
+.dir-a .b-baixa{background:rgba(127,127,127,.12);color:var(--color-text-secondary)}
+@keyframes aFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.dir-a *{animation:none!important;transition:none!important}}
+
+/* ============================================================
+   DIREÇÃO B — Bento-grid + glass
+   ============================================================ */
+.dir-b{min-height:100vh;background:
+  radial-gradient(900px 560px at -5% -10%, color-mix(in srgb, var(--color-primary) 26%, transparent), transparent 60%),
+  radial-gradient(760px 520px at 108% 8%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 58%),
+  radial-gradient(640px 480px at 40% 110%, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 60%),
+  var(--color-background);
+  background-attachment:fixed}
+.dir-b .frame{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 49px)}
+.dir-b .glass{background:color-mix(in srgb, var(--color-surface) 62%, transparent);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent)}
+.dir-b .appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:64px;padding:0 24px;border-bottom:1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);position:sticky;top:0;z-index:5}
+.dir-b .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px}
+.dir-b .logo .sym{width:30px;height:30px;border-radius:9px;background:var(--color-primary);color:var(--color-primary-contrast);display:grid;place-items:center;font-size:15px}
+.dir-b .condo{font-size:12px;color:var(--color-text-muted);padding-left:16px;border-left:1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent)}
+.dir-b .hspacer{flex:1}
+.dir-b .hbtn{position:relative;width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--color-text-secondary);display:grid;place-items:center;cursor:pointer}
+.dir-b .hbtn:hover{background:color-mix(in srgb, var(--color-text-primary) 6%, transparent)}
+.dir-b .hbtn .dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:9999px;background:var(--color-accent);color:#16211D;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;display:grid;place-items:center}
+.dir-b .user{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px}
+.dir-b .user .av{width:30px;height:30px;border-radius:9999px;background:color-mix(in srgb,var(--color-primary) 24%,transparent);color:var(--color-primary);display:grid;place-items:center;font-size:12px;font-weight:700}
+.dir-b .side{padding:16px 12px;display:flex;flex-direction:column;gap:2px;border-right:1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent)}
+.dir-b .side .sec{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:16px 12px 6px}
+.dir-b .nitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--color-text-secondary);font-weight:500;font-size:13.5px;cursor:pointer;text-decoration:none;transition:background .15s ease}
+.dir-b .nitem:hover{background:color-mix(in srgb, var(--color-text-primary) 6%, transparent)}
+.dir-b .nitem.on{background:color-mix(in srgb, var(--color-primary) 16%, transparent);color:var(--color-primary)}
+.dir-b .main{padding:26px 28px 60px;min-width:0}
+.dir-b .pagehead{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.dir-b .pagehead h1{font-family:'Space Grotesk',sans-serif;font-size:23px;font-weight:600}
+.dir-b .pagehead .sub{font-size:12.5px;color:var(--color-text-muted)}
+.dir-b .btn{font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;height:40px;padding:0 18px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.dir-b .btn.primary{background:var(--color-primary);color:var(--color-primary-contrast)}
+.dir-b .btn.ghost{background:transparent;color:var(--color-text-secondary)}
+.dir-b .btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+
+.dir-b .bento{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:96px;gap:14px;margin-bottom:20px}
+.dir-b .bento .cell{border-radius:18px;padding:20px}
+.dir-b .bento .c1{grid-column:span 2;grid-row:span 2}
+.dir-b .bento .c2{grid-column:span 2;grid-row:span 1}
+.dir-b .bento .c3{grid-column:span 2;grid-row:span 1}
+.dir-b .bento .c4{grid-column:span 2;grid-row:span 1;align-self:start}
+.dir-b .bento .cwide{grid-column:span 4;grid-row:span 3}
+.dir-b .lbl{font-size:12.5px;color:var(--color-text-secondary)}
+.dir-b .val{display:block;font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;margin-top:6px}
+.dir-b .val.big{font-size:44px}
+.dir-b .card{border-radius:18px;padding:20px}
+.dir-b .card .chead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dir-b .card .chead h3{font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:600}
+.dir-b .card .chead a{font-size:12.5px;color:var(--color-primary);text-decoration:none;font-weight:500}
+.dir-b .clist li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent)}
+.dir-b .clist li:last-child{border:none;padding-bottom:0}
+.dir-b .clist .t{font-size:13.5px}
+.dir-b .clist .d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted)}
+
+.dir-b .toolbarx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.dir-b .search{flex:1;min-width:180px;height:38px;border-radius:10px;border:1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);background:color-mix(in srgb, var(--color-surface) 55%, transparent);backdrop-filter:blur(10px);padding:0 14px;font-size:13px;color:var(--color-text-primary)}
+.dir-b .pill{height:34px;padding:0 14px;border-radius:9999px;border:1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);background:color-mix(in srgb, var(--color-surface) 45%, transparent);font-size:12.5px;color:var(--color-text-secondary);cursor:pointer}
+.dir-b .pill.on{border-color:var(--color-primary);color:var(--color-primary);background:color-mix(in srgb,var(--color-primary) 16%,transparent)}
+.dir-b .tablewrap{border-radius:18px;overflow:hidden}
+.dir-b table{width:100%;border-collapse:collapse}
+.dir-b th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);padding:14px 20px 10px}
+.dir-b td{padding:14px 20px;border-top:1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);font-size:13px;vertical-align:middle}
+.dir-b tbody tr:hover{background:color-mix(in srgb, var(--color-text-primary) 5%, transparent)}
+.dir-b .mor{font-weight:500}
+.dir-b .res{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.dir-b .badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:9999px;font-size:11.5px;font-weight:600}
+.dir-b .b-aberto{background:color-mix(in srgb,var(--color-accent) 20%,transparent);color:var(--color-accent)}
+.dir-b .b-progresso{background:color-mix(in srgb,var(--color-primary) 20%,transparent);color:var(--color-primary)}
+.dir-b .b-resolvido{background:color-mix(in srgb,var(--color-success) 20%,transparent);color:var(--color-success)}
+.dir-b .b-alta{background:color-mix(in srgb,var(--color-danger) 20%,transparent);color:var(--color-danger)}
+.dir-b .b-media{background:color-mix(in srgb,var(--color-accent) 20%,transparent);color:var(--color-accent)}
+.dir-b .b-baixa{background:color-mix(in srgb, var(--color-text-primary) 12%, transparent);color:var(--color-text-secondary)}
+
+/* ============================================================
+   DIREÇÃO C — Editorial tipográfico
+   ============================================================ */
+.dir-c{min-height:100vh}
+.dir-c .frame{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 49px)}
+.dir-c .appheader{grid-column:1/-1;display:flex;align-items:center;gap:16px;height:68px;padding:0 32px;border-bottom:1px solid var(--color-border)}
+.dir-c .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.01em}
+.dir-c .logo .sym{width:28px;height:28px;border-radius:7px;background:var(--color-primary);color:var(--color-primary-contrast);display:grid;place-items:center;font-size:14px}
+.dir-c .condo{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted);padding-left:16px;border-left:1px solid var(--color-border)}
+.dir-c .hspacer{flex:1}
+.dir-c .hbtn{position:relative;width:34px;height:34px;border:none;background:transparent;color:var(--color-text-secondary);display:grid;place-items:center;cursor:pointer}
+.dir-c .hbtn .dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;border-radius:9999px;background:var(--color-accent);color:#16211D;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:600;display:grid;place-items:center}
+.dir-c .user{display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px;font-family:'JetBrains Mono',monospace}
+.dir-c .user .av{width:26px;height:26px;border:1px solid var(--color-primary);color:var(--color-primary);display:grid;place-items:center;font-size:11px;font-weight:700}
+.dir-c .side{padding:24px 20px;display:flex;flex-direction:column;gap:0;border-right:1px solid var(--color-border)}
+.dir-c .side .sec{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;letter-spacing:.08em;color:var(--color-text-muted);text-transform:uppercase;padding:20px 4px 8px}
+.dir-c .nitem{display:flex;align-items:center;gap:10px;padding:8px 4px;color:var(--color-text-secondary);font-weight:500;font-size:13.5px;cursor:pointer;text-decoration:none;border-bottom:1px solid transparent}
+.dir-c .nitem:hover{color:var(--color-text-primary)}
+.dir-c .nitem.on{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.dir-c .main{padding:40px 48px 80px;min-width:0;max-width:1180px}
+.dir-c .pagehead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;padding-bottom:20px;border-bottom:1px solid var(--color-border)}
+.dir-c .pagehead h1{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:600;letter-spacing:-.01em}
+.dir-c .pagehead .sub{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted)}
+.dir-c .btn{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12.5px;height:38px;padding:0 16px;border:1px solid var(--color-text-primary);cursor:pointer;display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--color-text-primary)}
+.dir-c .btn.primary{background:var(--color-primary);color:var(--color-primary-contrast);border-color:var(--color-primary)}
+.dir-c .btn.sm{height:30px;padding:0 10px;font-size:11.5px}
+
+.dir-c .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:28px 0 40px}
+.dir-c .stat{padding:0 24px;border-left:1px solid var(--color-border)}
+.dir-c .stat:first-child{padding-left:0;border-left:none}
+.dir-c .stat .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em}
+.dir-c .stat .val{display:flex;align-items:flex-end;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:52px;font-weight:700;line-height:1;margin-top:10px}
+.dir-c .stat .val svg{width:56px;height:24px;overflow:visible}
+.dir-c .stat .val svg polyline{fill:none;stroke:var(--color-primary);stroke-width:2}
+.dir-c .stat.accent .val svg polyline{stroke:var(--color-accent)}
+
+.dir-c .section-title{display:flex;align-items:baseline;justify-content:space-between;font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;padding-bottom:12px;border-bottom:1px solid var(--color-text-primary);margin-bottom:4px}
+.dir-c .section-title a{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;color:var(--color-primary);text-decoration:none}
+.dir-c .clist li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--color-border)}
+.dir-c .clist li:last-child{border:none}
+.dir-c .clist .t{font-size:15px}
+.dir-c .clist .d{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-muted)}
+
+.dir-c .toolbarx{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:28px 0 8px;padding-bottom:14px;border-bottom:1px solid var(--color-border)}
+.dir-c .search{flex:1;min-width:180px;height:34px;border:none;border-bottom:1px solid var(--color-border);background:transparent;padding:0 2px;font-size:14px;color:var(--color-text-primary);font-family:'Inter',sans-serif}
+.dir-c .search:focus{outline:none;border-bottom-color:var(--color-primary)}
+.dir-c .pill{height:auto;padding:2px 0;border:none;border-bottom:1px solid transparent;background:transparent;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--color-text-secondary);cursor:pointer}
+.dir-c .pill.on{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.dir-c .manifest{display:flex;flex-direction:column}
+.dir-c .row{display:grid;grid-template-columns:60px 1.6fr 1fr .9fr 100px 120px;gap:16px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--color-border)}
+.dir-c .row.head{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;padding-top:0}
+.dir-c .row .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-text-muted)}
+.dir-c .row .tit{font-size:15px}
+.dir-c .row .cat{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted);margin-top:2px}
+.dir-c .row .mor{font-size:13px}
+.dir-c .row .res{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-text-muted)}
+.dir-c .row .dt{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-text-secondary)}
+.dir-c .tag{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.dir-c .tag::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.dir-c .t-aberto{color:var(--color-accent)}
+.dir-c .t-progresso{color:var(--color-primary)}
+.dir-c .t-resolvido{color:var(--color-success)}
+.dir-c .t-alta{color:var(--color-danger)}
+.dir-c .t-media{color:var(--color-accent)}
+.dir-c .t-baixa{color:var(--color-text-muted)}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="toolbar">
+  <div class="grp">
+    <span class="grp-label">Direção</span>
+    <button data-set-dir="a" class="on">A · Elevação</button>
+    <button data-set-dir="b">B · Bento/glass</button>
+    <button data-set-dir="c">C · Editorial</button>
+  </div>
+  <div class="grp">
+    <span class="grp-label">Tela</span>
+    <button data-set-screen="dashboard" class="on">Dashboard</button>
+    <button data-set-screen="solicitacoes">Solicitações</button>
+  </div>
+  <div class="grp">
+    <span class="grp-label">Tema</span>
+    <button data-set-theme="light" class="on">Claro</button>
+    <button data-set-theme="dark">Escuro</button>
+  </div>
+  <div class="spacer"></div>
+  <p class="blurb" id="blurb"></p>
+</div>
+
+<!-- ============================================================ DIREÇÃO A ============================================================ -->
+<div class="scene dir-a on" data-scene="a">
+  <div class="frame">
+    <header class="appheader">
+      <div class="logo"><span class="sym">S</span>Sinndico</div>
+      <span class="condo">Residencial Bosque Verde</span>
+      <div class="hspacer"></div>
+      <button class="hbtn" aria-label="Notificações"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+      <div class="user"><span class="av">MD</span>Marina Duarte</div>
+    </header>
+    <aside class="side">
+      <a class="nitem on"><svg class="ic" data-icon="dashboard"></svg>Dashboard</a>
+      <a class="nitem"><svg class="ic" data-icon="solicitacao"></svg>Solicitações</a>
+      <a class="nitem"><svg class="ic" data-icon="encomenda"></svg>Encomendas</a>
+      <a class="nitem"><svg class="ic" data-icon="comunicado"></svg>Comunicados</a>
+      <a class="nitem"><svg class="ic" data-icon="chat"></svg>Chat</a>
+      <a class="nitem"><svg class="ic" data-icon="visitantes"></svg>Visitantes</a>
+      <a class="nitem"><svg class="ic" data-icon="comida"></svg>Comida</a>
+      <a class="nitem"><svg class="ic" data-icon="areas"></svg>Áreas comuns</a>
+      <a class="nitem"><svg class="ic" data-icon="assembleia"></svg>Assembleias</a>
+      <p class="sec">Cadastros</p>
+      <a class="nitem"><svg class="ic" data-icon="moradores"></svg>Moradores</a>
+    </aside>
+    <main class="main">
+      <!-- Dashboard -->
+      <div class="screen on" data-screen="dashboard">
+        <div class="pagehead"><h1>Visão geral</h1><span class="sub">quinta-feira, 19 de julho</span></div>
+        <div class="stats">
+          <div class="stat"><div class="halo"></div><span class="lbl">Solicitações abertas</span><span class="val" data-count="12">0</span></div>
+          <div class="stat primary-halo"><div class="halo"></div><span class="lbl">Em progresso</span><span class="val" data-count="5">0</span></div>
+          <div class="stat"><div class="halo"></div><span class="lbl">Encomendas aguardando</span><span class="val" data-count="8">0</span></div>
+          <div class="stat primary-halo"><div class="halo"></div><span class="lbl">Chegaram hoje</span><span class="val" data-count="3">0</span></div>
+        </div>
+        <div class="card">
+          <div class="chead"><h3>Comunicados recentes</h3><a href="#">ver todos</a></div>
+          <div class="cbody">
+            <ul class="clist">
+              <li><span class="t">Manutenção do elevador social — 22/07</span><span class="d">19/07/2026</span></li>
+              <li><span class="t">Assembleia extraordinária convocada</span><span class="d">15/07/2026</span></li>
+              <li><span class="t">Poda de árvores na área verde</span><span class="d">10/07/2026</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Solicitações -->
+      <div class="screen" data-screen="solicitacoes">
+        <div class="pagehead"><h1>Solicitações do condomínio</h1></div>
+        <div class="card">
+          <div class="cbody" style="padding-bottom:0">
+            <div class="toolbarx">
+              <input class="search" placeholder="Buscar por título ou descrição">
+              <button class="pill on">Status: Todos</button>
+              <button class="pill">Categoria: Todas</button>
+              <button class="pill">Mais recentes</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Nº</th><th>Solicitação</th><th>Morador</th><th>Criada em</th><th>Prioridade</th><th>Status</th></tr></thead>
+            <tbody id="a-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ DIREÇÃO B ============================================================ -->
+<div class="scene dir-b" data-scene="b">
+  <div class="frame">
+    <header class="appheader glass">
+      <div class="logo"><span class="sym">S</span>Sinndico</div>
+      <span class="condo">Residencial Bosque Verde</span>
+      <div class="hspacer"></div>
+      <button class="hbtn" aria-label="Notificações"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+      <div class="user"><span class="av">MD</span>Marina Duarte</div>
+    </header>
+    <aside class="side glass">
+      <a class="nitem on"><svg class="ic" data-icon="dashboard"></svg>Dashboard</a>
+      <a class="nitem"><svg class="ic" data-icon="solicitacao"></svg>Solicitações</a>
+      <a class="nitem"><svg class="ic" data-icon="encomenda"></svg>Encomendas</a>
+      <a class="nitem"><svg class="ic" data-icon="comunicado"></svg>Comunicados</a>
+      <a class="nitem"><svg class="ic" data-icon="chat"></svg>Chat</a>
+      <a class="nitem"><svg class="ic" data-icon="visitantes"></svg>Visitantes</a>
+      <a class="nitem"><svg class="ic" data-icon="comida"></svg>Comida</a>
+      <a class="nitem"><svg class="ic" data-icon="areas"></svg>Áreas comuns</a>
+      <a class="nitem"><svg class="ic" data-icon="assembleia"></svg>Assembleias</a>
+      <p class="sec">Cadastros</p>
+      <a class="nitem"><svg class="ic" data-icon="moradores"></svg>Moradores</a>
+    </aside>
+    <main class="main">
+      <!-- Dashboard -->
+      <div class="screen on" data-screen="dashboard">
+        <div class="pagehead"><h1>Visão geral</h1><span class="sub">quinta-feira, 19 de julho</span></div>
+        <div class="bento">
+          <div class="cell glass c1"><span class="lbl">Solicitações abertas</span><span class="val big">12</span></div>
+          <div class="cell glass c2"><span class="lbl">Em progresso</span><span class="val">5</span></div>
+          <div class="cell glass c3"><span class="lbl">Encomendas aguardando</span><span class="val">8</span></div>
+          <div class="cell glass c4"><span class="lbl">Chegaram hoje</span><span class="val">3</span></div>
+          <div class="cell glass cwide card">
+            <div class="chead"><h3>Comunicados recentes</h3><a href="#">ver todos</a></div>
+            <ul class="clist">
+              <li><span class="t">Manutenção do elevador social — 22/07</span><span class="d">19/07/2026</span></li>
+              <li><span class="t">Assembleia extraordinária convocada</span><span class="d">15/07/2026</span></li>
+              <li><span class="t">Poda de árvores na área verde</span><span class="d">10/07/2026</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Solicitações -->
+      <div class="screen" data-screen="solicitacoes">
+        <div class="pagehead"><h1>Solicitações do condomínio</h1></div>
+        <div class="toolbarx">
+          <input class="search" placeholder="Buscar por título ou descrição">
+          <button class="pill on">Status: Todos</button>
+          <button class="pill">Categoria: Todas</button>
+          <button class="pill">Mais recentes</button>
+        </div>
+        <div class="tablewrap glass">
+          <table>
+            <thead><tr><th>Nº</th><th>Solicitação</th><th>Morador</th><th>Criada em</th><th>Prioridade</th><th>Status</th></tr></thead>
+            <tbody id="b-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ DIREÇÃO C ============================================================ -->
+<div class="scene dir-c" data-scene="c">
+  <div class="frame">
+    <header class="appheader">
+      <div class="logo"><span class="sym">S</span>Sinndico</div>
+      <span class="condo">RESIDENCIAL BOSQUE VERDE</span>
+      <div class="hspacer"></div>
+      <button class="hbtn" aria-label="Notificações"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot">3</span></button>
+      <div class="user"><span class="av">MD</span>M. DUARTE</div>
+    </header>
+    <aside class="side">
+      <a class="nitem on"><svg class="ic" data-icon="dashboard"></svg>Dashboard</a>
+      <a class="nitem"><svg class="ic" data-icon="solicitacao"></svg>Solicitações</a>
+      <a class="nitem"><svg class="ic" data-icon="encomenda"></svg>Encomendas</a>
+      <a class="nitem"><svg class="ic" data-icon="comunicado"></svg>Comunicados</a>
+      <a class="nitem"><svg class="ic" data-icon="chat"></svg>Chat</a>
+      <a class="nitem"><svg class="ic" data-icon="visitantes"></svg>Visitantes</a>
+      <a class="nitem"><svg class="ic" data-icon="comida"></svg>Comida</a>
+      <a class="nitem"><svg class="ic" data-icon="areas"></svg>Áreas comuns</a>
+      <a class="nitem"><svg class="ic" data-icon="assembleia"></svg>Assembleias</a>
+      <p class="sec">Cadastros</p>
+      <a class="nitem"><svg class="ic" data-icon="moradores"></svg>Moradores</a>
+    </aside>
+    <main class="main">
+      <!-- Dashboard -->
+      <div class="screen on" data-screen="dashboard">
+        <div class="pagehead"><h1>Visão geral</h1><span class="sub">QUI · 19 JUL 2026</span></div>
+        <div class="stats">
+          <div class="stat"><span class="lbl">Solicitações abertas</span><span class="val">12<svg viewBox="0 0 56 24"><polyline points="0,18 8,15 16,17 24,10 32,12 40,6 48,8 56,3"/></svg></span></div>
+          <div class="stat"><span class="lbl">Em progresso</span><span class="val">5<svg viewBox="0 0 56 24"><polyline points="0,8 8,10 16,7 24,12 32,9 40,14 48,11 56,15"/></svg></span></div>
+          <div class="stat accent"><span class="lbl">Encomendas aguardando</span><span class="val">8<svg viewBox="0 0 56 24"><polyline points="0,20 8,16 16,18 24,12 32,14 40,7 48,9 56,4"/></svg></span></div>
+          <div class="stat accent"><span class="lbl">Chegaram hoje</span><span class="val">3<svg viewBox="0 0 56 24"><polyline points="0,14 8,15 16,13 24,16 32,12 40,13 48,10 56,11"/></svg></span></div>
+        </div>
+        <div class="section-title">Comunicados recentes<a href="#">ver todos →</a></div>
+        <ul class="clist">
+          <li><span class="t">Manutenção do elevador social — 22/07</span><span class="d">19/07/2026</span></li>
+          <li><span class="t">Assembleia extraordinária convocada</span><span class="d">15/07/2026</span></li>
+          <li><span class="t">Poda de árvores na área verde</span><span class="d">10/07/2026</span></li>
+        </ul>
+      </div>
+      <!-- Solicitações -->
+      <div class="screen" data-screen="solicitacoes">
+        <div class="pagehead"><h1>Solicitações</h1><span class="sub">DO CONDOMÍNIO</span></div>
+        <div class="toolbarx">
+          <input class="search" placeholder="Buscar por título ou descrição">
+          <button class="pill on">STATUS: TODOS</button>
+          <button class="pill">CATEGORIA: TODAS</button>
+          <button class="pill">MAIS RECENTES</button>
+        </div>
+        <div class="manifest" id="c-rows"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const ICONS = {
+  dashboard: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  solicitacao: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.5-3.5a6 6 0 0 1-7.8 7.8l-6.7 6.7a2.1 2.1 0 0 1-3-3l6.7-6.7a6 6 0 0 1 7.8-7.8z"/>',
+  encomenda: '<path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="M3 7.5v9L12 21l9-4.5v-9"/><path d="M12 12v9"/>',
+  comunicado: '<path d="M3 11v2a2 2 0 0 0 2 2h1l3 5V4L6 9H5a2 2 0 0 0-2 2z"/><path d="M15 8a3 3 0 0 1 0 6"/><path d="M18 5a7 7 0 0 1 0 12"/>',
+  chat: '<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1 4.7-11.4 8.4 8.4 0 0 1 11.4 4.7 8.4 8.4 0 0 1 0 2.9z"/>',
+  visitantes: '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="11" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  comida: '<path d="M6 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3"/><path d="M8 12v9"/><path d="M18 3c-2 1-3 3-3 6s1 5 3 6"/><path d="M18 3v18"/>',
+  areas: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  assembleia: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l3 3 5-6"/>',
+  moradores: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/>',
+};
+document.querySelectorAll('svg.ic[data-icon]').forEach((el) => {
+  el.innerHTML = ICONS[el.dataset.icon] || '';
+});
+
+const BLURBS = {
+  a: 'A — Elevação em camadas + acentos decorativos. Sombra/hover reais, halo âmbar atrás dos números, gradiente sutil de fundo, entrada animada. Só tokens já existentes — risco baixo.',
+  b: 'B — Bento-grid + glass. Grid assimétrico, superfícies com blur. Tendência visual do momento, mas tensiona com "fugir dos clichês de SaaS-IA"; blur arrisca contraste.',
+  c: 'C — Editorial tipográfico. Menos caixas, hierarquia via Space Grotesk grande e divisores finos, dados em JetBrains Mono, sparklines inline. Mudança estrutural maior.',
+};
+
+const state = { dir: 'a', screen: 'dashboard', theme: 'light' };
+
+function applyState() {
+  document.querySelectorAll('.scene').forEach((s) => s.classList.toggle('on', s.dataset.scene === state.dir));
+  document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('on', s.dataset.screen === state.screen));
+  document.body.setAttribute('data-theme', state.theme);
+  document.getElementById('blurb').textContent = BLURBS[state.dir];
+  document.querySelectorAll('[data-set-dir]').forEach((b) => b.classList.toggle('on', b.dataset.setDir === state.dir));
+  document.querySelectorAll('[data-set-screen]').forEach((b) => b.classList.toggle('on', b.dataset.setScreen === state.screen));
+  document.querySelectorAll('[data-set-theme]').forEach((b) => b.classList.toggle('on', b.dataset.setTheme === state.theme));
+  if (state.dir === 'a' && state.screen === 'dashboard') runCountUp();
+}
+
+document.querySelectorAll('[data-set-dir]').forEach((b) => b.addEventListener('click', () => { state.dir = b.dataset.setDir; applyState(); }));
+document.querySelectorAll('[data-set-screen]').forEach((b) => b.addEventListener('click', () => { state.screen = b.dataset.setScreen; applyState(); }));
+document.querySelectorAll('[data-set-theme]').forEach((b) => b.addEventListener('click', () => { state.theme = b.dataset.setTheme; applyState(); }));
+
+function runCountUp() {
+  document.querySelectorAll('.dir-a .stat .val[data-count]').forEach((el) => {
+    const target = Number(el.dataset.count);
+    const dur = 700;
+    const start = performance.now();
+    function frame(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target);
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+const SOLICITACOES = [
+  { num: '#a3f21c9', tit: 'Vazamento no teto da garagem', cat: 'Manutenção', mor: 'Carlos Menezes', res: 'Bloco A · 302', dt: '18/07/2026', pri: 'alta', priL: 'Alta', st: 'aberto', stL: 'Aberto' },
+  { num: '#7b901ef', tit: 'Barulho excessivo apto 504', cat: 'Segurança', mor: 'Fernanda Alves', res: 'Bloco B · 504', dt: '17/07/2026', pri: 'media', priL: 'Média', st: 'progresso', stL: 'Em progresso' },
+  { num: '#c44d820', tit: 'Gato preso na escada de incêndio', cat: 'Animal', mor: 'Rogério Lins', res: 'Bloco A · 108', dt: '17/07/2026', pri: 'alta', priL: 'Alta', st: 'resolvido', stL: 'Resolvido' },
+  { num: '#91ffa3b', tit: 'Portão da garagem não fecha', cat: 'Manutenção', mor: 'Juliana Prado', res: 'Bloco C · 210', dt: '16/07/2026', pri: 'alta', priL: 'Alta', st: 'progresso', stL: 'Em progresso' },
+  { num: '#2ecd77a', tit: 'Solicito troca de lâmpada no corredor', cat: 'Manutenção', mor: 'Heitor Sales', res: 'Bloco B · 401', dt: '15/07/2026', pri: 'baixa', priL: 'Baixa', st: 'aberto', stL: 'Aberto' },
+  { num: '#f501b6d', tit: 'Reclamação sobre estacionamento irregular', cat: 'Outra', mor: 'Patrícia Gomes', res: 'Bloco C · 105', dt: '14/07/2026', pri: 'media', priL: 'Média', st: 'resolvido', stL: 'Resolvido' },
+];
+
+function fillTable(tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = SOLICITACOES.map((r) => `
+    <tr>
+      <td class="mono">${r.num}</td>
+      <td><span class="mor">${r.tit}</span><br><span style="font-size:11.5px;color:var(--color-text-muted)">${r.cat}</span></td>
+      <td><span class="mor">${r.mor}</span><span class="res">${r.res}</span></td>
+      <td class="mono">${r.dt}</td>
+      <td><span class="badge b-${r.pri}">${r.priL}</span></td>
+      <td><span class="badge b-${r.st}">${r.stL}</span></td>
+    </tr>
+  `).join('');
+}
+fillTable('a-rows');
+fillTable('b-rows');
+
+const cRows = document.getElementById('c-rows');
+cRows.innerHTML = `
+  <div class="row head"><span>Nº</span><span>Solicitação</span><span>Morador</span><span>Criada em</span><span>Prioridade</span><span>Status</span></div>
+  ${SOLICITACOES.map((r) => `
+    <div class="row">
+      <span class="num">${r.num}</span>
+      <span><span class="tit">${r.tit}</span><span class="cat">${r.cat}</span></span>
+      <span><span class="mor">${r.mor}</span><span class="res">${r.res}</span></span>
+      <span class="dt">${r.dt}</span>
+      <span class="tag t-${r.pri}">${r.priL}</span>
+      <span class="tag t-${r.st}">${r.stL}</span>
+    </div>
+  `).join('')}
+`;
+
+applyState();
+</script>
+</body>
+</html>
