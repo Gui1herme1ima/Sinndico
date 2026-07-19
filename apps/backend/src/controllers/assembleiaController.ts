@@ -8,7 +8,6 @@ import {
   listAssembleias,
   updateAssembleiaStatus,
 } from '../models/Assembleia';
-import { listTokensForUsers } from '../models/DeviceToken';
 import { listUsersForTenant } from '../models/User';
 import {
   ContagemVotos,
@@ -20,7 +19,7 @@ import {
   OpcaoVoto,
 } from '../models/Voto';
 import { ApiError } from '../middleware/errorHandler';
-import { sendPushToTokens } from '../services/notificationService';
+import { notifyUsers } from '../services/notificationService';
 
 export const createAssembleiaSchema = z.object({
   titulo: z.string().min(1),
@@ -61,11 +60,15 @@ function toAssembleiaResponse(assembleia: Assembleia, votos: ContagemVotos, meuV
   };
 }
 
-async function notificarMoradores(req: Request, title: string, body: string, assembleiaId: string) {
+async function notificarMoradores(req: Request, titulo: string, corpo: string, assembleiaId: string) {
   const ctx = tenantContextOf(req);
   const moradores = await listUsersForTenant(ctx, ['morador']);
-  const tokens = await listTokensForUsers(ctx, moradores.map((m) => m.id));
-  await sendPushToTokens(tokens, { title, body, data: { tipo: 'assembleia', assembleiaId } });
+  await notifyUsers(ctx, moradores.map((m) => m.id), {
+    tipo: 'assembleia',
+    titulo,
+    corpo,
+    referenciaId: assembleiaId,
+  });
 }
 
 export async function create(req: Request, res: Response) {
