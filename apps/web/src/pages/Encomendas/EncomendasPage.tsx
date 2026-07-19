@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Pagination } from '@/components/ui/Pagination';
-import { EncomendaIcon } from '@/components/ui/icons';
+import { EncomendaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -169,7 +169,11 @@ export function EncomendasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {isPorteiro && <CreateEncomendaForm />}
+      {isPorteiro && (
+        <div id="create-encomenda-form">
+          <CreateEncomendaForm />
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         <h2 className="font-display text-xl font-semibold text-text-primary">
@@ -216,13 +220,25 @@ export function EncomendasPage() {
                 loading={isLoading}
                 emptyState={
                   <EmptyState
-                    icon={<EncomendaIcon width={48} height={48} />}
+                    icon={<EncomendaEmptyIllustration />}
                     title={
                       hasActiveFilters
                         ? 'Nenhuma encomenda encontrada para esses filtros.'
                         : 'Nenhuma encomenda por aqui ainda.'
                     }
-                    action={hasActiveFilters ? { label: 'Limpar filtros', onClick: clearFilters } : undefined}
+                    action={
+                      hasActiveFilters
+                        ? { label: 'Limpar filtros', onClick: clearFilters }
+                        : isPorteiro
+                          ? {
+                              label: 'Registrar encomenda',
+                              onClick: () =>
+                                document
+                                  .getElementById('create-encomenda-form')
+                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+                            }
+                          : undefined
+                    }
                   />
                 }
               />
