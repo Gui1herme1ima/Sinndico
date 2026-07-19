@@ -3,9 +3,8 @@ import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
 import { Chat, createChatMessage, listChatMessages, markThreadAsRead } from '../models/Chat';
-import { listTokensForUsers } from '../models/DeviceToken';
 import { findUserByIdForTenant, listAdminIdsForTenant } from '../models/User';
-import { sendPushToTokens } from '../services/notificationService';
+import { notifyUsers } from '../services/notificationService';
 
 export const createChatSchema = z.object({
   // Obrigatório só quando quem escreve é admin (precisa dizer com qual morador); morador escreve
@@ -65,11 +64,11 @@ export async function create(req: Request, res: Response) {
   });
 
   const destinatarios = req.user!.role === 'morador' ? await listAdminIdsForTenant(ctx) : [moradorId];
-  const tokens = await listTokensForUsers(ctx, destinatarios);
-  await sendPushToTokens(tokens, {
-    title: req.user!.role === 'morador' ? 'Nova mensagem de morador' : 'Nova mensagem da administração',
-    body: input.mensagem,
-    data: { tipo: 'chat', moradorId },
+  await notifyUsers(ctx, destinatarios, {
+    tipo: 'chat',
+    titulo: req.user!.role === 'morador' ? 'Nova mensagem de morador' : 'Nova mensagem da administração',
+    corpo: input.mensagem,
+    referenciaId: moradorId,
   });
 
   res.status(201).json(toChatResponse(chat));
