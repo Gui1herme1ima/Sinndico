@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CreateSolicitacaoForm } from '@/components/Solicitacoes/CreateSolicitacaoForm';
 import { SolicitacaoDetail } from '@/components/Solicitacoes/SolicitacaoDetail';
 import { CATEGORIA_LABELS, PRIORIDADE_LABELS, STATUS_LABELS } from '@/components/Solicitacoes/solicitacaoLabels';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -74,6 +75,19 @@ export function SolicitacoesPage() {
     queryKey: ['moradores-diretorio'],
     queryFn: () => usersApi.listDiretorio(),
     enabled: isAdmin,
+  });
+
+  const abertasQuery = useQuery({
+    queryKey: ['solicitacoes-count', 'aberto'],
+    queryFn: () => solicitacoesApi.list({ page: 1, pageSize: 1, status: 'aberto' }),
+  });
+  const emProgressoQuery = useQuery({
+    queryKey: ['solicitacoes-count', 'em-progresso'],
+    queryFn: () => solicitacoesApi.list({ page: 1, pageSize: 1, status: 'em-progresso' }),
+  });
+  const resolvidasQuery = useQuery({
+    queryKey: ['solicitacoes-count', 'resolvido'],
+    queryFn: () => solicitacoesApi.list({ page: 1, pageSize: 1, status: 'resolvido' }),
   });
 
   const moradorPorId = useMemo(
@@ -200,6 +214,30 @@ export function SolicitacoesPage() {
           }
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile
+            tint="accent"
+            icon={<SolicitacaoManutencaoIcon width={22} height={22} />}
+            value={abertasQuery.data?.total ?? 0}
+            label="abertas"
+            foot="aguardando resposta"
+          />
+          <StatTile
+            tint="primary"
+            icon={<SolicitacaoManutencaoIcon width={22} height={22} />}
+            value={emProgressoQuery.data?.total ?? 0}
+            label="em progresso"
+            foot="já sendo resolvidas"
+          />
+          <StatTile
+            tint="accent"
+            icon={<SolicitacaoManutencaoIcon width={22} height={22} />}
+            value={resolvidasQuery.data?.total ?? 0}
+            label="resolvidas"
+            foot="atendidas até aqui"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -207,6 +245,8 @@ export function SolicitacoesPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Título ou descrição"
+              resultCount={data?.total}
+              resultLabel="solicitações"
               filters={[
                 {
                   key: 'status',

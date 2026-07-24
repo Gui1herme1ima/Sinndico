@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CreateVisitanteForm } from '@/components/Visitantes/CreateVisitanteForm';
 import { VisitanteDetail } from '@/components/Visitantes/VisitanteDetail';
 import { displayStatus } from '@/components/Visitantes/visitanteLabels';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -79,6 +80,19 @@ export function VisitantesPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const aprovadoQuery = useQuery({
+    queryKey: ['visitantes-count', 'aprovado'],
+    queryFn: () => visitantesApi.list({ page: 1, pageSize: 1, status: 'aprovado' }),
+  });
+  const ativoQuery = useQuery({
+    queryKey: ['visitantes-count', 'ativo'],
+    queryFn: () => visitantesApi.list({ page: 1, pageSize: 1, status: 'ativo' }),
+  });
+  const bloqueadoQuery = useQuery({
+    queryKey: ['visitantes-count', 'bloqueado'],
+    queryFn: () => visitantesApi.list({ page: 1, pageSize: 1, status: 'bloqueado' }),
+  });
 
   const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
@@ -204,6 +218,30 @@ export function VisitantesPage() {
           }
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile
+            tint="accent"
+            icon={<VisitanteIcon width={22} height={22} />}
+            value={aprovadoQuery.data?.total ?? 0}
+            label="aprovados"
+            foot="ainda não chegaram"
+          />
+          <StatTile
+            tint="primary"
+            icon={<VisitanteIcon width={22} height={22} />}
+            value={ativoQuery.data?.total ?? 0}
+            label="na portaria"
+            foot="visita em andamento"
+          />
+          <StatTile
+            tint="accent"
+            icon={<VisitanteIcon width={22} height={22} />}
+            value={bloqueadoQuery.data?.total ?? 0}
+            label="bloqueados"
+            foot="acesso negado"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -211,6 +249,8 @@ export function VisitantesPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Nome do visitante"
+              resultCount={data?.total}
+              resultLabel="visitantes"
               filters={[
                 {
                   key: 'status',

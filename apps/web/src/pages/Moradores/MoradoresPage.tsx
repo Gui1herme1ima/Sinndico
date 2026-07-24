@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CreateMoradorForm } from '@/components/Moradores/CreateMoradorForm';
 import { ImportarMoradoresButton } from '@/components/Moradores/ImportarMoradoresButton';
 import { MoradorDetail } from '@/components/Moradores/MoradorDetail';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
@@ -16,7 +17,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { MoradorEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon, UserIcon } from '@/components/ui/icons';
+import { PlusIcon, ResidenciaIcon, UserIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { residenciasApi } from '@/services/api/residenciasApi';
@@ -151,6 +152,22 @@ export function MoradoresPage() {
           }
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <StatTile
+            tint="primary"
+            icon={<UserIcon width={22} height={22} />}
+            value={moradoresQuery.data?.total ?? 0}
+            label="moradores cadastrados"
+          />
+          <StatTile
+            tint="accent"
+            icon={<ResidenciaIcon width={22} height={22} />}
+            value={residencias.length}
+            label="residências"
+            foot="no condomínio"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -158,6 +175,8 @@ export function MoradoresPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Nome ou e-mail"
+              resultCount={moradoresQuery.data?.total}
+              resultLabel="moradores"
               sortOptions={SORT_OPTIONS}
               sortValue={`${state.sortBy}-${state.sortOrder}`}
               onSortChange={(value) => {

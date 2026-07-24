@@ -162,7 +162,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   hover eleva levemente o ícone + mostra chevron indicando linha clicável; `EmptyState` com fundo
   tintado (`color-mix()`) em vez de neutro. Tudo mudança nos componentes compartilhados, testável nas
   6 telas de uma vez, nos dois temas.
-- **Fatia 4.7.6 — Toolbar rico + mini-stats no topo.** Nas mesmas 6 telas: `ListToolbar` ganha
+- **Fatia 4.7.6 — Toolbar rico + mini-stats no topo.** ✅ Concluída. Nas mesmas 6 telas: `ListToolbar` ganha
   contador de resultados ("42 solicitações") e chips removíveis por filtro ativo (hoje só existe
   "Limpar filtros" geral, dentro do `EmptyState`). Acima do `Card` da tabela, uma faixa de 2–4
   `StatTile` reaproveitados (mesmo componente do Dashboard: tint accent/primary, badge de ícone, foot

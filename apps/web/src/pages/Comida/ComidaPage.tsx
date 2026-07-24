@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ComidaDetail } from '@/components/Comida/ComidaDetail';
 import { STATUS_LABELS } from '@/components/Comida/comidaLabels';
 import { CreateComidaForm } from '@/components/Comida/CreateComidaForm';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -79,6 +80,19 @@ export function ComidaPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const pedidoFeitoQuery = useQuery({
+    queryKey: ['comida-count', 'pedido-feito'],
+    queryFn: () => comidaApi.list({ page: 1, pageSize: 1, status: 'pedido-feito' }),
+  });
+  const emCaminhoQuery = useQuery({
+    queryKey: ['comida-count', 'em-caminho'],
+    queryFn: () => comidaApi.list({ page: 1, pageSize: 1, status: 'em-caminho' }),
+  });
+  const chegouQuery = useQuery({
+    queryKey: ['comida-count', 'chegou'],
+    queryFn: () => comidaApi.list({ page: 1, pageSize: 1, status: 'chegou' }),
+  });
 
   const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
@@ -179,6 +193,30 @@ export function ComidaPage() {
           }
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile
+            tint="accent"
+            icon={<ComidaIcon width={22} height={22} />}
+            value={pedidoFeitoQuery.data?.total ?? 0}
+            label="pedido feito"
+            foot="aguardando saída"
+          />
+          <StatTile
+            tint="primary"
+            icon={<ComidaIcon width={22} height={22} />}
+            value={emCaminhoQuery.data?.total ?? 0}
+            label="em caminho"
+            foot="chegando na portaria"
+          />
+          <StatTile
+            tint="accent"
+            icon={<ComidaIcon width={22} height={22} />}
+            value={chegouQuery.data?.total ?? 0}
+            label="chegaram"
+            foot="avise seus moradores"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -186,6 +224,8 @@ export function ComidaPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Restaurante"
+              resultCount={data?.total}
+              resultLabel="pedidos"
               filters={[
                 {
                   key: 'status',

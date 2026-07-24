@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CreateEncomendaForm } from '@/components/Encomendas/CreateEncomendaForm';
 import { EncomendaDetail } from '@/components/Encomendas/EncomendaDetail';
 import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -79,6 +80,15 @@ export function EncomendasPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const aguardandoQuery = useQuery({
+    queryKey: ['encomendas-count', 'aguardando'],
+    queryFn: () => encomendasApi.list({ page: 1, pageSize: 1, status: 'aguardando' }),
+  });
+  const retiradaQuery = useQuery({
+    queryKey: ['encomendas-count', 'retirada'],
+    queryFn: () => encomendasApi.list({ page: 1, pageSize: 1, status: 'retirada' }),
+  });
 
   const selected = data?.items.find((item) => item.id === selectedId) ?? null;
 
@@ -192,6 +202,23 @@ export function EncomendasPage() {
           }
         />
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <StatTile
+            tint="accent"
+            icon={<EncomendaIcon width={22} height={22} />}
+            value={aguardandoQuery.data?.total ?? 0}
+            label="aguardando retirada"
+            foot="na portaria"
+          />
+          <StatTile
+            tint="primary"
+            icon={<EncomendaIcon width={22} height={22} />}
+            value={retiradaQuery.data?.total ?? 0}
+            label="retiradas"
+            foot="já entregues"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -199,6 +226,8 @@ export function EncomendasPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Descrição"
+              resultCount={data?.total}
+              resultLabel="encomendas"
               filters={[
                 {
                   key: 'status',

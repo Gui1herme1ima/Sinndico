@@ -5,6 +5,7 @@ import { AreaComumCard } from '@/components/AreasComuns/AreaComumCard';
 import { CreateAreaComumForm } from '@/components/AreasComuns/CreateAreaComumForm';
 import { ReservaDetail } from '@/components/AreasComuns/ReservaDetail';
 import { STATUS_LABELS } from '@/components/AreasComuns/reservaLabels';
+import { StatTile } from '@/components/Dashboard/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -87,6 +88,19 @@ export function AreasComunsPage() {
     () => new Map((diretorioQuery.data ?? []).map((m) => [m.id, m])),
     [diretorioQuery.data],
   );
+
+  const pendenteQuery = useQuery({
+    queryKey: ['reservas-count', 'pendente'],
+    queryFn: () => reservasApi.list({ page: 1, pageSize: 1, status: 'pendente' }),
+  });
+  const aprovadaQuery = useQuery({
+    queryKey: ['reservas-count', 'aprovada'],
+    queryFn: () => reservasApi.list({ page: 1, pageSize: 1, status: 'aprovada' }),
+  });
+  const canceladaQuery = useQuery({
+    queryKey: ['reservas-count', 'cancelada'],
+    queryFn: () => reservasApi.list({ page: 1, pageSize: 1, status: 'cancelada' }),
+  });
 
   const selected = reservasQuery.data?.items.find((item) => item.id === selectedId) ?? null;
 
@@ -214,6 +228,30 @@ export function AreasComunsPage() {
           {isMorador ? 'Minhas reservas' : 'Reservas'}
         </h2>
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile
+            tint="accent"
+            icon={<AreaComumIcon width={22} height={22} />}
+            value={pendenteQuery.data?.total ?? 0}
+            label="pendentes"
+            foot="aguardando aprovação"
+          />
+          <StatTile
+            tint="primary"
+            icon={<AreaComumIcon width={22} height={22} />}
+            value={aprovadaQuery.data?.total ?? 0}
+            label="aprovadas"
+            foot="reserva confirmada"
+          />
+          <StatTile
+            tint="accent"
+            icon={<AreaComumIcon width={22} height={22} />}
+            value={canceladaQuery.data?.total ?? 0}
+            label="canceladas"
+            foot="não vão ocorrer"
+          />
+        </div>
+
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
             <ListToolbar
@@ -221,6 +259,8 @@ export function AreasComunsPage() {
               onSearchChange={setRawSearch}
               searchLabel="Buscar"
               searchPlaceholder="Área comum"
+              resultCount={reservasQuery.data?.total}
+              resultLabel="reservas"
               filters={[
                 {
                   key: 'status',
