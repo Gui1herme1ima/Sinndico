@@ -9,13 +9,14 @@ import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { MoradorEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { PlusIcon, UserIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { residenciasApi } from '@/services/api/residenciasApi';
@@ -86,7 +87,12 @@ export function MoradoresPage() {
       {
         key: 'nome',
         header: 'Nome',
-        render: (row) => <p className="font-medium text-text-primary">{row.nome}</p>,
+        render: (row) => (
+          <div className="flex items-center gap-3">
+            <IconBadge icon={<UserIcon width={16} height={16} />} size="sm" className="group-hover:scale-105" />
+            <p className="font-medium text-text-primary">{row.nome}</p>
+          </div>
+        ),
       },
       {
         key: 'contato',

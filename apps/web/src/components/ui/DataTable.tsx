@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ChevronRightIcon } from '@/components/ui/icons';
 import { cn } from '@/lib/cn';
 
 export interface DataTableColumn<T> {
@@ -12,6 +13,8 @@ export interface DataTableColumn<T> {
   render: (row: T) => ReactNode;
 }
 
+export type DataTableAccent = 'accent' | 'primary' | 'success' | 'danger';
+
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   rows: T[];
@@ -21,12 +24,21 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   selectedRowKey?: string;
   emptyState?: ReactNode;
+  /** Tinta a borda esquerda da linha (ex.: por prioridade/status) — puramente decorativo. */
+  rowAccent?: (row: T) => DataTableAccent | undefined;
 }
 
 const alignClass: Record<'left' | 'right' | 'center', string> = {
   left: 'text-left',
   right: 'text-right',
   center: 'text-center',
+};
+
+const accentShadowClass: Record<DataTableAccent, string> = {
+  accent: 'shadow-[inset_3px_0_0_var(--color-accent)]',
+  primary: 'shadow-[inset_3px_0_0_var(--color-primary)]',
+  success: 'shadow-[inset_3px_0_0_var(--color-success)]',
+  danger: 'shadow-[inset_3px_0_0_var(--color-danger)]',
 };
 
 export function DataTable<T>({
@@ -38,6 +50,7 @@ export function DataTable<T>({
   onRowClick,
   selectedRowKey,
   emptyState,
+  rowAccent,
 }: DataTableProps<T>) {
   return (
     <table className="w-full border-collapse">
@@ -55,6 +68,7 @@ export function DataTable<T>({
               {column.header}
             </th>
           ))}
+          {onRowClick && <th className="border-b border-border" style={{ width: '40px' }} />}
         </tr>
       </thead>
       <tbody className="[&>tr:last-child>td]:border-b-0">
@@ -66,25 +80,29 @@ export function DataTable<T>({
                   <Skeleton className="h-4 w-full" />
                 </td>
               ))}
+              {onRowClick && <td />}
             </tr>
           ))
         ) : rows.length === 0 && emptyState ? (
           <tr>
-            <td colSpan={columns.length}>{emptyState}</td>
+            <td colSpan={columns.length + (onRowClick ? 1 : 0)}>{emptyState}</td>
           </tr>
         ) : (
           rows.map((row) => {
             const key = rowKey(row);
             const selected = selectedRowKey === key;
+            const accent = rowAccent?.(row);
             return (
               <tr
                 key={key}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={cn(
-                  'border-b border-border',
+                  'group border-b border-border transition-colors duration-150',
                   onRowClick ? 'cursor-pointer' : 'cursor-default',
                   'hover:bg-text-primary/5',
-                  selected && 'bg-primary/[0.07] shadow-[inset_3px_0_0_var(--color-primary)]',
+                  selected
+                    ? 'bg-primary/[0.07] shadow-[inset_3px_0_0_var(--color-primary)]'
+                    : accent && accentShadowClass[accent],
                 )}
               >
                 {columns.map((column) => (
@@ -99,6 +117,11 @@ export function DataTable<T>({
                     {column.render(row)}
                   </td>
                 ))}
+                {onRowClick && (
+                  <td className="px-2 text-text-muted opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                    <ChevronRightIcon width={16} height={16} />
+                  </td>
+                )}
               </tr>
             );
           })

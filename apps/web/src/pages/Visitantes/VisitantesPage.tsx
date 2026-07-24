@@ -7,15 +7,16 @@ import { displayStatus } from '@/components/Visitantes/visitanteLabels';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableAccent, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { VisitanteEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { PlusIcon, VisitanteIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -104,11 +105,14 @@ export function VisitantesPage() {
         key: 'nomeVisitante',
         header: 'Visitante',
         render: (row) => (
-          <div>
-            <p className="font-medium text-text-primary">{row.nomeVisitante}</p>
-            <p className="text-xs text-text-secondary">
-              {[row.rg && `RG ${row.rg}`, row.placaVeiculo].filter(Boolean).join(' · ')}
-            </p>
+          <div className="flex items-center gap-3">
+            <IconBadge icon={<VisitanteIcon width={16} height={16} />} size="sm" className="group-hover:scale-105" />
+            <div>
+              <p className="font-medium text-text-primary">{row.nomeVisitante}</p>
+              <p className="text-xs text-text-secondary">
+                {[row.rg && `RG ${row.rg}`, row.placaVeiculo].filter(Boolean).join(' · ')}
+              </p>
+            </div>
           </div>
         ),
       },
@@ -163,13 +167,25 @@ export function VisitantesPage() {
         width: '130px',
         render: (row) => {
           const { status, label } = displayStatus(row);
-          return <Badge status={status}>{label}</Badge>;
+          return (
+            <Badge status={status} dot={status === 'ativo'}>
+              {label}
+            </Badge>
+          );
         },
       },
     );
 
     return cols;
   }, [isMorador, moradorPorId]);
+
+  const rowAccent = (row: VisitanteResponse): DataTableAccent | undefined => {
+    const { status } = displayStatus(row);
+    if (status === 'ativo') return 'primary';
+    if (status === 'bloqueado') return 'danger';
+    if (status === 'aprovado') return 'accent';
+    return undefined;
+  };
 
   const podeCadastrar = isMorador || canManage;
 
@@ -229,6 +245,7 @@ export function VisitantesPage() {
                 loading={isLoading}
                 onRowClick={(row) => setSelectedId(row.id)}
                 selectedRowKey={selectedId ?? undefined}
+                rowAccent={rowAccent}
                 emptyState={
                   <EmptyState
                     icon={<VisitanteEmptyIllustration />}

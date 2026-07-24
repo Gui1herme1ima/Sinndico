@@ -7,15 +7,16 @@ import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableAccent, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { EncomendaEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { EncomendaIcon, PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -102,18 +103,21 @@ export function EncomendasPage() {
         key: 'descricao',
         header: 'Encomenda',
         render: (row) => (
-          <div>
-            <p className="font-medium text-text-primary">{row.descricao || 'Encomenda sem descrição'}</p>
-            {row.fotoUrl && (
-              <a
-                href={row.fotoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                Ver foto
-              </a>
-            )}
+          <div className="flex items-center gap-3">
+            <IconBadge icon={<EncomendaIcon width={16} height={16} />} size="sm" className="group-hover:scale-105" />
+            <div>
+              <p className="font-medium text-text-primary">{row.descricao || 'Encomenda sem descrição'}</p>
+              {row.fotoUrl && (
+                <a
+                  href={row.fotoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Ver foto
+                </a>
+              )}
+            </div>
           </div>
         ),
       },
@@ -154,7 +158,9 @@ export function EncomendasPage() {
         width: '160px',
         render: (row) => (
           <div>
-            <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>
+            <Badge status={row.status} dot={row.status === 'aguardando'}>
+              {STATUS_LABELS[row.status]}
+            </Badge>
             {row.assinado && row.dataAssinatura && (
               <p className="mt-1 text-[11px] text-text-muted" title={formatDate(row.dataAssinatura)}>
                 assinada {formatRelativeTime(row.dataAssinatura)}
@@ -167,6 +173,9 @@ export function EncomendasPage() {
 
     return cols;
   }, [isMorador, moradorPorId]);
+
+  const rowAccent = (row: EncomendaResponse): DataTableAccent | undefined =>
+    row.status === 'aguardando' ? 'accent' : undefined;
 
   return (
     <div className="flex flex-col gap-6">
@@ -223,6 +232,7 @@ export function EncomendasPage() {
                 loading={isLoading}
                 onRowClick={(row) => setSelectedId(row.id)}
                 selectedRowKey={selectedId ?? undefined}
+                rowAccent={rowAccent}
                 emptyState={
                   <EmptyState
                     icon={<EncomendaEmptyIllustration />}

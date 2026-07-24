@@ -7,15 +7,16 @@ import { CreateComidaForm } from '@/components/Comida/CreateComidaForm';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableAccent, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { ComidaEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { ComidaIcon, PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -100,7 +101,12 @@ export function ComidaPage() {
       {
         key: 'restaurante',
         header: 'Restaurante',
-        render: (row) => <p className="font-medium text-text-primary">{row.restaurante}</p>,
+        render: (row) => (
+          <div className="flex items-center gap-3">
+            <IconBadge icon={<ComidaIcon width={16} height={16} />} size="sm" className="group-hover:scale-105" />
+            <p className="font-medium text-text-primary">{row.restaurante}</p>
+          </div>
+        ),
       },
     ];
 
@@ -139,12 +145,22 @@ export function ComidaPage() {
         key: 'status',
         header: 'Status',
         width: '150px',
-        render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
+        render: (row) => (
+          <Badge status={row.status} dot={row.status === 'pedido-feito' || row.status === 'em-caminho'}>
+            {STATUS_LABELS[row.status]}
+          </Badge>
+        ),
       },
     );
 
     return cols;
   }, [isMorador, moradorPorId]);
+
+  const rowAccent = (row: ComidaResponse): DataTableAccent | undefined => {
+    if (row.status === 'pedido-feito' || row.status === 'em-caminho') return 'accent';
+    if (row.status === 'chegou') return 'primary';
+    return undefined;
+  };
 
   const podeCadastrar = isMorador || canManage;
 
@@ -205,6 +221,7 @@ export function ComidaPage() {
                 loading={isLoading}
                 onRowClick={(row) => setSelectedId(row.id)}
                 selectedRowKey={selectedId ?? undefined}
+                rowAccent={rowAccent}
                 emptyState={
                   <EmptyState
                     icon={<ComidaEmptyIllustration />}

@@ -7,14 +7,15 @@ import { CATEGORIA_LABELS, PRIORIDADE_LABELS, STATUS_LABELS } from '@/components
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableAccent, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { SolicitacaoEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { PlusIcon, SolicitacaoManutencaoIcon } from '@/components/ui/icons';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { formatDate } from '@/lib/formatDate';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
@@ -104,9 +105,16 @@ export function SolicitacoesPage() {
         key: 'titulo',
         header: 'Solicitação',
         render: (row) => (
-          <div>
-            <p className="font-medium text-text-primary">{row.titulo}</p>
-            <p className="text-xs text-text-secondary">{CATEGORIA_LABELS[row.categoria]}</p>
+          <div className="flex items-center gap-3">
+            <IconBadge
+              icon={<SolicitacaoManutencaoIcon width={16} height={16} />}
+              size="sm"
+              className="group-hover:scale-105"
+            />
+            <div>
+              <p className="font-medium text-text-primary">{row.titulo}</p>
+              <p className="text-xs text-text-secondary">{CATEGORIA_LABELS[row.categoria]}</p>
+            </div>
           </div>
         ),
       },
@@ -160,12 +168,22 @@ export function SolicitacoesPage() {
         key: 'status',
         header: 'Status',
         width: '130px',
-        render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
+        render: (row) => (
+          <Badge status={row.status} dot={row.status !== 'resolvido'}>
+            {STATUS_LABELS[row.status]}
+          </Badge>
+        ),
       },
     );
 
     return cols;
   }, [isAdmin, moradorPorId]);
+
+  const rowAccent = (row: SolicitacaoResponse): DataTableAccent | undefined => {
+    if (row.prioridade === 'alta') return 'danger';
+    if (row.prioridade === 'media') return 'accent';
+    return undefined;
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -236,6 +254,7 @@ export function SolicitacoesPage() {
                 loading={isLoading}
                 onRowClick={(row) => setSelectedId(row.id)}
                 selectedRowKey={selectedId ?? undefined}
+                rowAccent={rowAccent}
                 emptyState={
                   <EmptyState
                     icon={<SolicitacaoEmptyIllustration />}

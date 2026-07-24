@@ -8,16 +8,17 @@ import { STATUS_LABELS } from '@/components/AreasComuns/reservaLabels';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
+import { DataTable, type DataTableAccent, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconBadge } from '@/components/ui/IconBadge';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ReservaEmptyIllustration } from '@/components/ui/illustrations';
-import { PlusIcon } from '@/components/ui/icons';
+import { AreaComumIcon, PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -104,7 +105,10 @@ export function AreasComunsPage() {
         key: 'area',
         header: 'Área',
         render: (row) => (
-          <p className="font-medium text-text-primary">{areaNomePorId.get(row.areaComumId) ?? 'Área removida'}</p>
+          <div className="flex items-center gap-3">
+            <IconBadge icon={<AreaComumIcon width={16} height={16} />} size="sm" className="group-hover:scale-105" />
+            <p className="font-medium text-text-primary">{areaNomePorId.get(row.areaComumId) ?? 'Área removida'}</p>
+          </div>
         ),
       },
     ];
@@ -149,12 +153,22 @@ export function AreasComunsPage() {
         key: 'status',
         header: 'Status',
         width: '130px',
-        render: (row) => <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>,
+        render: (row) => (
+          <Badge status={row.status} dot={row.status === 'pendente'}>
+            {STATUS_LABELS[row.status]}
+          </Badge>
+        ),
       },
     );
 
     return cols;
   }, [isMorador, moradorPorId, areaNomePorId]);
+
+  const rowAccent = (row: ReservaResponse): DataTableAccent | undefined => {
+    if (row.status === 'pendente') return 'accent';
+    if (row.status === 'aprovada') return 'primary';
+    return undefined;
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -241,6 +255,7 @@ export function AreasComunsPage() {
                 loading={reservasQuery.isLoading}
                 onRowClick={(row) => setSelectedId(row.id)}
                 selectedRowKey={selectedId ?? undefined}
+                rowAccent={rowAccent}
                 emptyState={
                   <EmptyState
                     icon={<ReservaEmptyIllustration />}

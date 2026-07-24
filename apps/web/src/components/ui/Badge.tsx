@@ -32,6 +32,8 @@ export interface BadgeProps {
   status: BadgeStatus;
   children: ReactNode;
   mono?: boolean;
+  /** Pontinho antes do texto — sinaliza status "vivo" (aberto, em progresso, etc). */
+  dot?: boolean;
 }
 
 const statusClasses: Record<BadgeStatus, string> = {
@@ -61,15 +63,16 @@ const statusClasses: Record<BadgeStatus, string> = {
   encerrada: 'bg-success/10 text-success',
 };
 
-export function Badge({ status, children, mono = false }: BadgeProps) {
+export function Badge({ status, children, mono = false, dot = false }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium',
         mono && 'font-mono',
         statusClasses[status],
       )}
     >
+      {dot && <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current" />}
       {children}
     </span>
   );

@@ -153,7 +153,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
 - **Fatia 4.7.4 — Rollout da ação em overlay.** ✅ Concluída. Aplicar o padrão validado na 4.7.3 nas 9 telas
   restantes: Encomendas, Comida, Solicitações, Áreas Comuns, Moradores, Assembleias, Residências,
   Equipe, Condomínios.
-- **Fatia 4.7.5 — Linha da tabela, ícones e micro-interações.** Feedback de 2026-07-23: telas de
+- **Fatia 4.7.5 — Linha da tabela, ícones e micro-interações.** ✅ Concluída. Feedback de 2026-07-23: telas de
   listagem ainda parecem "lista crua" perto do novo Dashboard. Nas 6 telas com
   `DataTable`/`ListToolbar`/`Pagination` (Solicitações, Encomendas, Visitantes, Comida, Reservas,
   Moradores): ícone de domínio (`icons.tsx`) em badge circular tintado antes do título de cada item
