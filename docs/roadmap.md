@@ -138,6 +138,43 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
     com o tom mais caloroso da frase narrativa do hero (hoje cada tela tem o texto que foi escrito
     na fatia em que nasceu, sem revisão de tom unificada).
 
+- **Fatia 4.7.3 — Ação em overlay (base + piloto).** Feedback de 2026-07-23: toda tela com uma
+  "ação" (Comunicados, Visitantes, Encomendas, Comida, Solicitações, Áreas Comuns, Moradores,
+  Assembleias, Residências, Equipe, Condomínios — 11 telas no total) hoje mostra o `Create*Form`
+  fixo no topo da página, acima da lista. Trocar por: a tela mostra só os itens já cadastrados
+  (ocupando a página inteira, com divisões/agrupamentos/filtros como fizer sentido por tela); um
+  botão "Criar X"/"Cadastrar X" fica fixo na parte superior da página; clicar nele abre o `Create*Form`
+  existente dentro do `Drawer` já usado hoje pro detalhe (`components/ui/Drawer.tsx`) — mesma
+  linguagem visual de painel lateral, sem componente novo — e fecha automaticamente ao concluir o
+  cadastro com sucesso. Base + piloto em 2 telas que cobrem os dois estilos de listagem existentes:
+  **Comunicados** (lista em cards, `ComunicadoCard`) e **Visitantes** (`DataTable`). Outros botões de
+  ação da tela (ex. "Importar moradores" em Moradores) seguem o mesmo padrão: topo da página, não
+  mais soltos entre o formulário e a lista.
+- **Fatia 4.7.4 — Rollout da ação em overlay.** Aplicar o padrão validado na 4.7.3 nas 9 telas
+  restantes: Encomendas, Comida, Solicitações, Áreas Comuns, Moradores, Assembleias, Residências,
+  Equipe, Condomínios.
+- **Fatia 4.7.5 — Linha da tabela, ícones e micro-interações.** Feedback de 2026-07-23: telas de
+  listagem ainda parecem "lista crua" perto do novo Dashboard. Nas 6 telas com
+  `DataTable`/`ListToolbar`/`Pagination` (Solicitações, Encomendas, Visitantes, Comida, Reservas,
+  Moradores): ícone de domínio (`icons.tsx`) em badge circular tintado antes do título de cada item
+  na tabela (mesmo padrão visual do badge do `StatTile`); `Badge` ganha variante com dot de status
+  pra status "vivo" (aberto/em progresso); linha com borda esquerda tintada por prioridade/status;
+  hover eleva levemente o ícone + mostra chevron indicando linha clicável; `EmptyState` com fundo
+  tintado (`color-mix()`) em vez de neutro. Tudo mudança nos componentes compartilhados, testável nas
+  6 telas de uma vez, nos dois temas.
+- **Fatia 4.7.6 — Toolbar rico + mini-stats no topo.** Nas mesmas 6 telas: `ListToolbar` ganha
+  contador de resultados ("42 solicitações") e chips removíveis por filtro ativo (hoje só existe
+  "Limpar filtros" geral, dentro do `EmptyState`). Acima do `Card` da tabela, uma faixa de 2–4
+  `StatTile` reaproveitados (mesmo componente do Dashboard: tint accent/primary, badge de ícone, foot
+  de contexto) com métricas da própria tela (ex. em Solicitações: Abertas / Em progresso / Resolvidas
+  este mês). Decidir por tela se o número vem do `total` já paginado ou exige contagem por status
+  server-side — não criar endpoint novo sem necessidade real.
+- **Fatia 4.7.7 — Drawer de detalhe enriquecido.** Header do `Drawer` de detalhe ganha badge de
+  ícone de domínio + protocolo em destaque (`font-display`) no lugar do título texto plano; timeline
+  vertical de eventos (criado → em progresso → resolvido) com pontos coloridos por status. Começar
+  por Solicitações e Encomendas (já têm datas suficientes); nas demais telas, timeline só se o dado
+  existir — sem inventar campo novo de auditoria (isso é a fatia 4.19).
+
 ### Bloco B — Dashboard rico
 
 - **Fatia 4.8 — Dashboard admin.** Gráficos com Recharts: solicitações por status e por categoria
