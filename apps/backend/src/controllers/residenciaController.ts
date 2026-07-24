@@ -255,7 +255,7 @@ export async function getDetalhe(req: Request, res: Response) {
         [id]
       ),
       client.query<Solicitacao>(
-        `SELECT * FROM chamados
+        `SELECT * FROM solicitacoes
          WHERE morador_id IN (SELECT id FROM users WHERE residencia_id = $1)
          ORDER BY data_criacao DESC`,
         [id]
