@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { ApiError } from '@/services/api/client';
@@ -11,9 +10,10 @@ import { visitantesApi } from '@/services/api/visitantesApi';
 
 export interface CreateVisitanteFormProps {
   isMorador: boolean;
+  onSuccess?: () => void;
 }
 
-export function CreateVisitanteForm({ isMorador }: CreateVisitanteFormProps) {
+export function CreateVisitanteForm({ isMorador, onSuccess }: CreateVisitanteFormProps) {
   const queryClient = useQueryClient();
   const [moradorId, setMoradorId] = useState('');
   const [nomeVisitante, setNomeVisitante] = useState('');
@@ -39,6 +39,7 @@ export function CreateVisitanteForm({ isMorador }: CreateVisitanteFormProps) {
       setPlacaVeiculo('');
       setDataVisita('');
       setError(null);
+      onSuccess?.();
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao registrar visitante.');
@@ -51,40 +52,33 @@ export function CreateVisitanteForm({ isMorador }: CreateVisitanteFormProps) {
   }
 
   return (
-    <Card title="Novo visitante">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {!isMorador && (
-          <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
-        )}
-        <Input
-          label="Nome do visitante"
-          required
-          value={nomeVisitante}
-          onChange={(e) => setNomeVisitante(e.target.value)}
-        />
-        <Input label="RG (opcional)" value={rg} onChange={(e) => setRg(e.target.value)} />
-        <Input
-          label="Placa do veículo (opcional)"
-          value={placaVeiculo}
-          onChange={(e) => setPlacaVeiculo(e.target.value)}
-        />
-        <Input
-          label="Data e hora da visita"
-          type="datetime-local"
-          required
-          value={dataVisita}
-          onChange={(e) => setDataVisita(e.target.value)}
-        />
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button
-          type="submit"
-          loading={mutation.isPending}
-          disabled={!isMorador && !moradorId}
-          className="self-start"
-        >
-          Registrar visitante
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {!isMorador && (
+        <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
+      )}
+      <Input
+        label="Nome do visitante"
+        required
+        value={nomeVisitante}
+        onChange={(e) => setNomeVisitante(e.target.value)}
+      />
+      <Input label="RG (opcional)" value={rg} onChange={(e) => setRg(e.target.value)} />
+      <Input
+        label="Placa do veículo (opcional)"
+        value={placaVeiculo}
+        onChange={(e) => setPlacaVeiculo(e.target.value)}
+      />
+      <Input
+        label="Data e hora da visita"
+        type="datetime-local"
+        required
+        value={dataVisita}
+        onChange={(e) => setDataVisita(e.target.value)}
+      />
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} disabled={!isMorador && !moradorId} className="w-full">
+        Registrar visitante
+      </Button>
+    </form>
   );
 }

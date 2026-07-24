@@ -3,13 +3,16 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { ApiError } from '@/services/api/client';
 import { comunicadosApi } from '@/services/api/comunicadosApi';
 
-export function CreateComunicadoForm() {
+export interface CreateComunicadoFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateComunicadoForm({ onSuccess }: CreateComunicadoFormProps) {
   const queryClient = useQueryClient();
   const [titulo, setTitulo] = useState('');
   const [conteudo, setConteudo] = useState('');
@@ -22,6 +25,7 @@ export function CreateComunicadoForm() {
       setTitulo('');
       setConteudo('');
       setError(null);
+      onSuccess?.();
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao publicar comunicado.');
@@ -34,20 +38,18 @@ export function CreateComunicadoForm() {
   }
 
   return (
-    <Card title="Novo comunicado">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-        <Textarea
-          label="Conteúdo"
-          required
-          value={conteudo}
-          onChange={(e) => setConteudo(e.target.value)}
-        />
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
-          Publicar comunicado
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+      <Textarea
+        label="Conteúdo"
+        required
+        value={conteudo}
+        onChange={(e) => setConteudo(e.target.value)}
+      />
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} className="w-full">
+        Publicar comunicado
+      </Button>
+    </form>
   );
 }

@@ -138,7 +138,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
     com o tom mais caloroso da frase narrativa do hero (hoje cada tela tem o texto que foi escrito
     na fatia em que nasceu, sem revisão de tom unificada).
 
-- **Fatia 4.7.3 — Ação em overlay (base + piloto).** Feedback de 2026-07-23: toda tela com uma
+- **Fatia 4.7.3 — Ação em overlay (base + piloto).** ✅ Concluída. Feedback de 2026-07-23: toda tela com uma
   "ação" (Comunicados, Visitantes, Encomendas, Comida, Solicitações, Áreas Comuns, Moradores,
   Assembleias, Residências, Equipe, Condomínios — 11 telas no total) hoje mostra o `Create*Form`
   fixo no topo da página, acima da lista. Trocar por: a tela mostra só os itens já cadastrados
