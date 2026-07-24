@@ -16,6 +16,7 @@ import { ComidaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { comidaApi } from '@/services/api/comidaApi';
 import type { ComidaListParams, ComidaResponse } from '@/services/api/types';
 import { usersApi } from '@/services/api/usersApi';
@@ -88,10 +89,9 @@ export function ComidaPage() {
     const cols: DataTableColumn<ComidaResponse>[] = [
       {
         key: 'id',
-        header: 'Nº',
-        mono: true,
-        width: '90px',
-        render: (row) => `#${row.id.slice(0, 8)}`,
+        header: 'Protocolo',
+        width: '100px',
+        render: (row) => row.id.slice(0, 8),
       },
       {
         key: 'restaurante',
@@ -127,7 +127,9 @@ export function ComidaPage() {
         header: 'Chegada estimada',
         mono: true,
         width: '160px',
-        render: (row) => formatDate(row.horarioChegadaEstimada),
+        render: (row) => (
+          <span title={formatDate(row.horarioChegadaEstimada)}>{formatRelativeTime(row.horarioChegadaEstimada)}</span>
+        ),
       },
       {
         key: 'status',

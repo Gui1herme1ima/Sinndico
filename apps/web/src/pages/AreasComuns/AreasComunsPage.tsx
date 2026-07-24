@@ -18,6 +18,7 @@ import { ReservaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { areasComunsApi } from '@/services/api/areasComunsApi';
 import { reservasApi } from '@/services/api/reservasApi';
 import type { ReservaListParams, ReservaResponse } from '@/services/api/types';
@@ -133,8 +134,10 @@ export function AreasComunsPage() {
         width: '170px',
         render: (row) => (
           <>
-            {formatDate(row.horaInicio)}
-            <span className="block text-[11px] text-text-muted">até {formatDate(row.horaFim)}</span>
+            <span title={formatDate(row.horaInicio)}>{formatRelativeTime(row.horaInicio)}</span>
+            <span className="block text-[11px] text-text-muted" title={formatDate(row.horaFim)}>
+              até {formatRelativeTime(row.horaFim)}
+            </span>
           </>
         ),
       },

@@ -16,6 +16,7 @@ import { EncomendaEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { encomendasApi } from '@/services/api/encomendasApi';
 import type { EncomendaListParams, EncomendaResponse } from '@/services/api/types';
 import { usersApi } from '@/services/api/usersApi';
@@ -89,10 +90,9 @@ export function EncomendasPage() {
     const cols: DataTableColumn<EncomendaResponse>[] = [
       {
         key: 'id',
-        header: 'Nº',
-        mono: true,
-        width: '90px',
-        render: (row) => `#${row.id.slice(0, 8)}`,
+        header: 'Protocolo',
+        width: '100px',
+        render: (row) => row.id.slice(0, 8),
       },
       {
         key: 'descricao',
@@ -142,7 +142,7 @@ export function EncomendasPage() {
         header: 'Chegou em',
         mono: true,
         width: '150px',
-        render: (row) => formatDate(row.horarioChegada),
+        render: (row) => <span title={formatDate(row.horarioChegada)}>{formatRelativeTime(row.horarioChegada)}</span>,
       },
       {
         key: 'status',
@@ -152,7 +152,9 @@ export function EncomendasPage() {
           <div>
             <Badge status={row.status}>{STATUS_LABELS[row.status]}</Badge>
             {row.assinado && row.dataAssinatura && (
-              <p className="mt-1 text-[11px] text-text-muted">assinada {formatDate(row.dataAssinatura)}</p>
+              <p className="mt-1 text-[11px] text-text-muted" title={formatDate(row.dataAssinatura)}>
+                assinada {formatRelativeTime(row.dataAssinatura)}
+              </p>
             )}
           </div>
         ),

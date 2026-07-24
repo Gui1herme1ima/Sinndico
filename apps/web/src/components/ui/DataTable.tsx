@@ -48,7 +48,7 @@ export function DataTable<T>({
               key={column.key}
               style={column.width ? { width: column.width } : undefined}
               className={cn(
-                'border-b border-border px-5 py-4 text-[11.5px] font-semibold uppercase tracking-[0.04em] text-text-muted',
+                'border-b border-border px-[22px] py-[17px] text-[11.5px] font-semibold uppercase tracking-[0.04em] text-text-muted',
                 alignClass[column.align ?? 'left'],
               )}
             >
@@ -91,7 +91,7 @@ export function DataTable<T>({
                   <td
                     key={column.key}
                     className={cn(
-                      'px-5 py-4 text-[13.5px] align-middle',
+                      'px-[22px] py-[17px] text-sm align-middle',
                       alignClass[column.align ?? 'left'],
                       column.mono && 'font-mono text-xs text-text-secondary',
                     )}

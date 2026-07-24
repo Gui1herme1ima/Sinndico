@@ -88,7 +88,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
     — trocaria a `DataTable`/`ListToolbar`/`Pagination` já reaproveitada em 6 telas (fatia
     4.2-4.4.1), custo alto sem ganho proporcional. Fica no protótipo só como referência histórica.
 
-- **Fatia 4.7.2 — Aplicar a direção A reformulada no app de verdade.** Levar pro código React o que
+- **Fatia 4.7.2 — Aplicar a direção A reformulada no app de verdade.** ✅ Concluída. Levar pro código React o que
   está validado em `docs/prototipos/fatia-4.7.1-direcoes.html` (cena "A", versão atual — abrir e
   clicar em "A · Elevação" no toolbar do protótipo pra ver exatamente o resultado esperado).
   Escopo obrigatório:

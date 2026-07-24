@@ -110,9 +110,11 @@ Line-height: `1.2` para display, `1.5` para corpo, `1.4` para dados/mono.
 
 ## 4. Ícones
 
-Outline · stroke 2px · grid 24px · `linecap`/`linejoin` round · `currentColor` (herda a cor do
+Outline · stroke 2.3px · grid 24px · `linecap`/`linejoin` round · `currentColor` (herda a cor do
 contexto, funciona em claro/escuro sem código extra) — o mesmo spec já usado em
 `apps/web/src/components/ui/icons.tsx` (ícones de UI: sol/lua, menu, fechar, sair, usuário etc.).
+Stroke promovido de 2px pra 2.3px na fatia 4.7.2 (era um ponto em aberto do protótipo da 4.7.1,
+decisão do usuário foi tornar padrão global em vez de restringir às telas de listagem).
 
 `brand-assets/assets/icons/` traz um segundo conjunto — ícones **de domínio**, um por módulo
 funcional, no mesmo estilo (drop-in direto, sem reconciliar spec): `solicitacao-manutencao`,
@@ -158,7 +160,8 @@ Estados: `default`, `hover`, `active`, `disabled`, `loading`.
 - `disabled`: opacidade 40%, `cursor: not-allowed`, sem hover.
 - `loading`: substitui o label por um spinner de 16px, mantém a largura do botão (evita layout shift).
 
-Tamanhos: `sm` (32px altura), `md` (40px, default), `lg` (48px).
+Tamanhos: `sm` (32px altura), `md` (44px, default — era 40px, promovido a padrão global na fatia
+4.7.2), `lg` (48px).
 
 ### 6.2 Card
 

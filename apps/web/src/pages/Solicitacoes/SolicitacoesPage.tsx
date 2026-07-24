@@ -14,6 +14,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { SolicitacaoEmptyIllustration } from '@/components/ui/illustrations';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { formatDate } from '@/lib/formatDate';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { solicitacoesApi } from '@/services/api/solicitacoesApi';
@@ -91,10 +92,9 @@ export function SolicitacoesPage() {
     const cols: DataTableColumn<SolicitacaoResponse>[] = [
       {
         key: 'id',
-        header: 'Nº',
-        mono: true,
-        width: '90px',
-        render: (row) => `#${row.id.slice(0, 8)}`,
+        header: 'Protocolo',
+        width: '100px',
+        render: (row) => row.id.slice(0, 8),
       },
       {
         key: 'titulo',
@@ -137,10 +137,10 @@ export function SolicitacoesPage() {
         width: '150px',
         render: (row) => (
           <>
-            {formatDate(row.dataCriacao)}
+            <span title={formatDate(row.dataCriacao)}>{formatRelativeTime(row.dataCriacao)}</span>
             {row.dataResolvimento && (
-              <span className="block text-[11px] text-text-muted">
-                resolvido {formatDate(row.dataResolvimento)}
+              <span className="block text-[11px] text-text-muted" title={formatDate(row.dataResolvimento)}>
+                resolvido {formatRelativeTime(row.dataResolvimento)}
               </span>
             )}
           </>

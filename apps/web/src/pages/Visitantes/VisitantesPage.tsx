@@ -16,6 +16,7 @@ import { VisitanteEmptyIllustration } from '@/components/ui/illustrations';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import type { VisitanteListParams, VisitanteResponse } from '@/services/api/types';
 import { usersApi } from '@/services/api/usersApi';
 import { visitantesApi } from '@/services/api/visitantesApi';
@@ -91,10 +92,9 @@ export function VisitantesPage() {
     const cols: DataTableColumn<VisitanteResponse>[] = [
       {
         key: 'id',
-        header: 'Nº',
-        mono: true,
-        width: '90px',
-        render: (row) => `#${row.id.slice(0, 8)}`,
+        header: 'Protocolo',
+        width: '100px',
+        render: (row) => row.id.slice(0, 8),
       },
       {
         key: 'nomeVisitante',
@@ -139,9 +139,17 @@ export function VisitantesPage() {
         width: '170px',
         render: (row) => (
           <>
-            {formatDate(row.dataVisita)}
-            {row.horaEntrada && <span className="block text-[11px] text-text-muted">entrada {formatDate(row.horaEntrada)}</span>}
-            {row.horaSaida && <span className="block text-[11px] text-text-muted">saída {formatDate(row.horaSaida)}</span>}
+            <span title={formatDate(row.dataVisita)}>{formatRelativeTime(row.dataVisita)}</span>
+            {row.horaEntrada && (
+              <span className="block text-[11px] text-text-muted" title={formatDate(row.horaEntrada)}>
+                entrada {formatRelativeTime(row.horaEntrada)}
+              </span>
+            )}
+            {row.horaSaida && (
+              <span className="block text-[11px] text-text-muted" title={formatDate(row.horaSaida)}>
+                saída {formatRelativeTime(row.horaSaida)}
+              </span>
+            )}
           </>
         ),
       },
