@@ -18,6 +18,7 @@ import encomendasRoutes from './routes/encomendas';
 import notificacoesRoutes from './routes/notificacoes';
 import reservasRoutes from './routes/reservas';
 import residenciasRoutes from './routes/residencias';
+import setoresRoutes from './routes/setores';
 import solicitacoesRoutes from './routes/solicitacoes';
 import usersRoutes from './routes/users';
 import visitantesRoutes from './routes/visitantes';
@@ -52,6 +53,7 @@ app.use('/api/areas-comuns', areasComunsRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/residencias', residenciasRoutes);
+app.use('/api/setores', setoresRoutes);
 app.use('/api/assembleias', assembleiasRoutes);
 app.use('/api/notificacoes', notificacoesRoutes);
 

@@ -1,38 +1,99 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 
-import { TenantContext } from '../database/tenantContext';
+import { withTenantContext } from '../database/tenantContext';
 import { ApiError } from '../middleware/errorHandler';
-import { findCondominioById } from '../models/Condominio';
 import {
   createResidencia,
   findConflictingResidencia,
   findResidenciaById,
-  listResidencias,
+  findSetorNomeByResidenciaId,
+  listResidenciasPorSetor,
+  listTodasResidencias,
   Residencia,
+  ResidenciaComContagem,
+  ResidenciaComSetorInfo,
   updateResidencia,
 } from '../models/Residencia';
+import { findSetorById, listSetores } from '../models/Setor';
+import { Encomenda } from '../models/Encomenda';
+import { Solicitacao } from '../models/Solicitacao';
+import { User } from '../models/User';
+import { Visitante } from '../models/Visitante';
+
+// Mappers "resumo" (só o que a aba de detalhe da residência precisa exibir em lista) — mais
+// enxutos que os toXxxResponse privados dos controllers de origem, que não são exportados.
+function toMoradorResumoResponse(user: User) {
+  return {
+    id: user.id,
+    nome: user.nome,
+    email: user.email,
+    telefone: user.telefone,
+    apto: user.apto,
+  };
+}
+
+function toVisitanteResumoResponse(visitante: Visitante) {
+  return {
+    id: visitante.id,
+    nomeVisitante: visitante.nome_visitante,
+    dataVisita: visitante.data_visita,
+    status: visitante.status,
+  };
+}
+
+function toEncomendaResumoResponse(encomenda: Encomenda) {
+  return {
+    id: encomenda.id,
+    descricao: encomenda.descricao,
+    horarioChegada: encomenda.horario_chegada,
+    status: encomenda.status,
+  };
+}
+
+function toSolicitacaoResumoResponse(solicitacao: Solicitacao) {
+  return {
+    id: solicitacao.id,
+    titulo: solicitacao.titulo,
+    categoria: solicitacao.categoria,
+    status: solicitacao.status,
+    prioridade: solicitacao.prioridade,
+    dataCriacao: solicitacao.data_criacao,
+  };
+}
 
 export const createResidenciaSchema = z.object({
-  bloco: z.string().min(1).optional(),
-  rua: z.string().min(1).optional(),
+  setorId: z.string().uuid(),
   numero: z.string().min(1),
 });
 
 export const updateResidenciaSchema = createResidenciaSchema;
 
+// A planilha não tem o UUID do setor — vem o nome (ex.: "Bloco A"), resolvido contra os setores
+// já cadastrados do tenant antes de inserir (ver importar()).
+export const importarResidenciaLinhaSchema = z.object({
+  setor: z.string().min(1),
+  numero: z.string().min(1),
+});
+
 export const importarResidenciasSchema = z.object({
-  residencias: z.array(createResidenciaSchema).min(1).max(500),
+  residencias: z.array(importarResidenciaLinhaSchema).min(1).max(500),
 });
 
 function toResidenciaResponse(residencia: Residencia) {
   return {
     id: residencia.id,
     condominioId: residencia.condominio_id,
-    bloco: residencia.bloco,
-    rua: residencia.rua,
+    setorId: residencia.setor_id,
     numero: residencia.numero,
     createdAt: residencia.created_at,
+  };
+}
+
+function toResidenciaComContagemResponse(residencia: ResidenciaComContagem) {
+  return {
+    ...toResidenciaResponse(residencia),
+    moradoresCount: Number(residencia.moradores_count),
   };
 }
 
@@ -40,47 +101,25 @@ function tenantContextOf(req: Request) {
   return { userId: req.user!.id, condominioId: req.user!.condominioId };
 }
 
-// A obrigatoriedade de bloco vs rua depende do tipo do condomínio (linha de outra tabela), então não
-// dá pra validar só no Zod — resolve aqui e devolve os dois campos já normalizados (o que não se aplica
-// ao tipo do condomínio sempre vira null, nunca fica com lixo da requisição).
-async function normalizarBlocoRua(
-  condominioId: string,
-  input: { bloco?: string; rua?: string }
-): Promise<{ bloco: string | null; rua: string | null }> {
-  const condominio = await findCondominioById(condominioId);
-  if (!condominio) {
-    throw new ApiError(404, 'Condomínio não encontrado');
-  }
-
-  if (condominio.tipo_residencia === 'apartamento') {
-    if (!input.bloco) {
-      throw new ApiError(400, 'Bloco é obrigatório para condomínios do tipo apartamento');
-    }
-    return { bloco: input.bloco, rua: null };
-  }
-
-  if (!input.rua) {
-    throw new ApiError(400, 'Rua é obrigatória para condomínios do tipo casa');
-  }
-  return { bloco: null, rua: input.rua };
-}
-
-// Compartilhada por create() e importar() — checa bloco/rua vs tipo do condomínio, duplicidade, e
-// insere. Lança ApiError igual ao caminho de criação individual; importar() captura por linha em vez
-// de deixar propagar, pra uma linha ruim não derrubar as outras.
+// Compartilhada por create() e importar() — checa se o setor existe e pertence ao tenant,
+// checa duplicidade de número dentro do setor, e insere. Lança ApiError igual ao caminho de
+// criação individual; importar() captura por linha em vez de deixar propagar.
 async function criarUmaResidencia(
   condominioId: string,
-  ctx: TenantContext,
-  input: { bloco?: string; rua?: string; numero: string }
+  ctx: ReturnType<typeof tenantContextOf>,
+  input: { setorId: string; numero: string }
 ): Promise<Residencia> {
-  const { bloco, rua } = await normalizarBlocoRua(condominioId, input);
-
-  const conflito = await findConflictingResidencia(ctx, { bloco, rua, numero: input.numero });
-  if (conflito) {
-    throw new ApiError(409, 'Já existe uma residência cadastrada com esse bloco/rua e número');
+  const setor = await findSetorById(ctx, input.setorId);
+  if (!setor) {
+    throw new ApiError(404, 'Setor não encontrado');
   }
 
-  return createResidencia(ctx, { condominioId, bloco, rua, numero: input.numero });
+  const conflito = await findConflictingResidencia(ctx, { setorId: input.setorId, numero: input.numero });
+  if (conflito) {
+    throw new ApiError(409, 'Já existe uma residência cadastrada com esse número neste setor');
+  }
+
+  return createResidencia(ctx, { condominioId, setorId: input.setorId, numero: input.numero });
 }
 
 export async function create(req: Request, res: Response) {
@@ -99,12 +138,20 @@ export async function importar(req: Request, res: Response) {
   const condominioId = req.user!.condominioId!;
   const ctx = tenantContextOf(req);
 
+  const setores = await listSetores(ctx);
+  const setorIdPorNome = new Map(setores.map((s) => [s.nome.toLowerCase(), s.id]));
+
   let criadas = 0;
   const erros: { linha: number; motivo: string }[] = [];
 
   for (let i = 0; i < input.residencias.length; i++) {
+    const linha = input.residencias[i];
     try {
-      await criarUmaResidencia(condominioId, ctx, input.residencias[i]);
+      const setorId = setorIdPorNome.get(linha.setor.toLowerCase());
+      if (!setorId) {
+        throw new ApiError(404, 'Setor não encontrado para o nome informado');
+      }
+      await criarUmaResidencia(condominioId, ctx, { setorId, numero: linha.numero });
       criadas++;
     } catch (err) {
       erros.push({ linha: i + 1, motivo: err instanceof ApiError ? err.message : 'Erro inesperado' });
@@ -114,9 +161,34 @@ export async function importar(req: Request, res: Response) {
   res.json({ criadas, erros });
 }
 
+export const listResidenciasQuerySchema = z.object({
+  setorId: z.string().uuid().optional(),
+  search: z.string().optional(),
+});
+
+function toResidenciaComSetorResponse(residencia: ResidenciaComSetorInfo) {
+  return {
+    ...toResidenciaResponse(residencia),
+    setorNome: residencia.setor_nome,
+    setorTipo: residencia.setor_tipo,
+  };
+}
+
+// Sem setorId: lista achatada de todas as residências do tenant, com o setor resolvido — usada
+// pelo seletor de residência de Moradores (fora do contexto de um setor específico). Com setorId:
+// listagem por setor (drill-down da tela de Setores), com contagem de moradores por residência.
 export async function list(req: Request, res: Response) {
-  const residencias = await listResidencias(tenantContextOf(req));
-  res.json(residencias.map(toResidenciaResponse));
+  const { setorId, search } = listResidenciasQuerySchema.parse(req.query);
+  const ctx = tenantContextOf(req);
+
+  if (!setorId) {
+    const residencias = await listTodasResidencias(ctx);
+    res.json(residencias.map(toResidenciaComSetorResponse));
+    return;
+  }
+
+  const residencias = await listResidenciasPorSetor(ctx, setorId, search);
+  res.json(residencias.map(toResidenciaComContagemResponse));
 }
 
 export async function getById(req: Request, res: Response) {
@@ -133,20 +205,77 @@ export async function getById(req: Request, res: Response) {
 export async function update(req: Request, res: Response) {
   const id = z.string().uuid().parse(req.params.id);
   const input = updateResidenciaSchema.parse(req.body);
-  const condominioId = req.user!.condominioId!;
   const ctx = tenantContextOf(req);
 
-  const { bloco, rua } = await normalizarBlocoRua(condominioId, input);
-
-  const conflito = await findConflictingResidencia(ctx, { bloco, rua, numero: input.numero }, id);
-  if (conflito) {
-    throw new ApiError(409, 'Já existe uma residência cadastrada com esse bloco/rua e número');
+  const setor = await findSetorById(ctx, input.setorId);
+  if (!setor) {
+    throw new ApiError(404, 'Setor não encontrado');
   }
 
-  const residencia = await updateResidencia(ctx, id, { bloco, rua, numero: input.numero });
+  const conflito = await findConflictingResidencia(ctx, { setorId: input.setorId, numero: input.numero }, id);
+  if (conflito) {
+    throw new ApiError(409, 'Já existe uma residência cadastrada com esse número neste setor');
+  }
+
+  const residencia = await updateResidencia(ctx, id, { setorId: input.setorId, numero: input.numero });
   if (!residencia) {
     throw new ApiError(404, 'Residência não encontrada');
   }
 
   res.json(toResidenciaResponse(residencia));
+}
+
+// Fatia 4.10.2 — agrega tudo que está vinculado à residência numa única resposta, pra tela de
+// detalhe montar as abas sem múltiplos round-trips. Visitantes/encomendas/solicitações não têm
+// residencia_id direto (só morador_id), então filtra via subquery pelos moradores da residência.
+export async function getDetalhe(req: Request, res: Response) {
+  const id = z.string().uuid().parse(req.params.id);
+  const ctx = tenantContextOf(req);
+
+  const residencia = await findResidenciaById(ctx, id);
+  if (!residencia) {
+    throw new ApiError(404, 'Residência não encontrada');
+  }
+
+  const setor = await findSetorNomeByResidenciaId(ctx, residencia.setor_id);
+
+  const detalhe = await withTenantContext(ctx, async (client) => {
+    const [moradores, visitantes, encomendas, solicitacoes] = await Promise.all([
+      client.query<User>('SELECT * FROM users WHERE residencia_id = $1 ORDER BY nome', [id]),
+      client.query<Visitante>(
+        `SELECT * FROM visitantes
+         WHERE morador_id IN (SELECT id FROM users WHERE residencia_id = $1)
+         ORDER BY data_visita DESC`,
+        [id]
+      ),
+      client.query<Encomenda>(
+        `SELECT * FROM encomendas
+         WHERE morador_id IN (SELECT id FROM users WHERE residencia_id = $1)
+         ORDER BY horario_chegada DESC`,
+        [id]
+      ),
+      client.query<Solicitacao>(
+        `SELECT * FROM chamados
+         WHERE morador_id IN (SELECT id FROM users WHERE residencia_id = $1)
+         ORDER BY data_criacao DESC`,
+        [id]
+      ),
+    ]);
+
+    return {
+      moradores: moradores.rows.map(toMoradorResumoResponse),
+      visitantes: visitantes.rows.map(toVisitanteResumoResponse),
+      encomendas: encomendas.rows.map(toEncomendaResumoResponse),
+      solicitacoes: solicitacoes.rows.map(toSolicitacaoResumoResponse),
+    };
+  });
+
+  res.json({
+    residencia: {
+      ...toResidenciaResponse(residencia),
+      setorNome: setor?.nome ?? null,
+      setorTipo: setor?.tipo ?? null,
+    },
+    ...detalhe,
+  });
 }

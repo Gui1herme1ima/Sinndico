@@ -7,9 +7,7 @@ import { Select } from '@/components/ui/Select';
 import type { MoradorResponse, ResidenciaResponse } from '@/services/api/types';
 
 function labelResidencia(residencia: ResidenciaResponse): string {
-  return residencia.bloco
-    ? `Bloco ${residencia.bloco} — ${residencia.numero}`
-    : `${residencia.rua}, ${residencia.numero}`;
+  return `${residencia.setorNome} — ${residencia.numero}`;
 }
 
 export interface MoradorDetailPayload {
@@ -30,10 +28,7 @@ export function MoradorDetail({ morador, residencias, pending, hasError, onSave 
   const [nome, setNome] = useState(morador.nome);
   const [telefone, setTelefone] = useState(morador.telefone ?? '');
   const residenciaAtual = residencias.find(
-    (r) =>
-      r.bloco === morador.residencia?.bloco &&
-      r.rua === morador.residencia?.rua &&
-      r.numero === morador.residencia?.numero,
+    (r) => r.setorNome === morador.residencia?.setorNome && r.numero === morador.residencia?.numero,
   );
   const [residenciaId, setResidenciaId] = useState(residenciaAtual?.id ?? residencias[0]?.id ?? '');
 

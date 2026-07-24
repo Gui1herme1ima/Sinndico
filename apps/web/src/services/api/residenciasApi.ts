@@ -3,13 +3,23 @@ import type {
   CreateResidenciaPayload,
   ImportarResidenciasPayload,
   ImportarResultado,
+  ResidenciaDetalheResponse,
   ResidenciaResponse,
   UpdateResidenciaPayload,
 } from '@/services/api/types';
 
 export const residenciasApi = {
-  list(): Promise<ResidenciaResponse[]> {
-    return apiFetch<ResidenciaResponse[]>('/api/residencias');
+  // Sem setorId: lista achatada de todas as residências (usada pelo seletor de Moradores).
+  list(setorId?: string, search?: string): Promise<ResidenciaResponse[]> {
+    const params = new URLSearchParams();
+    if (setorId) params.set('setorId', setorId);
+    if (search) params.set('search', search);
+    const query = params.toString();
+    return apiFetch<ResidenciaResponse[]>(`/api/residencias${query ? `?${query}` : ''}`);
+  },
+
+  getDetalhe(id: string): Promise<ResidenciaDetalheResponse> {
+    return apiFetch<ResidenciaDetalheResponse>(`/api/residencias/${id}/detalhe`);
   },
 
   create(payload: CreateResidenciaPayload): Promise<ResidenciaResponse> {

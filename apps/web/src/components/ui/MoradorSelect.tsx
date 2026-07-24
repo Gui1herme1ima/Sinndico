@@ -9,8 +9,8 @@ import type { MoradorDiretorioResponse, ResidenciaResumo } from '@/services/api/
 
 export function formatResidencia(residencia: ResidenciaResumo | null): string {
   if (!residencia) return '';
-  const { bloco, rua, numero } = residencia;
-  return bloco ? `Bloco ${bloco} — ${numero}` : `${rua}, ${numero}`;
+  const { setorNome, numero } = residencia;
+  return `${setorNome} — ${numero}`;
 }
 
 export function labelMorador(morador: MoradorDiretorioResponse): string {

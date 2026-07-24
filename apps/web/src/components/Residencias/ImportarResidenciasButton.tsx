@@ -8,8 +8,8 @@ import { ApiError } from '@/services/api/client';
 import { residenciasApi } from '@/services/api/residenciasApi';
 import type { ImportarResultado } from '@/services/api/types';
 
-// Colunas esperadas na planilha: bloco (ou rua) + numero — mesmas regras condicionais do form de
-// cadastro individual, aplicadas linha a linha no backend (ver residenciaController.importar).
+// Colunas esperadas na planilha: setor (nome já cadastrado) + numero — resolvidas linha a linha
+// contra os setores do tenant no backend (ver residenciaController.importar).
 export function ImportarResidenciasButton() {
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -17,7 +17,7 @@ export function ImportarResidenciasButton() {
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (residencias: { bloco?: string; rua?: string; numero: string }[]) =>
+    mutationFn: (residencias: { setor: string; numero: string }[]) =>
       residenciasApi.importar({ residencias }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['residencias'] });
@@ -41,15 +41,14 @@ export function ImportarResidenciasButton() {
     try {
       const linhas = await parseSpreadsheetFile(file);
       const residencias = linhas
-        .filter((linha) => linha.numero)
+        .filter((linha) => linha.numero && linha.setor)
         .map((linha) => ({
-          bloco: linha.bloco || undefined,
-          rua: linha.rua || undefined,
+          setor: linha.setor,
           numero: linha.numero,
         }));
 
       if (residencias.length === 0) {
-        setError('Nenhuma linha com a coluna "numero" preenchida foi encontrada no arquivo.');
+        setError('Nenhuma linha com as colunas "setor" e "numero" preenchidas foi encontrada no arquivo.');
         return;
       }
 

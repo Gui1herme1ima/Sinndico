@@ -26,8 +26,11 @@ const ChangePasswordPage = lazy(() =>
 const DashboardPage = lazy(() =>
   import('@/pages/Dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })),
 );
-const ResidenciasPage = lazy(() =>
-  import('@/pages/Residencias/ResidenciasPage').then((m) => ({ default: m.ResidenciasPage })),
+const SetoresPage = lazy(() =>
+  import('@/pages/Residencias/SetoresPage').then((m) => ({ default: m.SetoresPage })),
+);
+const SetorResidenciasPage = lazy(() =>
+  import('@/pages/Residencias/SetorResidenciasPage').then((m) => ({ default: m.SetorResidenciasPage })),
 );
 const MoradoresPage = lazy(() =>
   import('@/pages/Moradores/MoradoresPage').then((m) => ({ default: m.MoradoresPage })),
@@ -126,7 +129,15 @@ export function AppRoutes() {
             path="residencias"
             element={
               <RequireAuth roles={['admin']}>
-                <ResidenciasPage />
+                <SetoresPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="residencias/:setorId"
+            element={
+              <RequireAuth roles={['admin']}>
+                <SetorResidenciasPage />
               </RequireAuth>
             }
           />

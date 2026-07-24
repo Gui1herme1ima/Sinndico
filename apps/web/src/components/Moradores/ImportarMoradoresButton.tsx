@@ -8,8 +8,8 @@ import { ApiError } from '@/services/api/client';
 import { usersApi } from '@/services/api/usersApi';
 import type { ImportarResultado } from '@/services/api/types';
 
-// Colunas esperadas: nome, email, telefone (opcional), bloco (ou rua), numero — a residência é
-// casada por bloco/rua+número contra as já cadastradas (o CSV não tem o UUID), ver
+// Colunas esperadas: nome, email, telefone (opcional), setor, numero — a residência é casada por
+// nome-do-setor+número contra as já cadastradas (o CSV não tem o UUID), ver
 // userController.importarMoradores.
 export function ImportarMoradoresButton() {
   const queryClient = useQueryClient();
@@ -19,7 +19,7 @@ export function ImportarMoradoresButton() {
 
   const mutation = useMutation({
     mutationFn: (
-      moradores: { nome: string; email: string; telefone?: string; bloco?: string; rua?: string; numero: string }[]
+      moradores: { nome: string; email: string; telefone?: string; setor: string; numero: string }[]
     ) => usersApi.importarMoradores({ moradores }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['moradores'] });
@@ -43,18 +43,17 @@ export function ImportarMoradoresButton() {
     try {
       const linhas = await parseSpreadsheetFile(file);
       const moradores = linhas
-        .filter((linha) => linha.nome && linha.email && linha.numero)
+        .filter((linha) => linha.nome && linha.email && linha.setor && linha.numero)
         .map((linha) => ({
           nome: linha.nome,
           email: linha.email,
           telefone: linha.telefone || undefined,
-          bloco: linha.bloco || undefined,
-          rua: linha.rua || undefined,
+          setor: linha.setor,
           numero: linha.numero,
         }));
 
       if (moradores.length === 0) {
-        setError('Nenhuma linha com nome/email/numero preenchidos foi encontrada no arquivo.');
+        setError('Nenhuma linha com nome/email/setor/numero preenchidos foi encontrada no arquivo.');
         return;
       }
 

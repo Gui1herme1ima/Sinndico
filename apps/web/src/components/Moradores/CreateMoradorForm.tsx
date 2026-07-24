@@ -10,9 +10,7 @@ import { usersApi } from '@/services/api/usersApi';
 import type { ResidenciaResponse } from '@/services/api/types';
 
 function labelResidencia(residencia: ResidenciaResponse): string {
-  return residencia.bloco
-    ? `Bloco ${residencia.bloco} — ${residencia.numero}`
-    : `${residencia.rua}, ${residencia.numero}`;
+  return `${residencia.setorNome} — ${residencia.numero}`;
 }
 
 export interface CreateMoradorFormProps {

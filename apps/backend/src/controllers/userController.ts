@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 
 import { ApiError } from '../middleware/errorHandler';
-import { findResidenciaById, listResidencias, Residencia } from '../models/Residencia';
+import { findResidenciaById, listResidenciasComSetorParaTenant, ResidenciaComSetorNome } from '../models/Residencia';
 import {
   findUserByIdForTenant,
   findUserByUsername,
@@ -66,8 +66,7 @@ export const importarMoradoresSchema = z.object({
         nome: z.string().min(1),
         email: z.string().email(),
         telefone: z.string().optional(),
-        bloco: z.string().optional(),
-        rua: z.string().optional(),
+        setor: z.string().min(1),
         numero: z.string().min(1),
       })
     )
@@ -89,10 +88,10 @@ function toUserResponse(user: User | UserComResidencia) {
     telefone: user.telefone,
     role: user.role,
     residencia:
-      'residencia_bloco' in comResidencia && user.residencia_id
+      'residencia_setor_nome' in comResidencia && user.residencia_id
         ? {
-            bloco: comResidencia.residencia_bloco,
-            rua: comResidencia.residencia_rua,
+            setorNome: comResidencia.residencia_setor_nome,
+            setorTipo: comResidencia.residencia_setor_tipo,
             numero: comResidencia.residencia_numero,
           }
         : null,
@@ -183,19 +182,20 @@ export async function create(req: Request, res: Response) {
   res.status(201).json({ ...toUserResponse(user), senhaTemporaria });
 }
 
-function chaveResidencia(residencia: Pick<Residencia, 'bloco' | 'rua' | 'numero'>): string {
-  return `${residencia.bloco ?? ''}|${residencia.rua ?? ''}|${residencia.numero}`.toLowerCase();
+function chaveResidencia(residencia: Pick<ResidenciaComSetorNome, 'setor_nome' | 'numero'>): string {
+  return `${residencia.setor_nome}|${residencia.numero}`.toLowerCase();
 }
 
-// Importação em massa (Fatia 6) — o CSV/XLSX não tem residenciaId (UUID), então resolve por bloco/rua+
-// número contra a lista de residências do tenant (busca uma vez, não uma query por linha). Parcial de
-// propósito, mesmo espírito de residenciaController.importar: uma linha ruim não derruba as outras.
+// Importação em massa (Fatia 6) — o CSV/XLSX não tem residenciaId (UUID), então resolve por nome-do-
+// setor + número contra a lista de residências do tenant (busca uma vez, não uma query por linha).
+// Parcial de propósito, mesmo espírito de residenciaController.importar: uma linha ruim não derruba
+// as outras.
 export async function importarMoradores(req: Request, res: Response) {
   const input = importarMoradoresSchema.parse(req.body);
   const condominioId = req.user!.condominioId!;
   const ctx = tenantContextOf(req);
 
-  const residencias = await listResidencias(ctx);
+  const residencias = await listResidenciasComSetorParaTenant(ctx);
   const residenciaPorChave = new Map(residencias.map((r) => [chaveResidencia(r), r.id]));
 
   let criadas = 0;
@@ -205,10 +205,10 @@ export async function importarMoradores(req: Request, res: Response) {
     const linha = input.moradores[i];
     try {
       const residenciaId = residenciaPorChave.get(
-        chaveResidencia({ bloco: linha.bloco ?? null, rua: linha.rua ?? null, numero: linha.numero })
+        chaveResidencia({ setor_nome: linha.setor, numero: linha.numero })
       );
       if (!residenciaId) {
-        throw new ApiError(404, 'Residência não encontrada para o bloco/rua e número informados');
+        throw new ApiError(404, 'Residência não encontrada para o setor e número informados');
       }
 
       await criarUmMorador(condominioId, { ...linha, residenciaId });
@@ -232,7 +232,7 @@ export async function diretorioMoradores(req: Request, res: Response) {
       id: m.id,
       nome: m.nome,
       residencia: m.residencia_id
-        ? { bloco: m.residencia_bloco, rua: m.residencia_rua, numero: m.residencia_numero }
+        ? { setorNome: m.residencia_setor_nome, setorTipo: m.residencia_setor_tipo, numero: m.residencia_numero }
         : null,
     }))
   );

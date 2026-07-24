@@ -47,8 +47,8 @@ export interface CreateUserInput {
 // Resumo de residência embutido na listagem de usuários (Moradores), pra tela não precisar de uma
 // segunda chamada só pra saber a unidade de cada morador.
 export interface UserComResidencia extends User {
-  residencia_bloco: string | null;
-  residencia_rua: string | null;
+  residencia_setor_nome: string | null;
+  residencia_setor_tipo: string | null;
   residencia_numero: string | null;
 }
 
@@ -143,9 +143,11 @@ export async function listUsersForTenant(ctx: TenantContext, roles?: UserRole[])
     const where = roles && roles.length > 0 ? 'WHERE u.role = ANY($1)' : '';
     const params = roles && roles.length > 0 ? [roles] : [];
     const result = await client.query<UserComResidencia>(
-      `SELECT u.*, r.bloco AS residencia_bloco, r.rua AS residencia_rua, r.numero AS residencia_numero
+      `SELECT u.*, s.nome AS residencia_setor_nome, s.tipo AS residencia_setor_tipo,
+              r.numero AS residencia_numero
        FROM users u
        LEFT JOIN residencias r ON r.id = u.residencia_id
+       LEFT JOIN setores s ON s.id = r.setor_id
        ${where}
        ORDER BY u.nome`,
       params
@@ -191,10 +193,12 @@ export async function listUsersForTenantPaginated(ctx: TenantContext, filter: Li
     params.push(filter.limit, filter.offset);
 
     const result = await client.query<UserComResidencia & { total_count: string }>(
-      `SELECT u.*, r.bloco AS residencia_bloco, r.rua AS residencia_rua, r.numero AS residencia_numero,
+      `SELECT u.*, s.nome AS residencia_setor_nome, s.tipo AS residencia_setor_tipo,
+              r.numero AS residencia_numero,
               COUNT(*) OVER() AS total_count
        FROM users u
        LEFT JOIN residencias r ON r.id = u.residencia_id
+       LEFT JOIN setores s ON s.id = r.setor_id
        ${where}
        ORDER BY ${filter.sortColumn} ${filter.sortOrder}
        LIMIT $${i++} OFFSET $${i++}`,

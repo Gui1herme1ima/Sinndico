@@ -186,6 +186,20 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
 
 ### Bloco C — Módulos novos (ordem de valor)
 
+- **Fatia 4.10.1 — Residências: Setores + listagem agrupada.** ✅ Concluída. Tela de Residências vira a
+  entrada principal de organização do condomínio. Nova entidade **Setor** (tabela `setores`:
+  nome + tipo extensível — Bloco, Rua, Quadra, Torre, Outro) substitui os campos soltos
+  `bloco`/`rua` de `residencias` (migração com backfill dos dados existentes). Residência só
+  pode ser cadastrada dentro de um Setor já existente. Tela inicial: listagem de Setores
+  (StatTile com residências/moradores por setor, ListToolbar com busca) — botão "Cadastrar
+  residência" antigo vira "Cadastrar setor". Clicar num Setor abre a listagem de residências
+  daquele setor (busca própria) com botão "Cadastrar residência". `condominios.tipo_residencia`
+  deixa de decidir bloco-vs-rua globalmente.
+- **Fatia 4.10.2 — Detalhe de residência em abas.** Clicar numa residência abre tela de detalhe
+  com abas (componente `Tabs` novo, reutilizável): Moradores (cadastro direto vinculado à
+  residência), Visitantes, Encomendas, Solicitações (via JOIN por `morador_id` — sem
+  denormalizar `residencia_id` nessas tabelas), e placeholders desabilitados para Financeiro e
+  Veículos ("em breve", habilitados nas fatias 4.11/4.17 quando esses módulos existirem).
 - **Fatia 4.11 — Financeiro (cobranças).** Taxa condominial por residência, geração de cobranças
   mensais, registro de pagamento, inadimplência visível no admin. Integração de boleto/PIX fica pra
   depois — começar com controle manual.

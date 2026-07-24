@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { create, getById, getDetalhe, importar, list, update } from '../controllers/residenciaController';
+import { create, getById, list, update } from '../controllers/setorController';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { authenticate, authorize } from '../middleware/auth';
 
@@ -10,10 +10,8 @@ router.use(asyncHandler(authenticate));
 router.use(authorize('admin'));
 
 router.post('/', asyncHandler(create));
-router.post('/importar', asyncHandler(importar));
 router.get('/', asyncHandler(list));
 router.get('/:id', asyncHandler(getById));
-router.get('/:id/detalhe', asyncHandler(getDetalhe));
 router.patch('/:id', asyncHandler(update));
 
 export default router;

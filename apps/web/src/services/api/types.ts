@@ -227,25 +227,79 @@ export interface CondominioAtualResponse {
 
 export type UpdatePermissoesPorteiroPayload = PermissoesPorteiro;
 
+export type SetorTipo = 'bloco' | 'rua' | 'quadra' | 'torre' | 'outro';
+
+export interface SetorResponse {
+  id: string;
+  condominioId: string;
+  nome: string;
+  tipo: SetorTipo;
+  residenciasCount: number;
+  moradoresCount: number;
+  createdAt: string;
+}
+
+export interface CreateSetorPayload {
+  nome: string;
+  tipo: SetorTipo;
+}
+
+export interface UpdateSetorPayload {
+  nome: string;
+  tipo: SetorTipo;
+}
+
 export interface ResidenciaResponse {
   id: string;
   condominioId: string;
-  bloco: string | null;
-  rua: string | null;
+  setorId: string;
   numero: string;
+  moradoresCount?: number;
+  // presentes só na listagem achatada (sem setorId no filtro), usada pelo seletor de Moradores.
+  setorNome?: string;
+  setorTipo?: SetorTipo;
   createdAt: string;
 }
 
 export interface CreateResidenciaPayload {
-  bloco?: string;
-  rua?: string;
+  setorId: string;
   numero: string;
 }
 
 export interface UpdateResidenciaPayload {
-  bloco?: string;
-  rua?: string;
+  setorId: string;
   numero: string;
+}
+
+export interface ResidenciaDetalheResponse {
+  residencia: ResidenciaResponse & { setorNome: string | null; setorTipo: SetorTipo | null };
+  moradores: {
+    id: string;
+    nome: string;
+    email: string | null;
+    telefone: string | null;
+    apto: string | null;
+  }[];
+  visitantes: {
+    id: string;
+    nomeVisitante: string;
+    dataVisita: string;
+    status: VisitanteStatus;
+  }[];
+  encomendas: {
+    id: string;
+    descricao: string | null;
+    horarioChegada: string;
+    status: EncomendaStatus;
+  }[];
+  solicitacoes: {
+    id: string;
+    titulo: string;
+    categoria: SolicitacaoCategoria;
+    status: SolicitacaoStatus;
+    prioridade: SolicitacaoPrioridade;
+    dataCriacao: string;
+  }[];
 }
 
 export type VisitanteStatus = 'aprovado' | 'bloqueado' | 'ativo';
@@ -344,8 +398,8 @@ export interface ReservaListParams extends ListParams {
 }
 
 export interface ResidenciaResumo {
-  bloco: string | null;
-  rua: string | null;
+  setorNome: string | null;
+  setorTipo: SetorTipo | null;
   numero: string | null;
 }
 
@@ -461,7 +515,7 @@ export interface ImportarResultado {
 }
 
 export interface ImportarResidenciasPayload {
-  residencias: Array<{ bloco?: string; rua?: string; numero: string }>;
+  residencias: Array<{ setor: string; numero: string }>;
 }
 
 export interface ImportarMoradoresPayload {
@@ -469,8 +523,7 @@ export interface ImportarMoradoresPayload {
     nome: string;
     email: string;
     telefone?: string;
-    bloco?: string;
-    rua?: string;
+    setor: string;
     numero: string;
   }>;
 }
