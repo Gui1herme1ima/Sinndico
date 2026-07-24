@@ -195,7 +195,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   residência" antigo vira "Cadastrar setor". Clicar num Setor abre a listagem de residências
   daquele setor (busca própria) com botão "Cadastrar residência". `condominios.tipo_residencia`
   deixa de decidir bloco-vs-rua globalmente.
-- **Fatia 4.10.2 — Detalhe de residência em abas.** Clicar numa residência abre tela de detalhe
+- **Fatia 4.10.2 — Detalhe de residência em abas.** ✅ Concluída. Clicar numa residência abre tela de detalhe
   com abas (componente `Tabs` novo, reutilizável): Moradores (cadastro direto vinculado à
   residência), Visitantes, Encomendas, Solicitações (via JOIN por `morador_id` — sem
   denormalizar `residencia_id` nessas tabelas), e placeholders desabilitados para Financeiro e

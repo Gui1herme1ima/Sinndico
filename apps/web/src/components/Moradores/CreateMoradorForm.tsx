@@ -15,15 +15,18 @@ function labelResidencia(residencia: ResidenciaResponse): string {
 
 export interface CreateMoradorFormProps {
   residencias: ResidenciaResponse[];
+  /** Fixa a residência (ex.: chamado a partir da aba Moradores do detalhe de uma residência) e
+   * omite o Select — o admin escolhe livremente só quando isso não é passado. */
+  residenciaId?: string;
   onSuccess?: () => void;
 }
 
-export function CreateMoradorForm({ residencias, onSuccess }: CreateMoradorFormProps) {
+export function CreateMoradorForm({ residencias, residenciaId: residenciaIdFixa, onSuccess }: CreateMoradorFormProps) {
   const queryClient = useQueryClient();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [residenciaId, setResidenciaId] = useState(residencias[0]?.id ?? '');
+  const [residenciaId, setResidenciaId] = useState(residenciaIdFixa ?? residencias[0]?.id ?? '');
   const [error, setError] = useState<string | null>(null);
   const [senhaGerada, setSenhaGerada] = useState<string | null>(null);
 
@@ -38,6 +41,7 @@ export function CreateMoradorForm({ residencias, onSuccess }: CreateMoradorFormP
       }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['moradores'] });
+      queryClient.invalidateQueries({ queryKey: ['residencia-detalhe', residenciaId] });
       setSenhaGerada(response.senhaTemporaria);
       setNome('');
       setEmail('');
@@ -54,7 +58,7 @@ export function CreateMoradorForm({ residencias, onSuccess }: CreateMoradorFormP
     mutation.mutate();
   }
 
-  if (residencias.length === 0) {
+  if (!residenciaIdFixa && residencias.length === 0) {
     return (
       <p className="text-sm text-text-secondary">
         Cadastre ao menos uma residência antes de poder vincular um morador a ela.
@@ -86,12 +90,14 @@ export function CreateMoradorForm({ residencias, onSuccess }: CreateMoradorFormP
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <Input label="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
       <Input label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      <Select
-        label="Residência"
-        value={residenciaId}
-        onChange={(e) => setResidenciaId(e.target.value)}
-        options={residencias.map((r) => ({ value: r.id, label: labelResidencia(r) }))}
-      />
+      {!residenciaIdFixa && (
+        <Select
+          label="Residência"
+          value={residenciaId}
+          onChange={(e) => setResidenciaId(e.target.value)}
+          options={residencias.map((r) => ({ value: r.id, label: labelResidencia(r) }))}
+        />
+      )}
       <Input label="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
 
       {error && <p className="text-sm text-danger">{error}</p>}

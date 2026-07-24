@@ -32,6 +32,9 @@ const SetoresPage = lazy(() =>
 const SetorResidenciasPage = lazy(() =>
   import('@/pages/Residencias/SetorResidenciasPage').then((m) => ({ default: m.SetorResidenciasPage })),
 );
+const ResidenciaDetalhePage = lazy(() =>
+  import('@/pages/Residencias/ResidenciaDetalhePage').then((m) => ({ default: m.ResidenciaDetalhePage })),
+);
 const MoradoresPage = lazy(() =>
   import('@/pages/Moradores/MoradoresPage').then((m) => ({ default: m.MoradoresPage })),
 );
@@ -138,6 +141,14 @@ export function AppRoutes() {
             element={
               <RequireAuth roles={['admin']}>
                 <SetorResidenciasPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="residencias/:setorId/:residenciaId"
+            element={
+              <RequireAuth roles={['admin']}>
+                <ResidenciaDetalhePage />
               </RequireAuth>
             }
           />
