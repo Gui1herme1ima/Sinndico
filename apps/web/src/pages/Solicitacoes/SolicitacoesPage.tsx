@@ -331,7 +331,20 @@ export function SolicitacoesPage() {
       <Drawer
         open={Boolean(selected)}
         onClose={() => setSelectedId(null)}
-        title={selected ? `Solicitação #${selected.id.slice(0, 8)}` : ''}
+        title={selected ? `Solicitação ${selected.id.slice(0, 8)}` : ''}
+        titleContent={
+          selected && (
+            <div className="flex items-center gap-3">
+              <IconBadge icon={<SolicitacaoManutencaoIcon width={18} height={18} />} />
+              <div>
+                <span className="block text-xs font-medium text-text-muted">Solicitação</span>
+                <span className="block font-display text-lg font-semibold text-text-primary">
+                  {selected.id.slice(0, 8)}
+                </span>
+              </div>
+            </div>
+          )
+        }
       >
         {selected && (
           <SolicitacaoDetail

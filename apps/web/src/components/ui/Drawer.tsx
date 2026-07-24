@@ -8,10 +8,12 @@ export interface DrawerProps {
   open: boolean;
   onClose: () => void;
   title: string;
+  /** Substitui o `<h3>{title}</h3>` por um header customizado (ex.: badge de ícone + protocolo). `title` continua usado no aria-label. */
+  titleContent?: ReactNode;
   children: ReactNode;
 }
 
-export function Drawer({ open, onClose, title, children }: DrawerProps) {
+export function Drawer({ open, onClose, title, titleContent, children }: DrawerProps) {
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
@@ -45,7 +47,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
         )}
       >
         <div className="flex items-center justify-between border-b border-border p-4 md:p-6">
-          <h3 className="font-display text-lg font-semibold text-text-primary">{title}</h3>
+          {titleContent ?? <h3 className="font-display text-lg font-semibold text-text-primary">{title}</h3>}
           <button
             type="button"
             onClick={onClose}

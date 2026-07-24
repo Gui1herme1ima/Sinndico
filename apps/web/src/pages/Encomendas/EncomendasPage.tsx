@@ -298,7 +298,20 @@ export function EncomendasPage() {
       <Drawer
         open={Boolean(selected)}
         onClose={() => setSelectedId(null)}
-        title={selected ? `Encomenda #${selected.id.slice(0, 8)}` : ''}
+        title={selected ? `Encomenda ${selected.id.slice(0, 8)}` : ''}
+        titleContent={
+          selected && (
+            <div className="flex items-center gap-3">
+              <IconBadge icon={<EncomendaIcon width={18} height={18} />} />
+              <div>
+                <span className="block text-xs font-medium text-text-muted">Encomenda</span>
+                <span className="block font-display text-lg font-semibold text-text-primary">
+                  {selected.id.slice(0, 8)}
+                </span>
+              </div>
+            </div>
+          )
+        }
       >
         {selected && (
           <EncomendaDetail

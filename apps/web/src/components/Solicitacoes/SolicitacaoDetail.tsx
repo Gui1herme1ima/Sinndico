@@ -8,7 +8,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { Select } from '@/components/ui/Select';
-import { formatDate } from '@/lib/formatDate';
+import { Timeline, type TimelineStep } from '@/components/ui/Timeline';
 import type {
   MoradorDiretorioResponse,
   SolicitacaoPrioridade,
@@ -33,6 +33,20 @@ export function SolicitacaoDetail({
   onChangeStatus,
   onChangePrioridade,
 }: SolicitacaoDetailProps) {
+  const steps: TimelineStep[] = [
+    { label: 'Criada', timestamp: solicitacao.dataCriacao, state: 'done' },
+    {
+      label: 'Em progresso',
+      state:
+        solicitacao.status === 'aberto' ? 'pending' : solicitacao.status === 'em-progresso' ? 'active' : 'done',
+    },
+    {
+      label: 'Resolvida',
+      timestamp: solicitacao.dataResolvimento,
+      state: solicitacao.status === 'resolvido' ? 'done' : 'pending',
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -56,10 +70,9 @@ export function SolicitacaoDetail({
         <Badge status={solicitacao.status}>{STATUS_LABELS[solicitacao.status]}</Badge>
       </div>
 
-      <p className="text-xs text-text-muted">
-        Criada em {formatDate(solicitacao.dataCriacao)}
-        {solicitacao.dataResolvimento && <> · resolvida em {formatDate(solicitacao.dataResolvimento)}</>}
-      </p>
+      <div className="border-t border-border pt-4">
+        <Timeline steps={steps} />
+      </div>
 
       {isAdmin && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">

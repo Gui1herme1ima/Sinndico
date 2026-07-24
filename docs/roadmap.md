@@ -169,7 +169,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   de contexto) com métricas da própria tela (ex. em Solicitações: Abertas / Em progresso / Resolvidas
   este mês). Decidir por tela se o número vem do `total` já paginado ou exige contagem por status
   server-side — não criar endpoint novo sem necessidade real.
-- **Fatia 4.7.7 — Drawer de detalhe enriquecido.** Header do `Drawer` de detalhe ganha badge de
+- **Fatia 4.7.7 — Drawer de detalhe enriquecido.** ✅ Concluída. Header do `Drawer` de detalhe ganha badge de
   ícone de domínio + protocolo em destaque (`font-display`) no lugar do título texto plano; timeline
   vertical de eventos (criado → em progresso → resolvido) com pontos coloridos por status. Começar
   por Solicitações e Encomendas (já têm datas suficientes); nas demais telas, timeline só se o dado

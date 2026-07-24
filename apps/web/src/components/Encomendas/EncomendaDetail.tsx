@@ -2,7 +2,7 @@ import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
-import { formatDate } from '@/lib/formatDate';
+import { Timeline, type TimelineStep } from '@/components/ui/Timeline';
 import type { EncomendaResponse, MoradorDiretorioResponse } from '@/services/api/types';
 
 export interface EncomendaDetailProps {
@@ -14,6 +14,15 @@ export interface EncomendaDetailProps {
 }
 
 export function EncomendaDetail({ encomenda, morador, isMorador, pending, onSign }: EncomendaDetailProps) {
+  const steps: TimelineStep[] = [
+    { label: 'Chegou na portaria', timestamp: encomenda.horarioChegada, state: 'done' },
+    {
+      label: 'Retirada confirmada',
+      timestamp: encomenda.dataAssinatura,
+      state: encomenda.assinado ? 'done' : 'pending',
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -41,12 +50,11 @@ export function EncomendaDetail({ encomenda, morador, isMorador, pending, onSign
 
       <div>
         <Badge status={encomenda.status}>{STATUS_LABELS[encomenda.status]}</Badge>
-        {encomenda.assinado && encomenda.dataAssinatura && (
-          <p className="mt-1 text-xs text-text-muted">assinada {formatDate(encomenda.dataAssinatura)}</p>
-        )}
       </div>
 
-      <p className="text-xs text-text-muted">Chegou em {formatDate(encomenda.horarioChegada)}</p>
+      <div className="border-t border-border pt-4">
+        <Timeline steps={steps} />
+      </div>
 
       {isMorador && !encomenda.assinado && (
         <div className="border-t border-border pt-4">
