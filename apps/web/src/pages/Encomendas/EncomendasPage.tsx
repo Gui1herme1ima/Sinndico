@@ -5,14 +5,17 @@ import { CreateEncomendaForm } from '@/components/Encomendas/CreateEncomendaForm
 import { EncomendaDetail } from '@/components/Encomendas/EncomendaDetail';
 import { STATUS_LABELS } from '@/components/Encomendas/encomendaLabels';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { EncomendaEmptyIllustration } from '@/components/ui/illustrations';
+import { PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -48,6 +51,7 @@ export function EncomendasPage() {
   }, [debouncedSearch]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const params: EncomendaListParams = {
     page: state.page,
@@ -166,16 +170,18 @@ export function EncomendasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {isPorteiro && (
-        <div id="create-encomenda-form">
-          <CreateEncomendaForm />
-        </div>
-      )}
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">
-          {isMorador ? 'Minhas encomendas' : 'Encomendas do condomínio'}
-        </h2>
+        <PageHeader
+          title={isMorador ? 'Minhas encomendas' : 'Encomendas do condomínio'}
+          action={
+            isPorteiro && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Registrar encomenda
+              </Button>
+            )
+          }
+        />
 
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
@@ -229,13 +235,7 @@ export function EncomendasPage() {
                       hasActiveFilters
                         ? { label: 'Limpar filtros', onClick: clearFilters }
                         : isPorteiro
-                          ? {
-                              label: 'Registrar encomenda',
-                              onClick: () =>
-                                document
-                                  .getElementById('create-encomenda-form')
-                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-                            }
+                          ? { label: 'Registrar encomenda', onClick: () => setCreateOpen(true) }
                           : undefined
                     }
                   />
@@ -271,6 +271,12 @@ export function EncomendasPage() {
           />
         )}
       </Drawer>
+
+      {isPorteiro && (
+        <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Nova encomenda">
+          <CreateEncomendaForm onSuccess={() => setCreateOpen(false)} />
+        </Drawer>
+      )}
     </div>
   );
 }

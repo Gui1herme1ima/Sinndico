@@ -3,13 +3,16 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { assembleiasApi } from '@/services/api/assembleiasApi';
 import { ApiError } from '@/services/api/client';
 
-export function CreateAssembleiaForm() {
+export interface CreateAssembleiaFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateAssembleiaForm({ onSuccess }: CreateAssembleiaFormProps) {
   const queryClient = useQueryClient();
   const [titulo, setTitulo] = useState('');
   const [data, setData] = useState('');
@@ -32,6 +35,7 @@ export function CreateAssembleiaForm() {
       setDescricao('');
       setPauta('');
       setError(null);
+      onSuccess?.();
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao convocar assembleia.');
@@ -44,26 +48,22 @@ export function CreateAssembleiaForm() {
   }
 
   return (
-    <Card title="Convocar assembleia">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-          <Input
-            label="Data e hora"
-            type="datetime-local"
-            required
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-          />
-        </div>
-        <Textarea label="Pauta" value={pauta} onChange={(e) => setPauta(e.target.value)} />
-        <Textarea label="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+      <Input
+        label="Data e hora"
+        type="datetime-local"
+        required
+        value={data}
+        onChange={(e) => setData(e.target.value)}
+      />
+      <Textarea label="Pauta" value={pauta} onChange={(e) => setPauta(e.target.value)} />
+      <Textarea label="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
 
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
-          Convocar
-        </Button>
-      </form>
-    </Card>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} className="w-full">
+        Convocar
+      </Button>
+    </form>
   );
 }

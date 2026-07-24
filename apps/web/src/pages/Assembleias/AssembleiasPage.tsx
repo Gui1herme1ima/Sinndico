@@ -1,9 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { AssembleiaCard } from '@/components/Assembleias/AssembleiaCard';
 import { CreateAssembleiaForm } from '@/components/Assembleias/CreateAssembleiaForm';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Drawer } from '@/components/ui/Drawer';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PlusIcon } from '@/components/ui/icons';
 import { assembleiasApi } from '@/services/api/assembleiasApi';
 import { useAuth } from '@/store/useAuth';
 
@@ -11,6 +16,7 @@ export function AssembleiasPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const isMorador = user?.role === 'morador';
+  const [createOpen, setCreateOpen] = useState(false);
 
   const assembleiasQuery = useQuery({
     queryKey: ['assembleias'],
@@ -19,10 +25,18 @@ export function AssembleiasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {isAdmin && <CreateAssembleiaForm />}
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">Assembleias</h2>
+        <PageHeader
+          title="Assembleias"
+          action={
+            isAdmin && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Convocar assembleia
+              </Button>
+            )
+          }
+        />
 
         {assembleiasQuery.isLoading && (
           <div className="flex flex-col gap-4">
@@ -47,6 +61,12 @@ export function AssembleiasPage() {
           <AssembleiaCard key={assembleia.id} assembleia={assembleia} isAdmin={isAdmin} isMorador={isMorador} />
         ))}
       </div>
+
+      {isAdmin && (
+        <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Convocar assembleia">
+          <CreateAssembleiaForm onSuccess={() => setCreateOpen(false)} />
+        </Drawer>
+      )}
     </div>
   );
 }

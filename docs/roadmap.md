@@ -150,7 +150,7 @@ qualquer módulo novo — não começar módulo do Bloco C sem o Bloco A estar p
   **Comunicados** (lista em cards, `ComunicadoCard`) e **Visitantes** (`DataTable`). Outros botões de
   ação da tela (ex. "Importar moradores" em Moradores) seguem o mesmo padrão: topo da página, não
   mais soltos entre o formulário e a lista.
-- **Fatia 4.7.4 — Rollout da ação em overlay.** Aplicar o padrão validado na 4.7.3 nas 9 telas
+- **Fatia 4.7.4 — Rollout da ação em overlay.** ✅ Concluída. Aplicar o padrão validado na 4.7.3 nas 9 telas
   restantes: Encomendas, Comida, Solicitações, Áreas Comuns, Moradores, Assembleias, Residências,
   Equipe, Condomínios.
 - **Fatia 4.7.5 — Linha da tabela, ícones e micro-interações.** Feedback de 2026-07-23: telas de

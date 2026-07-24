@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -18,7 +17,11 @@ const CATEGORIA_OPTIONS: { value: SolicitacaoCategoria; label: string }[] = [
   { value: 'outra', label: 'Outra' },
 ];
 
-export function CreateSolicitacaoForm() {
+export interface CreateSolicitacaoFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateSolicitacaoForm({ onSuccess }: CreateSolicitacaoFormProps) {
   const queryClient = useQueryClient();
   const [categoria, setCategoria] = useState<SolicitacaoCategoria>('manutencao');
   const [titulo, setTitulo] = useState('');
@@ -33,6 +36,7 @@ export function CreateSolicitacaoForm() {
       setDescricao('');
       setCategoria('manutencao');
       setError(null);
+      onSuccess?.();
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao criar solicitação.');
@@ -45,26 +49,24 @@ export function CreateSolicitacaoForm() {
   }
 
   return (
-    <Card title="Nova solicitação">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Select
-          label="Categoria"
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value as SolicitacaoCategoria)}
-          options={CATEGORIA_OPTIONS}
-        />
-        <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-        <Textarea
-          label="Descrição"
-          required
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-        />
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
-          Enviar solicitação
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Select
+        label="Categoria"
+        value={categoria}
+        onChange={(e) => setCategoria(e.target.value as SolicitacaoCategoria)}
+        options={CATEGORIA_OPTIONS}
+      />
+      <Input label="Título" required value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+      <Textarea
+        label="Descrição"
+        required
+        value={descricao}
+        onChange={(e) => setDescricao(e.target.value)}
+      />
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} className="w-full">
+        Enviar solicitação
+      </Button>
+    </form>
   );
 }

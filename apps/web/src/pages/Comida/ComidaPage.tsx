@@ -5,14 +5,17 @@ import { ComidaDetail } from '@/components/Comida/ComidaDetail';
 import { STATUS_LABELS } from '@/components/Comida/comidaLabels';
 import { CreateComidaForm } from '@/components/Comida/CreateComidaForm';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { ComidaEmptyIllustration } from '@/components/ui/illustrations';
+import { PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -48,6 +51,7 @@ export function ComidaPage() {
   }, [debouncedSearch]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const params: ComidaListParams = {
     page: state.page,
@@ -142,18 +146,22 @@ export function ComidaPage() {
     return cols;
   }, [isMorador, moradorPorId]);
 
+  const podeCadastrar = isMorador || canManage;
+
   return (
     <div className="flex flex-col gap-6">
-      {(isMorador || canManage) && (
-        <div id="create-comida-form">
-          <CreateComidaForm isMorador={isMorador} />
-        </div>
-      )}
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">
-          {isMorador ? 'Meus pedidos' : 'Pedidos do condomínio'}
-        </h2>
+        <PageHeader
+          title={isMorador ? 'Meus pedidos' : 'Pedidos do condomínio'}
+          action={
+            podeCadastrar && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Avisar pedido
+              </Button>
+            )
+          }
+        />
 
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
@@ -208,14 +216,8 @@ export function ComidaPage() {
                     action={
                       hasActiveFilters
                         ? { label: 'Limpar filtros', onClick: clearFilters }
-                        : isMorador || canManage
-                          ? {
-                              label: 'Avisar pedido',
-                              onClick: () =>
-                                document
-                                  .getElementById('create-comida-form')
-                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-                            }
+                        : podeCadastrar
+                          ? { label: 'Avisar pedido', onClick: () => setCreateOpen(true) }
                           : undefined
                     }
                   />
@@ -254,6 +256,12 @@ export function ComidaPage() {
           />
         )}
       </Drawer>
+
+      {podeCadastrar && (
+        <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Avisar pedido">
+          <CreateComidaForm isMorador={isMorador} onSuccess={() => setCreateOpen(false)} />
+        </Drawer>
+      )}
     </div>
   );
 }

@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ApiError } from '@/services/api/client';
@@ -18,9 +17,10 @@ function labelResidencia(residencia: ResidenciaResponse): string {
 
 export interface CreateMoradorFormProps {
   residencias: ResidenciaResponse[];
+  onSuccess?: () => void;
 }
 
-export function CreateMoradorForm({ residencias }: CreateMoradorFormProps) {
+export function CreateMoradorForm({ residencias, onSuccess }: CreateMoradorFormProps) {
   const queryClient = useQueryClient();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -58,54 +58,48 @@ export function CreateMoradorForm({ residencias }: CreateMoradorFormProps) {
 
   if (residencias.length === 0) {
     return (
-      <Card title="Novo morador">
-        <p className="text-sm text-text-secondary">
-          Cadastre ao menos uma residência antes de poder vincular um morador a ela.
+      <p className="text-sm text-text-secondary">
+        Cadastre ao menos uma residência antes de poder vincular um morador a ela.
+      </p>
+    );
+  }
+
+  if (senhaGerada) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-text-primary">
+          Senha temporária (mostrada só uma vez, um e-mail de boas-vindas também foi enviado):{' '}
+          <span className="font-mono font-semibold">{senhaGerada}</span>
         </p>
-      </Card>
+        <Button
+          className="self-start"
+          onClick={() => {
+            setSenhaGerada(null);
+            onSuccess?.();
+          }}
+        >
+          Fechar
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card title="Novo morador">
-      {senhaGerada && (
-        <div className="mb-4 flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/10 p-4">
-          <p className="text-sm text-text-primary">
-            Senha temporária (mostrada só uma vez, um e-mail de boas-vindas também foi enviado):{' '}
-            <span className="font-mono font-semibold">{senhaGerada}</span>
-          </p>
-          <Button size="sm" variant="ghost" className="self-start" onClick={() => setSenhaGerada(null)}>
-            Fechar
-          </Button>
-        </div>
-      )}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input label="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
+      <Input label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Select
+        label="Residência"
+        value={residenciaId}
+        onChange={(e) => setResidenciaId(e.target.value)}
+        options={residencias.map((r) => ({ value: r.id, label: labelResidencia(r) }))}
+      />
+      <Input label="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
-          <Input
-            label="E-mail"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Select
-            label="Residência"
-            value={residenciaId}
-            onChange={(e) => setResidenciaId(e.target.value)}
-            options={residencias.map((r) => ({ value: r.id, label: labelResidencia(r) }))}
-          />
-          <Input label="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-        </div>
-
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
-          Cadastrar
-        </Button>
-      </form>
-    </Card>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} className="w-full">
+        Cadastrar
+      </Button>
+    </form>
   );
 }

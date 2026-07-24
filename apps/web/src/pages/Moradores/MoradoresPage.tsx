@@ -4,15 +4,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { CreateMoradorForm } from '@/components/Moradores/CreateMoradorForm';
 import { ImportarMoradoresButton } from '@/components/Moradores/ImportarMoradoresButton';
 import { MoradorDetail } from '@/components/Moradores/MoradorDetail';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { MoradorEmptyIllustration } from '@/components/ui/illustrations';
+import { PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { residenciasApi } from '@/services/api/residenciasApi';
@@ -41,6 +44,7 @@ export function MoradoresPage() {
   const [rawSearch, setRawSearch] = useState(state.search);
   const debouncedSearch = useDebouncedValue(rawSearch, 300);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     if (debouncedSearch !== state.search) setSearch(debouncedSearch);
@@ -127,13 +131,19 @@ export function MoradoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div id="create-morador-form">
-        <CreateMoradorForm residencias={residencias} />
-      </div>
-      <ImportarMoradoresButton />
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">Moradores</h2>
+        <PageHeader
+          title="Moradores"
+          action={
+            <div className="flex items-center gap-3">
+              <ImportarMoradoresButton />
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Cadastrar morador
+              </Button>
+            </div>
+          }
+        />
 
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
@@ -169,13 +179,7 @@ export function MoradoresPage() {
                     action={
                       state.search
                         ? { label: 'Limpar filtros', onClick: clearFilters }
-                        : {
-                            label: 'Cadastrar morador',
-                            onClick: () =>
-                              document
-                                .getElementById('create-morador-form')
-                                ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-                          }
+                        : { label: 'Cadastrar morador', onClick: () => setCreateOpen(true) }
                     }
                   />
                 }
@@ -210,6 +214,10 @@ export function MoradoresPage() {
             onSave={(payload) => updateMutation.mutate({ id: selected.id, ...payload })}
           />
         )}
+      </Drawer>
+
+      <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Novo morador">
+        <CreateMoradorForm residencias={residencias} onSuccess={() => setCreateOpen(false)} />
       </Drawer>
     </div>
   );

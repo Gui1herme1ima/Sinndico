@@ -1,14 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { CreateResidenciaForm } from '@/components/Residencias/CreateResidenciaForm';
 import { ImportarResidenciasButton } from '@/components/Residencias/ImportarResidenciasButton';
 import { ResidenciaCard } from '@/components/Residencias/ResidenciaCard';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Drawer } from '@/components/ui/Drawer';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { PlusIcon } from '@/components/ui/icons';
 import { condominiosApi } from '@/services/api/condominiosApi';
 import { residenciasApi } from '@/services/api/residenciasApi';
 
 export function ResidenciasPage() {
+  const [createOpen, setCreateOpen] = useState(false);
+
   const condominioQuery = useQuery({
     queryKey: ['condominio-atual'],
     queryFn: () => condominiosApi.getMine(),
@@ -41,11 +48,19 @@ export function ResidenciasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <CreateResidenciaForm tipoResidencia={tipoResidencia} />
-      <ImportarResidenciasButton />
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">Residências</h2>
+        <PageHeader
+          title="Residências"
+          action={
+            <div className="flex items-center gap-3">
+              <ImportarResidenciasButton />
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Cadastrar residência
+              </Button>
+            </div>
+          }
+        />
 
         {residenciasQuery.isLoading && (
           <div className="flex flex-col gap-4">
@@ -70,6 +85,10 @@ export function ResidenciasPage() {
           <ResidenciaCard key={residencia.id} residencia={residencia} tipoResidencia={tipoResidencia} />
         ))}
       </div>
+
+      <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Nova residência">
+        <CreateResidenciaForm tipoResidencia={tipoResidencia} onSuccess={() => setCreateOpen(false)} />
+      </Drawer>
     </div>
   );
 }

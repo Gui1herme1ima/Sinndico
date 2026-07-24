@@ -3,14 +3,17 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { MoradorSelect } from '@/components/ui/MoradorSelect';
 import { Textarea } from '@/components/ui/Textarea';
 import { ApiError } from '@/services/api/client';
 import { encomendasApi } from '@/services/api/encomendasApi';
 
-export function CreateEncomendaForm() {
+export interface CreateEncomendaFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateEncomendaForm({ onSuccess }: CreateEncomendaFormProps) {
   const queryClient = useQueryClient();
   const [moradorId, setMoradorId] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -30,6 +33,7 @@ export function CreateEncomendaForm() {
       setDescricao('');
       setFotoUrl('');
       setError(null);
+      onSuccess?.();
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Erro inesperado ao cadastrar encomenda.');
@@ -42,25 +46,23 @@ export function CreateEncomendaForm() {
   }
 
   return (
-    <Card title="Nova encomenda">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
-        <Textarea
-          label="Descrição (opcional)"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-        />
-        <Input
-          label="URL da foto (opcional)"
-          type="url"
-          value={fotoUrl}
-          onChange={(e) => setFotoUrl(e.target.value)}
-        />
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} disabled={!moradorId} className="self-start">
-          Cadastrar encomenda
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <MoradorSelect label="Morador" required value={moradorId} onChange={setMoradorId} />
+      <Textarea
+        label="Descrição (opcional)"
+        value={descricao}
+        onChange={(e) => setDescricao(e.target.value)}
+      />
+      <Input
+        label="URL da foto (opcional)"
+        type="url"
+        value={fotoUrl}
+        onChange={(e) => setFotoUrl(e.target.value)}
+      />
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} disabled={!moradorId} className="w-full">
+        Cadastrar encomenda
+      </Button>
+    </form>
   );
 }

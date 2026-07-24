@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ApiError } from '@/services/api/client';
@@ -23,7 +22,11 @@ const CAMPOS_INICIAIS = {
   adminEmail: '',
 };
 
-export function CreateCondominioForm() {
+export interface CreateCondominioFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateCondominioForm({ onSuccess }: CreateCondominioFormProps) {
   const queryClient = useQueryClient();
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
   const [error, setError] = useState<string | null>(null);
@@ -63,108 +66,104 @@ export function CreateCondominioForm() {
     mutation.mutate();
   }
 
-  return (
-    <Card title="Novo condomínio">
-      {criado && (
-        <div className="mb-4 flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/10 p-4">
-          <p className="text-sm text-text-primary">
-            Condomínio <strong>{criado.nome}</strong> criado. Acesso:{' '}
-            <span className="font-mono">/{criado.slug}/login</span>
+  if (criado) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-text-primary">
+          Condomínio <strong>{criado.nome}</strong> criado. Acesso:{' '}
+          <span className="font-mono">/{criado.slug}/login</span>
+        </p>
+        <p className="text-sm text-text-primary">
+          Usuário do admin: <span className="font-mono">{criado.admin.username}</span>
+        </p>
+        <p className="text-sm text-text-primary">
+          Senha temporária (mostrada só uma vez, repasse ao admin):{' '}
+          <span className="font-mono font-semibold">{criado.admin.senhaTemporaria}</span>
+        </p>
+        {criado.admin.email && (
+          <p className="text-sm text-text-secondary">
+            Um e-mail de boas-vindas também foi enviado para {criado.admin.email}.
           </p>
-          <p className="text-sm text-text-primary">
-            Usuário do admin: <span className="font-mono">{criado.admin.username}</span>
-          </p>
-          <p className="text-sm text-text-primary">
-            Senha temporária (mostrada só uma vez, repasse ao admin):{' '}
-            <span className="font-mono font-semibold">{criado.admin.senhaTemporaria}</span>
-          </p>
-          {criado.admin.email && (
-            <p className="text-sm text-text-secondary">
-              Um e-mail de boas-vindas também foi enviado para {criado.admin.email}.
-            </p>
-          )}
-          <Button size="sm" variant="ghost" className="self-start" onClick={() => setCriado(null)}>
-            Fechar
-          </Button>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Nome" required value={campos.nome} onChange={(e) => set('nome', e.target.value)} />
-          <Input
-            label="Identificador de URL (slug)"
-            required
-            placeholder="condominio-vale-verde"
-            value={campos.slug}
-            onChange={(e) => set('slug', e.target.value)}
-            helperText="Vira sinndico.com.br/<slug>"
-          />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Select
-            label="Tipo de residência"
-            value={campos.tipoResidencia}
-            onChange={(e) => set('tipoResidencia', e.target.value as TipoResidencia)}
-            options={[
-              { value: 'apartamento', label: 'Apartamento (blocos)' },
-              { value: 'casa', label: 'Casa (ruas)' },
-            ]}
-          />
-          <Input label="Endereço" value={campos.endereco} onChange={(e) => set('endereco', e.target.value)} />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Input
-            label="Contato — nome"
-            value={campos.contatoNome}
-            onChange={(e) => set('contatoNome', e.target.value)}
-          />
-          <Input
-            label="Contato — e-mail"
-            type="email"
-            value={campos.contatoEmail}
-            onChange={(e) => set('contatoEmail', e.target.value)}
-          />
-          <Input
-            label="Contato — telefone"
-            value={campos.contatoTelefone}
-            onChange={(e) => set('contatoTelefone', e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold text-text-primary">Primeiro administrador</h3>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Input
-              label="Nome"
-              required
-              value={campos.adminNome}
-              onChange={(e) => set('adminNome', e.target.value)}
-            />
-            <Input
-              label="Usuário"
-              required
-              placeholder="joao.silva"
-              value={campos.adminUsername}
-              onChange={(e) => set('adminUsername', e.target.value)}
-            />
-            <Input
-              label="E-mail (opcional)"
-              type="email"
-              value={campos.adminEmail}
-              onChange={(e) => set('adminEmail', e.target.value)}
-              helperText="Sem e-mail, a senha é mostrada aqui pra você repassar."
-            />
-          </div>
-        </div>
-
-        {error && <p className="text-sm text-danger">{error}</p>}
-        <Button type="submit" loading={mutation.isPending} className="self-start">
-          Criar condomínio
+        )}
+        <Button
+          className="self-start"
+          onClick={() => {
+            setCriado(null);
+            onSuccess?.();
+          }}
+        >
+          Fechar
         </Button>
-      </form>
-    </Card>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Input label="Nome" required value={campos.nome} onChange={(e) => set('nome', e.target.value)} />
+      <Input
+        label="Identificador de URL (slug)"
+        required
+        placeholder="condominio-vale-verde"
+        value={campos.slug}
+        onChange={(e) => set('slug', e.target.value)}
+        helperText="Vira sinndico.com.br/<slug>"
+      />
+      <Select
+        label="Tipo de residência"
+        value={campos.tipoResidencia}
+        onChange={(e) => set('tipoResidencia', e.target.value as TipoResidencia)}
+        options={[
+          { value: 'apartamento', label: 'Apartamento (blocos)' },
+          { value: 'casa', label: 'Casa (ruas)' },
+        ]}
+      />
+      <Input label="Endereço" value={campos.endereco} onChange={(e) => set('endereco', e.target.value)} />
+      <Input
+        label="Contato — nome"
+        value={campos.contatoNome}
+        onChange={(e) => set('contatoNome', e.target.value)}
+      />
+      <Input
+        label="Contato — e-mail"
+        type="email"
+        value={campos.contatoEmail}
+        onChange={(e) => set('contatoEmail', e.target.value)}
+      />
+      <Input
+        label="Contato — telefone"
+        value={campos.contatoTelefone}
+        onChange={(e) => set('contatoTelefone', e.target.value)}
+      />
+
+      <div className="flex flex-col gap-4 border-t border-border pt-4">
+        <h3 className="text-sm font-semibold text-text-primary">Primeiro administrador</h3>
+        <Input
+          label="Nome"
+          required
+          value={campos.adminNome}
+          onChange={(e) => set('adminNome', e.target.value)}
+        />
+        <Input
+          label="Usuário"
+          required
+          placeholder="joao.silva"
+          value={campos.adminUsername}
+          onChange={(e) => set('adminUsername', e.target.value)}
+        />
+        <Input
+          label="E-mail (opcional)"
+          type="email"
+          value={campos.adminEmail}
+          onChange={(e) => set('adminEmail', e.target.value)}
+          helperText="Sem e-mail, a senha é mostrada aqui pra você repassar."
+        />
+      </div>
+
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <Button type="submit" loading={mutation.isPending} className="w-full">
+        Criar condomínio
+      </Button>
+    </form>
   );
 }

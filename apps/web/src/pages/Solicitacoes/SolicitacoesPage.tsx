@@ -5,13 +5,16 @@ import { CreateSolicitacaoForm } from '@/components/Solicitacoes/CreateSolicitac
 import { SolicitacaoDetail } from '@/components/Solicitacoes/SolicitacaoDetail';
 import { CATEGORIA_LABELS, PRIORIDADE_LABELS, STATUS_LABELS } from '@/components/Solicitacoes/solicitacaoLabels';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { SolicitacaoEmptyIllustration } from '@/components/ui/illustrations';
+import { PlusIcon } from '@/components/ui/icons';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
 import { formatDate } from '@/lib/formatDate';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
@@ -48,6 +51,7 @@ export function SolicitacoesPage() {
   }, [debouncedSearch]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const params: SolicitacaoListParams = {
     page: state.page,
@@ -165,16 +169,18 @@ export function SolicitacoesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {!isAdmin && (
-        <div id="create-solicitacao-form">
-          <CreateSolicitacaoForm />
-        </div>
-      )}
-
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">
-          {isAdmin ? 'Solicitações do condomínio' : 'Minhas solicitações'}
-        </h2>
+        <PageHeader
+          title={isAdmin ? 'Solicitações do condomínio' : 'Minhas solicitações'}
+          action={
+            !isAdmin && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Nova solicitação
+              </Button>
+            )
+          }
+        />
 
         <Card padding="none">
           <div className="p-5 md:p-8 md:pb-0">
@@ -242,13 +248,7 @@ export function SolicitacoesPage() {
                       hasActiveFilters
                         ? { label: 'Limpar filtros', onClick: clearFilters }
                         : !isAdmin
-                          ? {
-                              label: 'Nova solicitação',
-                              onClick: () =>
-                                document
-                                  .getElementById('create-solicitacao-form')
-                                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-                            }
+                          ? { label: 'Nova solicitação', onClick: () => setCreateOpen(true) }
                           : undefined
                     }
                   />
@@ -285,6 +285,12 @@ export function SolicitacoesPage() {
           />
         )}
       </Drawer>
+
+      {!isAdmin && (
+        <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Nova solicitação">
+          <CreateSolicitacaoForm onSuccess={() => setCreateOpen(false)} />
+        </Drawer>
+      )}
     </div>
   );
 }

@@ -6,15 +6,18 @@ import { CreateAreaComumForm } from '@/components/AreasComuns/CreateAreaComumFor
 import { ReservaDetail } from '@/components/AreasComuns/ReservaDetail';
 import { STATUS_LABELS } from '@/components/AreasComuns/reservaLabels';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable';
 import { Drawer } from '@/components/ui/Drawer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ListToolbar } from '@/components/ui/ListToolbar';
 import { formatResidencia } from '@/components/ui/MoradorSelect';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ReservaEmptyIllustration } from '@/components/ui/illustrations';
+import { PlusIcon } from '@/components/ui/icons';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useListQueryParams } from '@/hooks/useListQueryParams';
 import { formatDate } from '@/lib/formatDate';
@@ -56,6 +59,7 @@ export function AreasComunsPage() {
   }, [debouncedSearch]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const reservaParams: ReservaListParams = {
     page: state.page,
@@ -154,10 +158,18 @@ export function AreasComunsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {isAdmin && <CreateAreaComumForm />}
-
       <div id="areas-comuns-list" className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-semibold text-text-primary">Áreas comuns</h2>
+        <PageHeader
+          title="Áreas comuns"
+          action={
+            isAdmin && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <PlusIcon width={16} height={16} />
+                Nova área comum
+              </Button>
+            )
+          }
+        />
 
         {areasQuery.isLoading && (
           <div className="flex flex-col gap-4">
@@ -283,6 +295,12 @@ export function AreasComunsPage() {
           />
         )}
       </Drawer>
+
+      {isAdmin && (
+        <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Nova área comum">
+          <CreateAreaComumForm onSuccess={() => setCreateOpen(false)} />
+        </Drawer>
+      )}
     </div>
   );
 }
